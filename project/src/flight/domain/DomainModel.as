@@ -49,5 +49,13 @@ package flight.domain
 			
 			dispatchEvent(new DomainModelEvent(DomainModelEvent.MERGE));	
 		}
+		
+		public function isModified():Boolean
+		{
+			if(source)
+				return !source.equals(this);
+			return false;
+		}
+		
 	}
 }
