@@ -1,0 +1,1 @@
+﻿package flight.commands{	/**	 * The base interface for commands that support undo and redo.	 */	public interface IUndoableCommand extends ICommand	{		/**		 * Reverses the action performed by execute.		 */		function undo():void;				/**		 * Restores a reversed action following an undo.		 */		function redo():void;	}}

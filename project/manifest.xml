@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<componentPackage>
+	
+	<!-- framework -->
+	<component id="AsyncCommand" class="flight.commands.AsyncCommand"/>
+	<component id="CommandHistory" class="flight.commands.CommandHistory"/>
+	<component id="CommandItem" class="flight.commands.CommandItem"/>
+	<component id="Controller" class="flight.controller.Controller"/>
+	<component id="DomainController" class="flight.domain.DomainController"/>
+	<component id="DomainModel" class="flight.domain.DomainModel"/>
+	<component id="HistoryController" class="flight.domain.HistoryController"/>
+	<component id="MacroCommand" class="flight.commands.MacroCommand"/>
+	<component id="ValueObject" class="flight.utils.ValueObject"/>
+	
+	<!-- configs -->
+	<component id="Config" class="flight.config.Config"/>
+	<component id="FlashVarsConfig" class="flight.config.FlashVarsConfig"/>
+	<component id="SharedObjectConfig" class="flight.config.SharedObjectConfig"/>
+	<component id="URLConfig" class="flight.config.URLConfig"/>
+	<component id="XMLConfig" class="flight.config.XMLConfig"/>
+	
+	<!-- services -->
+	<component id="FileIOService" class="flight.services.fileio.FileIOService"/>
+	<component id="HTTPService" class="flight.services.http.HTTPService"/>
+	<component id="JSONService" class="flight.services.json.JSONService"/>
+	<component id="RemotingService" class="flight.services.remoting.RemotingService"/>
+	<component id="XMLService" class="flight.services.xml.XMLService"/>
+	
+	<!-- player classes -->
+	<component id="Array" class="Array" lookupOnly="true"/>
+	<component id="BevelFilter" class="flash.filters.BevelFilter" lookupOnly="true"/>
+	<component id="BlurFilter" class="flash.filters.BlurFilter" lookupOnly="true"/>
+	<component id="Boolean" class="Boolean" lookupOnly="true"/>
+	<component id="Class" class="Class" lookupOnly="true"/>
+	<component id="ColorMatrixFilter" class="flash.filters.ColorMatrixFilter" lookupOnly="true"/>
+	<component id="ConvolutionFilter" class="flash.filters.ConvolutionFilter" lookupOnly="true"/>
+	<component id="Date" class="Date" lookupOnly="true"/>
+	<component id="DisplacementMapFilter" class="flash.filters.DisplacementMapFilter" lookupOnly="true"/>
+	<component id="DropShadowFilter" class="flash.filters.DropShadowFilter" lookupOnly="true"/>
+	<component id="Function" class="Function" lookupOnly="true"/>
+	<component id="GlowFilter" class="flash.filters.GlowFilter" lookupOnly="true"/>
+	<component id="GradientBevelFilter" class="flash.filters.GradientBevelFilter" lookupOnly="true"/>
+	<component id="GradientGlowFilter" class="flash.filters.GradientGlowFilter" lookupOnly="true"/>
+	<component id="int" class="int" lookupOnly="true"/>
+	<component id="Matrix" class="flash.geom.Matrix" lookupOnly="true"/>
+	<component id="Number" class="Number" lookupOnly="true"/>
+	<component id="Object" class="Object" lookupOnly="true"/>
+	<component id="Point" class="flash.geom.Point" lookupOnly="true"/>
+	<component id="RegExp" class="RegExp" lookupOnly="true"/>
+	<component id="Sprite" class="flash.display.Sprite" lookupOnly="true"/>
+	<component id="String" class="String" lookupOnly="true"/>
+	<component id="Transform" class="geom.filters.Transform" lookupOnly="true"/>
+	<component id="uint" class="uint" lookupOnly="true"/>
+	
+</componentPackage>

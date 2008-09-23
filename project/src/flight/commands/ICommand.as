@@ -1,0 +1,1 @@
+﻿package flight.commands{	/**	 * Base interface for all commands.	 */	public interface ICommand	{		/**		 * Execute is the one necessary ingredient for a command class. This method represents		 * the primary action the command fulfills and returns its success or failure.		 */		function execute():Boolean;	}}
