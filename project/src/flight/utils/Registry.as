@@ -35,7 +35,7 @@ package flight.utils
 			delete scopeIndex[scope][index];
 		}
 		
-		public static function lookup(index:Object, scope:Object = null):Object
+		public static function lookup(index:Object, scope:Object = null):*
 		{
 			if(scope != null)
 			{

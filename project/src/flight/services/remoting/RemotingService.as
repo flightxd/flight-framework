@@ -46,7 +46,8 @@ package flight.services.remoting
 			_connection.addEventListener( SecurityErrorEvent.SECURITY_ERROR, handleEvent );
 			_connection.addEventListener( AsyncErrorEvent.ASYNC_ERROR, handleEvent );
 			
-			_connection.connect( _gateway = gateway);	
+			if (gateway)
+				gatewayURL = gateway;	
 		}
 		
 		/**
