@@ -28,7 +28,7 @@ package flight.config
 			// load
 			var loader:URLLoader = new URLLoader();
 			configureListeners(loader);
-			loader.load(new URLRequest(_configLocation));
+			loader.load(new URLRequest(_configLocation + "?c=" + new Date().milliseconds));
 		}
 		
 		private function configureListeners(dispatcher:IEventDispatcher):void

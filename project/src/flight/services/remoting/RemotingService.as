@@ -28,7 +28,7 @@ package flight.services.remoting
 		private var _rpc:PendingCall;	
 		private var _calls:Array;
 		
-		public function RemotingService ( gateway:String, service:String, enableLimiter:Boolean=true, encoding:int=3 )
+		public function RemotingService ( gateway:String="", service:String="", enableLimiter:Boolean=true, encoding:int=3 )
 		{
 			_calls = new Array();
 			
