@@ -3,29 +3,29 @@ package flight.config
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	public class FlashVarsConfig extends Config
+	dynamic public class FlashVarsConfig extends Config
 	{
-		public function FlashVarsConfig(configView:DisplayObject = null)
+		public function FlashVarsConfig(viewReference:DisplayObject = null)
 		{
-			this.configView = configView;
+			this.viewReference = viewReference;
 		}
 		
-		override public function set configView(value:DisplayObject):void
+		override public function set viewReference(value:DisplayObject):void
 		{
-			super.configView = value;
-			if(configView == null)
+			super.viewReference = value;
+			if(viewReference == null)
 				return;
 			
-			if(configView.root != null)
-				configData = configView.root.loaderInfo.parameters;
+			if(viewReference.root != null)
+				configurations = viewReference.root.loaderInfo.parameters;
 			else
-				configView.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+				viewReference.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 		}
 		
 		private function addedToStageHandler(event:Event):void
 		{
-			configData = configView.root.loaderInfo.parameters;
-			configView.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			configurations = formatSource(viewReference.root.loaderInfo.parameters);
+			viewReference.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 		}
 	}
 }

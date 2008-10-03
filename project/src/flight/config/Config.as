@@ -11,7 +11,7 @@ package flight.config
 	import mx.core.IMXMLObject;
 	import mx.events.PropertyChangeEvent;
 	
-	[DefaultProperty("configSource")]
+	[DefaultProperty("source")]
 	dynamic public class Config extends EventDispatcher implements IMXMLObject
 	{
 		private static const REGISTRY_SCOPE:String = "Config";
@@ -20,121 +20,206 @@ package flight.config
 			return Registry.lookup(id, REGISTRY_SCOPE) as Config;
 		}
 		
-		private var _configId:Object;
-		private var _configSource:Array;
-		private var _configData:Object;
-		private var _configView:DisplayObject;
+		public static var main:Config;
 		
-		public function Config(id:Object = null)
-		{
-			configSource = [];
-			configId = id;
-		}
+		private var _id:Object;
+		private var _source:Object;
+		private var _configurations:Object;
+		private var _viewReference:DisplayObject;
 		
-		public function get configId():Object
+		public function Config(id:Object = null, configView:DisplayObject = null)
 		{
-			return _configId;
-		}
-		public function set configId(value:Object):void
-		{
-			if(_configId == value)
-				return;
-			
-			Registry.unregister(_configId, REGISTRY_SCOPE);
-			_configId = value;
-			Registry.register(_configId, this, REGISTRY_SCOPE);
-		}
-		
-		[Bindable(event="propertyChange")]
-		public function get configData():Object
-		{
-			return _configData;
-		}
-		public function set configData(value:Object):void
-		{
-			if(_configData == value)
-				return;
-			
-			var oldValue:Object = _configData;
-			_configData = value;
-			update();
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "configData", oldValue, value));
-		}
-		
-		[Bindable(event="propertyChange")]
-		public function get configSource():Array
-		{
-			return _configSource;
-		}
-		public function set configSource(value:Array):void
-		{
-			if(_configSource == value)
-				return;
-			
-			var oldValue:Object = _configSource;
-			_configSource = value;
-			for each(var source:Config in _configSource)
+			if (id != 'global')
 			{
-				BindingUtils.bindSetter(update, source, "configData");
+				if (!main)
+					Registry.register('global', main = new Config('global'), REGISTRY_SCOPE);
+				
+				main.source = main.source.concat(this);
 			}
-			update();
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "configSource", oldValue, value));
+			
+			this.id = id;
+			this.viewReference = configView;
+			source = [];
+		}
+		
+		public function get id():Object
+		{
+			return _id;
+		}
+		public function set id(value:Object):void
+		{
+			if(_id == value)
+				return;
+			
+			_id = value;
+			Registry.register(_id, this, REGISTRY_SCOPE);
 		}
 		
 		[Bindable(event="propertyChange")]
-		public function get configView():DisplayObject
+		public function get configurations():Object
 		{
-			return _configView;
+			return _configurations;
 		}
-		public function set configView(value:DisplayObject):void
+		public function set configurations(value:Object):void
 		{
-			if(_configView == value)
+			if(_configurations == value)
 				return;
 			
-			var oldValue:Object = _configView;
-			_configView = value;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "configView", oldValue, value));
+			var oldValue:Object = _configurations;
+			var newValue:Object = {};
+			
+			for (var i:String in _configurations)
+				newValue[i] = _configurations[i];
+			
+			for (i in value)
+			{
+				newValue[i] = value[i];
+				// subclass configs may not be dynamic, we will fail silently
+				try { this[i] = value[i]; } catch(e:Error) { }
+			}
+			
+			_configurations = newValue;
+			
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "configurations", oldValue, newValue));
 		}
 		
+		[Bindable(event="propertyChange")]
+		public function get source():Object
+		{
+			return _source;
+		}
+		public function set source(value:Object):void
+		{
+			if(_source == value)
+				return;
+			
+			var oldValue:Object = _source;
+			_source = value;
+			
+			if (value is Array)
+			{
+				var mainSourceAltered:Boolean = false;
+				if (main && this != main)
+					var mainSource:Array = main.source.concat();
+				
+				for each(var source:Config in _source)
+				{
+					// let's not duplicate sources in main, they'll all filter up
+					var index:int;
+					if (mainSource && (index = mainSource.indexOf(source)) != -1)
+					{
+						mainSource.splice(index, 1);
+						mainSourceAltered = true;
+					}
+					
+					BindingUtils.bindSetter(update, source, "configurations");
+				}
+				
+				if (mainSource && mainSourceAltered)
+					main.source = mainSource;
+			}
+			
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "source", oldValue, value));
+		}
+		
+		[Bindable(event="propertyChange")]
+		public function get viewReference():DisplayObject
+		{
+			return _viewReference;
+		}
+		public function set viewReference(value:DisplayObject):void
+		{
+			if(_viewReference == value)
+				return;
+			
+			var oldValue:Object = _viewReference;
+			_viewReference = value;
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "viewReference", oldValue, value));
+		}
+		private var inited:uint;
 		public function initialized(document:Object, id:String):void
 		{
-			if(configId == null)
-				configId = id;
-			
-			if(configView != null)
+			if(id != null)
+				this.id = id;
+			trace("Initialized", ++inited, "times");
+			if(viewReference != null)
 				return;
 			if(document is DisplayObject)
-				configView = document as DisplayObject;
+				viewReference = document as DisplayObject;
 			else if(document is Config)
-				BindingUtils.bindProperty(this, "configView", document, "configView");
-		}
-		
-		private function update(data:Object = null):void
-		{
-			// "data" isn't used, but the param is included to allow update to act as a bindSetter
-			var propList:XMLList = Type.describeProperties(this);
+				BindingUtils.bindProperty(this, "viewReference", document, "viewReference");
 			
-			var configSource:Array = this.configSource.concat(this);
+			// initialize the configurations object
+			var configurations:Object = {};
+			var propList:XMLList = getProperties();
 			for each(var prop:XML in propList)
 			{
 				var name:String = prop.@name;
-				if(name.indexOf("config") != -1)
-					continue;
-				for(var i:int = 0; i < configSource.length; i++)
-				{
-					var source:Config = configSource[i] as Config;
-					var value:Object = (name in source) ? source[name] :
-								(source.configData != null && name in source.configData) ?
-								source.configData[name] : null;
-					if(value != null)
-					{
-						var type:Class = getDefinitionByName(prop.@type) as Class;
-						this[name] = (type == Boolean && value == "false") ? false : type(value);
-						break;
-					}
-				}
+				configurations[name] = this[name];
 			}
+			this.configurations = configurations;
 		}
 		
+		/**
+		 * Format data pulled in from the source param to its native types (boolean etc.)
+		 */
+		protected function formatSource(source:Object):Object
+		{
+			var propList:XMLList = getProperties();
+			
+			for (var name:String in source)
+			{
+				var prop:XMLList = propList.(@name == name);
+				var value:Object = source[name];
+				if(value != null && prop.length())
+				{
+					var type:Class = getDefinitionByName(prop.@type.toString()) as Class;
+					source[name] = (type == Boolean && value == "false") ? false : type(value);
+				}
+			}
+			
+			return source;
+		}
+		
+		// "data" is used as update is a bindSetter
+		private function update(data:Object):void
+		{
+			// if the configurations have not been initialized yet (they are null or
+			// or empty) then we won't process them yet
+			if (data == null)
+				return;
+			
+			var empty:Boolean = true;
+			for (var prop:String in data)
+			{
+				empty = false;
+				break;
+			}
+			
+			if (empty)
+				return;
+			
+			// can't just update using data, because of overrides, must do all sources
+			var sources:Array = source as Array;
+			var newConfigurations:Object = {};
+			
+			for each (var config:Config in sources)
+			{
+				// populate the dynamic properties
+				var configurations:Object = config.configurations;
+				for (var i:String in configurations)
+					newConfigurations[i] = configurations[i];
+			}
+			
+			this.configurations = newConfigurations;
+		}
+		
+		protected function getProperties():XMLList
+		{
+			return Type.describeProperties(this)
+					.(attribute('access') != 'readonly'
+					&& attribute('declaredBy') != "flight.config::Config"
+					&& !attribute('uri').length());
+		}
 	}
 }

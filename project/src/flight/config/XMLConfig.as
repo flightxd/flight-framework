@@ -5,30 +5,28 @@ package flight.config
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	
-	public class XMLConfig extends Config
+	dynamic public class XMLConfig extends Config
 	{
-		private var _configLocation:String;
 		
-		public function XMLConfig(configLocation:String = null)
+		public function XMLConfig(source:String = null)
 		{
-			this.configLocation = configLocation;
+			this.source = source;
 		}
 		
-		public function get configLocation():String
+		public override function set source(value:Object):void
 		{
-			return _configLocation;
-		}
-		public function set configLocation(value:String):void
-		{
-			if(_configLocation == value)
+			if(super.source == value)
 				return;
 			
-			_configLocation = value;
+			super.source = value;
 			
-			// load
-			var loader:URLLoader = new URLLoader();
-			configureListeners(loader);
-			loader.load(new URLRequest(_configLocation + "?c=" + new Date().milliseconds));
+			if (value is String)
+			{
+				// load
+				var loader:URLLoader = new URLLoader();
+				configureListeners(loader);
+				loader.load(new URLRequest(value as String));
+			}
 		}
 		
 		private function configureListeners(dispatcher:IEventDispatcher):void
@@ -44,7 +42,7 @@ package flight.config
 		private function completeHandler(event:Event):void
 		{
 			var loader:URLLoader = URLLoader(event.target);
-			configData = XML(loader.data);
+			configurations = formatSource(XML(loader.data));
 		}
 		
 //		private function openHandler(event:Event):void

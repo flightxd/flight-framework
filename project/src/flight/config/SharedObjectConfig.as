@@ -2,23 +2,23 @@ package flight.config
 {
 	import flash.net.SharedObject;
 	
-	public class SharedObjectConfig extends Config
+	dynamic public class SharedObjectConfig extends Config
 	{
 		private var _sharedObject:SharedObject;
 		
-		public function SharedObjectConfig(configId:Object = null)
+		public function SharedObjectConfig(id:Object = null)
 		{
-			super(configId);
+			this.id = id;
 		}
 		
-		override public function set configId(value:Object):void
+		override public function set id(value:Object):void
 		{
-			super.configId = value;
-			if(configId == value)
+			super.id = value;
+			if(id == value)
 				return;
 			
-			_sharedObject = SharedObject.getLocal( "config_" + String(configId) );
-			configData = sharedObject.data;
+			_sharedObject = SharedObject.getLocal( "config_" + String(id) );
+			configurations = formatSource(sharedObject.data);
 		}
 		
 		public function get sharedObject():SharedObject
