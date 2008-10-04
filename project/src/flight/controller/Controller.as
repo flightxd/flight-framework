@@ -101,14 +101,14 @@ package flight.controller
 			var type:Class = Type.getType(controller);
 			
 			var propList:XMLList = Type.describeProperties(controller).(child("metadata").length() > 0);
-			propList = propList.(metadata.@name == "Register");
+			propList = propList.(String(metadata.@name).indexOf("Register") != -1);
 			for each(var propNode:XML in propList)
 			{
 				controller.registerProperty(propNode.@name);
 			}
 			
 			var methList:XMLList = Type.describeMethods(controller).(child("metadata").length() > 0);
-			methList = methList.(metadata.@name == "Register");
+			methList = methList.(String(metadata.@name).indexOf("Register") != -1);
 			for each(var methNode:XML in methList)
 			{
 				var event:String = methNode.metadata.arg.(@key == "event").@value;
