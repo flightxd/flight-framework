@@ -2,7 +2,7 @@ package flight.utils
 {
 	public interface IValueObject
 	{
-		function equals(value:Object):Boolean;
+		function equals(value:ValueObject):Boolean;
 		function clone():ValueObject;
 	}
 }

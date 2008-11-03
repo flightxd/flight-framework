@@ -1,12 +1,17 @@
 package flight.errors
 {
-	import flash.utils.getQualifiedClassName;
+	import flight.utils.Type;
 	
 	public class InvalidConstructorError extends TypeError
 	{
+		public static function staticConstructor(classObject:Object):void
+		{
+			throw(new InvalidConstructorError(classObject));
+		}
+		
 		public function InvalidConstructorError(classObject:Object)
 		{
-			super("Error #1115: " + getQualifiedClassName(classObject).split("::").pop() + " is not a constructor.");
+			super("Error #1115: " + Type.getType(classObject) + " is not a constructor.");
 		}
 	}
 }

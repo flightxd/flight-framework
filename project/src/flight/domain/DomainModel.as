@@ -9,7 +9,7 @@ package flight.domain
 	[Event(name="commit", type="flight.events.DomainModelEvent")]
 	[Event(name="merge", type="flight.events.DomainModelEvent")]
 	
-	dynamic public class DomainModel extends ValueObject
+	public class DomainModel extends ValueObject
 	{
 		private var source:DomainModel;
 		
@@ -43,16 +43,23 @@ package flight.domain
 			dispatchEvent(new DomainModelEvent(DomainModelEvent.COMMIT));
 		}
 		
-		public function merge(value:Object):void
+		public function merge(value:DomainModel):void
 		{
-			Type.merge(value, this);
+			var propList:XMLList = Type.describeProperties(value);
+			
+			for each(var prop:XML in propList)
+			{
+				var name:String = prop.@name;
+				if(name in value && value[name] !== undefined)
+					this[name] = value[name];
+			}
 			
 			dispatchEvent(new DomainModelEvent(DomainModelEvent.MERGE));	
 		}
 		
-		public function isModified():Boolean
+		public function modified():Boolean
 		{
-			if(source)
+			if(source != null)
 				return !source.equals(this);
 			return false;
 		}

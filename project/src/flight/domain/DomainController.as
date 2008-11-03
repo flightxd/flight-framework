@@ -99,7 +99,7 @@ package flight.domain
 		
 		public function getCommandType(command:ICommand):String
 		{
-			return typesByCommand[ Type.getType(command) ];
+			return typesByCommand[ command["constructor"] ];
 		}
 		
 		/**

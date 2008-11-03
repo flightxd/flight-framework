@@ -6,8 +6,8 @@ package flight.controller
 	import flash.utils.getDefinitionByName;
 	
 	import flight.binding.utils.BindingUtils;
-	import flight.utils.Type;
 	import flight.utils.Registry;
+	import flight.utils.Type;
 	
 	import mx.core.IMXMLObject;
 	import mx.events.PropertyChangeEvent;
