@@ -79,7 +79,7 @@ package flight.binding.utils
 		
 		public static function releaseBindings(target:Object):void
 		{
-			var queue:Array = endPoints[target] as Array;
+			var queue:Array = endPoints[target];
 			if(queue != null)
 			{
 				for(var i:uint = 0; i < queue.length; i++)

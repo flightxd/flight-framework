@@ -15,14 +15,14 @@ package flight.binding.utils
 		{
 			if(DispatcherProxy.hostIndex[host] == null)
 				DispatcherProxy.hostIndex[host] = [];
-			var chainIndex:Array = DispatcherProxy.hostIndex[host] as Array;
+			var chainIndex:Array = DispatcherProxy.hostIndex[host];
 			
 			// convert chain into an identifier to be used as an associative array index
 			var chainId:String = (chain is Array) ? (chain as Array).join(".") : chain.toString();
 			if(chainIndex[chainId] == null)
 				chainIndex[chainId] = new DispatcherProxy(host, chain);
 			
-			return chainIndex[chainId] as DispatcherProxy;
+			return chainIndex[chainId];
 		}
 		
 		private var dispatcher:IEventDispatcher;
@@ -43,7 +43,7 @@ package flight.binding.utils
 			if(dispatcher is IEventDispatcher)
 				dispatcher.addEventListener(type, dispatchProxy, useCapture, 0, true);
 			var types:Array = useCapture ? typesCapture : this.types;
-			var listeners:Array = types[type] as Array;
+			var listeners:Array = types[type];
 			
 			if(index == -1)
 				listeners.push(new ListenerAttributes(type, site, listener, useCapture));
@@ -58,14 +58,14 @@ package flight.binding.utils
 				return;
 			
 			var types:Array = useCapture ? typesCapture : this.types;
-			var listeners:Array = types[type] as Array;
+			var listeners:Array = types[type];
 			ListenerAttributes(listeners[index]).block = true;
 		}
 		
 		private function dispatchProxy(event:Event):void
 		{
 			var types:Array = (event.eventPhase == EventPhase.CAPTURING_PHASE) ? typesCapture : this.types;
-			var listeners:Array = types[event.type] as Array;
+			var listeners:Array = types[event.type];
 			var length:uint = listeners.length;
 			for each(var attr:ListenerAttributes in listeners)
 			{
@@ -77,13 +77,13 @@ package flight.binding.utils
 		private function listenerIndexOf(type:String, site:Object, listener:Function, useCapture:Boolean=false):int
 		{
 			var types:Array = useCapture ? typesCapture : this.types;
-			var listeners:Array = types[type] as Array;
+			var listeners:Array = types[type];
 			if(listeners == null)
 				listeners = types[type] = [];
 			var length:uint = listeners.length;
 			for(var i:uint = 0; i < length; i++)
 			{
-				var attr:ListenerAttributes = listeners[i] as ListenerAttributes;
+				var attr:ListenerAttributes = listeners[i];
 				if(site == attr.site && listener == attr.listener && useCapture == attr.useCapture)
 					return i;
 			}

@@ -1,13 +1,13 @@
 package flight.errors
 {
 	import flight.utils.getClassName;
-	import flight.utils.Type;
+	import flight.utils.getType;
 	
 	public class InstantiationError extends ArgumentError
 	{
 		public static function abstractInstantiation(thisReference:Object, classObject:Class):void
 		{
-			if(Type.getType(thisReference) === classObject)
+			if(getType(thisReference) === classObject)
 				throw(new InstantiationError(classObject));	
 		}
 		

@@ -48,7 +48,7 @@ package flight.commands
 			var i:int = (lastCommand != null) ? commands.indexOf(lastCommand) : commands.length-1;
 			for(i; i >= 0; i--)
 			{
-				var command:ICommand = commands[i] as ICommand;
+				var command:ICommand = commands[i];
 				if(command is IUndoableCommand)
 					IUndoableCommand(command).undo();
 			}
@@ -75,7 +75,7 @@ package flight.commands
 				return true;
 			}
 			
-			lastCommand = commands[i] as ICommand;
+			lastCommand = commands[i];
 			if(lastCommand is AsyncCommand && queue)
 			{
 				var asyncCommand:AsyncCommand = lastCommand as AsyncCommand;

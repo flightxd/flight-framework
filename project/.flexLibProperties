@@ -44,6 +44,7 @@
 <classEntry path="flight.utils.Type"/>
 <classEntry path="flight.utils.ValueObject"/>
 <classEntry path="flight.utils.getClassName"/>
+<classEntry path="flight.utils.getType"/>
 </includeClasses>
 <includeResources/>
 <namespaceManifests>

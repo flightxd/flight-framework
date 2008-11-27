@@ -6,9 +6,6 @@ package flight.errors
 	{
 		public static function abstractMethodCall(thisReference:Object, callee:Function, methodName:String):void
 		{
-			if( !(methodName in thisReference) )
-				return;
-			
 			if(thisReference[methodName] == callee)
 				throw(new AbstractMethodCallError(thisReference, methodName));
 		}

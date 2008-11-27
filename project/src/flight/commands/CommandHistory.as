@@ -4,6 +4,7 @@ package flight.commands
 	import flash.events.EventDispatcher;
 	
 	import flight.utils.Type;
+	import flight.utils.getType;
 	
 	import mx.events.PropertyChangeEvent;
 	
@@ -96,7 +97,7 @@ package flight.commands
 				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "history", oldValue, value));
 			}
 			
-			currentCommand = _history[_currentPosition-1] as IUndoableCommand;
+			currentCommand = _history[_currentPosition-1];
 			
 			// update canUndo and canRedo
 			if(_canUndo != Boolean(_currentPosition > 0))
@@ -149,7 +150,7 @@ package flight.commands
 			
 			if(command is ICombinableCommand && ICombinableCommand(command).combining)
 			{
-				if(combiningCommand == null || Type.getType(combiningCommand) != Type.getType(command))
+				if(combiningCommand == null || getType(combiningCommand) != getType(command))
 					combiningCommand = command as ICombinableCommand;
 				else
 					return combiningCommand.combine(command as ICombinableCommand);
@@ -179,7 +180,7 @@ package flight.commands
 			if(!canUndo)
 				return false;
 			
-			var command:IUndoableCommand = _history[currentPosition-1] as IUndoableCommand;
+			var command:IUndoableCommand = _history[currentPosition-1];
 			command.undo();
 			currentPosition--;
 			return true;
@@ -193,7 +194,7 @@ package flight.commands
 			if(!canRedo)
 				return false;
 			
-			var command:IUndoableCommand = _history[currentPosition] as IUndoableCommand;
+			var command:IUndoableCommand = _history[currentPosition];
 			command.redo();
 			currentPosition++;
 			return true;

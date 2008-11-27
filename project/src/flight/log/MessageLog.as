@@ -16,7 +16,7 @@ package flight.log
 		{
 			if(logs[id] == null)
 				logs[id] = new MessageLog();
-			return logs[id] as MessageLog;
+			return logs[id];
 		}
 		
 		// :: LOCAL ACCESSORS :: //

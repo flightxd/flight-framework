@@ -12,7 +12,7 @@ package flight.domain
 	import flight.events.AsyncEvent;
 	import flight.events.CommandEvent;
 	import flight.utils.Registry;
-	import flight.utils.Type;
+	import flight.utils.getType;
 	
 	/**
 	 * Domain acts as an interface to a CommandHistory.
@@ -60,7 +60,7 @@ package flight.domain
 		
 		protected function get index():Object
 		{
-			return Type.getType(this);
+			return getType(this);
 		}
 		
 		override public function initialized(document:Object, id:String):void
@@ -180,7 +180,7 @@ package flight.domain
 			if( !(type in this && this[type] is Function) )
 				return false;
 			
-			var script:Function = this[type] as Function;
+			var script:Function = this[type];
 			return (properties != null) ? script.apply(null, [].concat(properties)) : script();
 		}
 		

@@ -16,13 +16,6 @@ package flight.utils
 		{
 		}
 		
-		public static function getType(value:Object):Class
-		{
-			if("constructor" in value)
-				return value.constructor as Class;
-			return getDefinitionByName( getQualifiedClassName(value) ) as Class;
-		}
-		
 		public static function isType(value:Object, type:Class):Boolean
 		{
 			if( !(value is Class) )
@@ -41,17 +34,27 @@ package flight.utils
 				return null;
 			
 			// retrieve the correct property type from the property list
-			var type:String = describeProperties(value).(@name == prop)[0].@type;
-			if(!type)
+			var typeName:String = describeProperties(value).(@name == property)[0].@type;
+			if(!typeName)
 				return null;
 			
-			return getDefinitionByName(type) as Class;
+			return getDefinitionByName(typeName) as Class;
+		}
+		
+		public static function getTypeProperty(value:Object, type:Class):String
+		{
+			var typeName:String = getQualifiedClassName(type);
+			
+			// retrieve the correct type property from the property list
+			var propList:XMLList = describeProperties(value).(@type == typeName);
+			
+			return (propList.length() > 0) ? propList[0].@name : "";
 		}
 		
 		public static function describeType(value:Object):XML
 		{
 			if( !(value is Class) )
-				value = Type.getType(value);
+				value = getType(value);
 			
 			if(typeCache[value] == null)
 				typeCache[value] = flash.utils.describeType(value);
@@ -61,6 +64,9 @@ package flight.utils
 		
 		public static function describeInheritance(value:Object):XMLList
 		{
+			if( !(value is Class) )
+				value = getType(value);
+			
 			if(inheritanceCache[value] == null)
 				inheritanceCache[value] = describeType(value).factory.*.(localName() == "extendsClass" || localName() == "implementsInterface");
 			return inheritanceCache[value];
@@ -68,6 +74,9 @@ package flight.utils
 		
 		public static function describeProperties(value:Object, metadataOnly:Boolean = false):XMLList
 		{
+			if( !(value is Class) )
+				value = getType(value);
+			
 			if(propertyCache[value] == null)
 				propertyCache[value] = describeType(value).factory.*.(localName() == "accessor" || localName() == "variable");
 			return (metadataOnly ? propertyCache[value].(child("metadata").length() > 0) : propertyCache[value]);
@@ -75,6 +84,9 @@ package flight.utils
 		
 		public static function describeMethods(value:Object, metadataOnly:Boolean = false):XMLList
 		{
+			if( !(value is Class) )
+				value = getType(value);
+			
 			if(methodCache[value] == null)
 				methodCache[value] = describeType(value).factory.method;
 			return (metadataOnly ? methodCache[value].(child("metadata").length() > 0) : methodCache[value]);

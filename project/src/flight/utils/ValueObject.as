@@ -85,7 +85,7 @@ package flight.utils
 		public static function registerType(value:Object):Boolean
 		{
 			if( !(value is Class) )
-				value = Type.getType(value);
+				value = getType(value);
 			
 			if(!registeredTypes[value])		// no need to register a class more than once
 				registeredTypes[value] = registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);

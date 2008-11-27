@@ -8,6 +8,7 @@ package flight.controller
 	import flight.binding.utils.BindingUtils;
 	import flight.utils.Registry;
 	import flight.utils.Type;
+	import flight.utils.getType;
 	
 	import mx.core.IMXMLObject;
 	import mx.events.PropertyChangeEvent;
@@ -98,7 +99,7 @@ package flight.controller
 		
 		private static function initController(controller:Controller):void 
 		{
-			var type:Class = Type.getType(controller);
+			var type:Class = getType(controller);
 			
 			var propList:XMLList = Type.describeProperties(controller).(child("metadata").length() > 0);
 			propList = propList.(String(metadata.@name).indexOf("Register") != -1);
