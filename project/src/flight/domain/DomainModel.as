@@ -3,6 +3,7 @@ package flight.domain
 	import flight.utils.Type;
 	import flight.utils.ValueObject;
 	import flight.utils.getClassName;
+	import flight.utils.getType;
 	
 	public class DomainModel extends ValueObject
 	{
@@ -33,7 +34,7 @@ package flight.domain
 		
 		public function merge(value:DomainModel):void
 		{
-			var type:Class = Type.getType(value);
+			var type:Class = getType(value);
 			if( !(this is type) )
 				throw new TypeError("Attempted merge with incompatible type " + getClassName(type));
 			

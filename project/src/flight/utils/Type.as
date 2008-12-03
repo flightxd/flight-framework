@@ -72,24 +72,40 @@ package flight.utils
 			return inheritanceCache[value];
 		}
 		
-		public static function describeProperties(value:Object, metadataOnly:Boolean = false):XMLList
+		public static function describeProperties(value:Object, metadata:String = null):XMLList
 		{
 			if( !(value is Class) )
 				value = getType(value);
 			
 			if(propertyCache[value] == null)
 				propertyCache[value] = describeType(value).factory.*.(localName() == "accessor" || localName() == "variable");
-			return (metadataOnly ? propertyCache[value].(child("metadata").length() > 0) : propertyCache[value]);
+			
+			if(metadata == null)
+				return propertyCache[value];
+			
+			if(propertyCache[metadata] == null)
+				propertyCache[metadata] = new Dictionary();
+			if(propertyCache[metadata][value] == null)
+				propertyCache[metadata][value] = propertyCache[value].(child("metadata").(@name == metadata).length() > 0);
+			return propertyCache[metadata][value];
 		}
 		
-		public static function describeMethods(value:Object, metadataOnly:Boolean = false):XMLList
+		public static function describeMethods(value:Object, metadata:String = null):XMLList
 		{
 			if( !(value is Class) )
 				value = getType(value);
 			
 			if(methodCache[value] == null)
 				methodCache[value] = describeType(value).factory.method;
-			return (metadataOnly ? methodCache[value].(child("metadata").length() > 0) : methodCache[value]);
+			
+			if(metadata == null)
+				return methodCache[value];
+			
+			if(methodCache[metadata] == null)
+				methodCache[metadata] = new Dictionary();
+			if(methodCache[metadata][value] == null)
+				methodCache[metadata][value] = methodCache[value].(child("metadata").(@name == metadata).length() > 0);
+			return methodCache[metadata][value];
 		}
 		
 	}
