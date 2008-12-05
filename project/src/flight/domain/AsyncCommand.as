@@ -1,18 +1,22 @@
-package flight.commands
+package flight.domain
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
+	import flight.commands.IAsyncCommand;
+	
 	[Event(name="complete", type="flash.events.Event")]
+	[Event(name="cancel", type="flash.events.Event")]
 	
 	/**
 	 * An abstract command class that supports Asynchronous commands through dispatching
 	 * the ExecutionComplete event upon completion of the asynchronous action.
 	 */
-	public class AsyncCommand extends EventDispatcher implements ICommand
+	public class AsyncCommand extends EventDispatcher implements IAsyncCommand
 	{
 		public function AsyncCommand()
 		{
+			
 		}
 		
 		/**

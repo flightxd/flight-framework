@@ -26,6 +26,13 @@ package flight.services.remoting
 			parameters = params;	
 		}
 		
+		public function execute ():void 
+		{
+			concatParams = new Array( request, responder );
+			
+			connector.call.apply ( connector, concatParams.concat(parameters) );	
+		}
+		
 		private function result ( event:Object ):void 
 		{	
 			dispatchEvent ( new ResultEvent ( ResultEvent.RESULT, event ) );	
@@ -34,13 +41,6 @@ package flight.services.remoting
 		private function status ( event:Object ):void 
 		{
 			dispatchEvent ( new FaultEvent ( FaultEvent.FAULT, event ) );	
-		}
-		
-		internal function execute ():void 
-		{
-			concatParams = new Array( request, responder );
-			
-			connector.call.apply ( connector, concatParams.concat(parameters) );	
 		}
 
 	}

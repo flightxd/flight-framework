@@ -1,4 +1,4 @@
-package flight.services.json
+package flight.services
 {
 	public class JSONService
 	{

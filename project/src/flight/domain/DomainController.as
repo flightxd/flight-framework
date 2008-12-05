@@ -1,17 +1,18 @@
 package flight.domain
 {
+	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import flight.commands.AsyncCommand;
 	import flight.commands.CommandItem;
+	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
 	import flight.commands.ICommandFactory;
 	import flight.commands.ICommandInvoker;
 	import flight.controller.Controller;
-	import flight.events.AsyncEvent;
 	import flight.events.CommandEvent;
 	import flight.utils.Registry;
+	import flight.utils.Type;
 	import flight.utils.getType;
 	
 	/**
@@ -32,7 +33,7 @@ package flight.domain
 		 */
 		protected var typesByCommand:Dictionary;
 		
-		private var asyncExecutions:Dictionary;			// keeps a strong reference to each AsyncCommand until completed or canceled
+		private var asyncExecutions:Dictionary;			// keeps a strong reference to each IAsyncCommand until completed or canceled
 		private var executing:Dictionary;				// the type of the currently executing script, used to avoid unwanted recursion
 		
 		
@@ -112,22 +113,21 @@ package flight.domain
 			if(commandClass == null)
 				return null;
 			
-			var command:ICommand;
-			var params:Array = properties as Array;
-			switch( (params != null) ? params.length : 0 )
-			{
-				case 0 : command = new commandClass() as ICommand; break;
-				case 1 : command = new commandClass(params[0]) as ICommand; break;
-				case 2 : command = new commandClass(params[0], params[1]) as ICommand; break;
-				case 3 : command = new commandClass(params[0], params[1], params[2]) as ICommand; break;
-				case 4 : command = new commandClass(params[0], params[1], params[2], params[3]) as ICommand; break;
-				case 5 : command = new commandClass(params[0], params[1], params[2], params[3], params[4]) as ICommand; break;
-				default : command = new commandClass(params[0], params[1], params[2], params[3], params[4], params[5]) as ICommand; break;
-			}
-			
+			var command:ICommand = new commandClass() as ICommand;
 			if("client" in command)
 				command["client"] = this;
-			for(var i:String in properties)
+			
+			if(properties is Array)
+			{
+				var argumentList:XMLList = Type.describeProperties(command, "Argument");
+				for(var i:String in argumentList)
+				{
+					if(i in properties)
+						command[ argumentList[i].@name ] = properties[i];
+				}
+			}
+			
+			for(i in properties)
 			{
 				if(i in command)
 					command[i] = properties[i];
@@ -160,17 +160,17 @@ package flight.domain
 			if(command == null)
 				return false;
 			
-			if(command is AsyncCommand)
-				catchAsyncCommand(command as AsyncCommand);
+			if(command is IAsyncCommand)
+				catchAsyncCommand(command as IAsyncCommand);
 			
 			var success:Boolean = (invoker != null)
 						? invoker.executeCommand(command)
 						: command.execute();
 			
-			if( !(command is AsyncCommand) )
+			if( !(command is IAsyncCommand) )
 				dispatchEvent(new CommandEvent(getCommandType(command), command, success));
 			else if(!success)
-				releaseAsyncCommand(command as AsyncCommand);
+				releaseAsyncCommand(command as IAsyncCommand);
 			
 			return success;
 		}
@@ -188,29 +188,29 @@ package flight.domain
 		{
 		}
 		
-		protected function catchAsyncCommand(command:AsyncCommand):void
+		protected function catchAsyncCommand(command:IAsyncCommand):void
 		{
 			asyncExecutions[command] = true;
-			command.addEventListener(AsyncEvent.COMPLETE, asyncHandler);
-			command.addEventListener(AsyncEvent.CANCEL, asyncHandler);
+			command.addEventListener(Event.COMPLETE, asyncHandler);
+			command.addEventListener(Event.CANCEL, asyncHandler);
 		}
 		
-		protected function releaseAsyncCommand(command:AsyncCommand):void
+		protected function releaseAsyncCommand(command:IAsyncCommand):void
 		{
-			command.removeEventListener(AsyncEvent.COMPLETE, asyncHandler);
-			command.removeEventListener(AsyncEvent.CANCEL, asyncHandler);
+			command.removeEventListener(Event.COMPLETE, asyncHandler);
+			command.removeEventListener(Event.CANCEL, asyncHandler);
 			delete asyncExecutions[command];
 		}
 		
 		/**
 		 * Catches asynchronous commands upon completion and dispatches an event.
 		 */
-		protected function asyncHandler(event:AsyncEvent):void
+		protected function asyncHandler(event:Event):void
 		{
-			var command:AsyncCommand = event.target as AsyncCommand;
+			var command:IAsyncCommand = event.target as IAsyncCommand;
 			releaseAsyncCommand(command);
 			
-			dispatchEvent(new CommandEvent(getCommandType(command), command, Boolean(event.type == AsyncEvent.COMPLETE) ));
+			dispatchEvent(new CommandEvent(getCommandType(command), command, Boolean(event.type == Event.COMPLETE) ));
 		}
 		
 	}

@@ -2,7 +2,6 @@
 <componentPackage>
 	
 	<!-- framework -->
-	<component id="AsyncCommand"			class="flight.commands.AsyncCommand"/>
 	<component id="CommandHistory"			class="flight.commands.CommandHistory"/>
 	<component id="CommandItem"				class="flight.commands.CommandItem"/>
 	<component id="Controller"				class="flight.controller.Controller"/>
@@ -20,11 +19,11 @@
 	<component id="XMLConfig"				class="flight.config.XMLConfig"/>
 	
 	<!-- services -->
-	<component id="FileIOService"			class="flight.services.fileio.FileIOService"/>
-	<component id="HTTPService"				class="flight.services.http.HTTPService"/>
-	<component id="JSONService"				class="flight.services.json.JSONService"/>
-	<component id="RemotingService"			class="flight.services.remoting.RemotingService"/>
-	<component id="XMLService"				class="flight.services.xml.XMLService"/>
+	<component id="FileIOService"			class="flight.services.FileIOService"/>
+	<component id="HTTPService"				class="flight.services.HTTPService"/>
+	<component id="JSONService"				class="flight.services.JSONService"/>
+	<component id="RemotingService"			class="flight.services.RemotingService"/>
+	<component id="XMLService"				class="flight.services.XMLService"/>
 	
 	<!-- player classes -->
 	

@@ -3,7 +3,6 @@ package flight.commands
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
-	import flight.utils.Type;
 	import flight.utils.getType;
 	
 	import mx.events.PropertyChangeEvent;
@@ -145,8 +144,8 @@ package flight.commands
 			if( !(command is IUndoableCommand) )
 				return command.execute();
 			
-			if(command is AsyncCommand)
-				AsyncCommand(command).addEventListener(Event.CANCEL, asyncErrorHandler, false, 0, true);
+			if(command is IAsyncCommand)
+				IAsyncCommand(command).addEventListener(Event.CANCEL, asyncErrorHandler, false, 0, true);
 			
 			if(command is ICombinableCommand && ICombinableCommand(command).combining)
 			{
@@ -161,8 +160,8 @@ package flight.commands
 			var success:Boolean = command.execute();
 			if(success && _history.indexOf(command) == -1)
 			{
-				// ensure that if the command is an AsyncCommand that it hasn't dispatched the CANCEL before adding it to the history
-				if( !(command is AsyncCommand) || AsyncCommand(command).hasEventListener(Event.CANCEL))
+				// ensure that if the command is an IAsyncCommand that it hasn't dispatched the CANCEL before adding it to the history
+				if( !(command is IAsyncCommand) || IAsyncCommand(command).hasEventListener(Event.CANCEL))
 				{
 					_history.splice(currentPosition, _history.length, command);
 					currentPosition++;
@@ -231,7 +230,7 @@ package flight.commands
 		 */
 		protected function asyncErrorHandler(event:Event):void
 		{
-			var command:AsyncCommand = event.target as AsyncCommand;
+			var command:IAsyncCommand = event.target as IAsyncCommand;
 			command.removeEventListener(Event.CANCEL, asyncErrorHandler);
 			if(_history.indexOf(command) != -1)
 			{

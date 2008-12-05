@@ -1,4 +1,4 @@
-package flight.services.fileio
+package flight.services
 {
 	public class FileIOService
 	{

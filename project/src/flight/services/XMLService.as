@@ -1,4 +1,4 @@
-package flight.services.xml
+package flight.services
 {
 	public class XMLService
 	{

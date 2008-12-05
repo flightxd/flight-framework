@@ -2,7 +2,7 @@ package flight.commands
 {
 	import flash.events.Event;
 	
-	import flight.events.AsyncEvent;
+	import flight.domain.AsyncCommand;
 	
 	[DefaultProperty("commands")]
 	/**
@@ -79,10 +79,10 @@ package flight.commands
 			if(lastCommand is AsyncCommand && queue)
 			{
 				var asyncCommand:AsyncCommand = lastCommand as AsyncCommand;
-				if(!asyncCommand.hasEventListener(AsyncEvent.COMPLETE))
+				if(!asyncCommand.hasEventListener(Event.COMPLETE))
 				{
-					asyncCommand.addEventListener(AsyncEvent.COMPLETE, executeNext);
-					asyncCommand.addEventListener(AsyncEvent.CANCEL, dispatchCancel);
+					asyncCommand.addEventListener(Event.COMPLETE, executeNext);
+					asyncCommand.addEventListener(Event.CANCEL, dispatchCancel);
 				}
 				return asyncCommand.execute();
 			}

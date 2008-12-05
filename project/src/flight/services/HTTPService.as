@@ -1,4 +1,4 @@
-package flight.services.http
+package flight.services
 {
 	public class HTTPService
 	{

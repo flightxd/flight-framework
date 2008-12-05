@@ -2,7 +2,7 @@
  * Based on NetConnection wrapper by Thibault Imbert (bytearray.org)
  */
 
-package flight.services.remoting
+package flight.services
 {
 	
 	import flash.events.AsyncErrorEvent;
@@ -15,6 +15,10 @@ package flight.services.remoting
 	import flash.net.NetConnection;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	
+	import flight.services.remoting.FaultEvent;
+	import flight.services.remoting.PendingCall;
+	import flight.services.remoting.ResultEvent;
 
 	public dynamic class RemotingService extends Proxy implements IEventDispatcher
 	{	
