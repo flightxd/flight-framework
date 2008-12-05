@@ -17,7 +17,7 @@ package flight.utils
 		{
 		}
 		
-		public function equals(value:ValueObject):Boolean
+		public function equals(value:Object):Boolean
 		{
 			if(this == value)
 				return true;
@@ -34,7 +34,7 @@ package flight.utils
 			return Boolean(so1.toString() == so2.toString());
 		}
 		
-		public function clone():ValueObject
+		public function clone():Object
 		{
 			if(!registered)
 				registered = registerType(this);
