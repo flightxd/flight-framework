@@ -5,6 +5,6 @@ package flight.domain
 		public function Command()
 		{
 		}
-
+		
 	}
 }

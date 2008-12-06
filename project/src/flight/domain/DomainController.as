@@ -45,7 +45,6 @@ package flight.domain
 			executing = new Dictionary();
 			
 			Registry.register(index, this, view);
-			initAdapters();
 		}
 		
 		[Bindable(event="propertyChange")]
@@ -182,10 +181,6 @@ package flight.domain
 			
 			var script:Function = this[type];
 			return (properties != null) ? script.apply(null, [].concat(properties)) : script();
-		}
-		
-		protected function initAdapters():void
-		{
 		}
 		
 		protected function catchAsyncCommand(command:IAsyncCommand):void

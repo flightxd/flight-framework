@@ -76,9 +76,9 @@ package flight.commands
 			}
 			
 			lastCommand = commands[i];
-			if(lastCommand is AsyncCommand && queue)
+			if(lastCommand is IAsyncCommand && queue)
 			{
-				var asyncCommand:AsyncCommand = lastCommand as AsyncCommand;
+				var asyncCommand:IAsyncCommand = lastCommand as IAsyncCommand;
 				if(!asyncCommand.hasEventListener(Event.COMPLETE))
 				{
 					asyncCommand.addEventListener(Event.COMPLETE, executeNext);
