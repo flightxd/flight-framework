@@ -1,6 +1,7 @@
 package flight.domain
 {
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
@@ -9,7 +10,6 @@ package flight.domain
 	import flight.commands.ICommand;
 	import flight.commands.ICommandFactory;
 	import flight.commands.ICommandInvoker;
-	import flight.controller.Controller;
 	import flight.events.CommandEvent;
 	import flight.utils.Registry;
 	import flight.utils.Type;
@@ -19,43 +19,26 @@ package flight.domain
 	 * Domain acts as an interface to a CommandHistory.
 	 * It exposes methods such as undo/redo and routes IUndoableCommands to the current history.  
 	 */
-	public class DomainController extends Controller implements ICommandInvoker, ICommandFactory
+	public class DomainController implements IEventDispatcher, ICommandInvoker, ICommandFactory
 	{
-		protected var invoker:ICommandInvoker;
-		
-		/**
-		 * Associative array of command classes organized by their designated type.
-		 */
-		protected var commandClasses:Array;
-		
-		/**
-		 * Stores each command's type for dispatching.
-		 */
-		protected var typesByCommand:Dictionary;
-		
-		private var asyncExecutions:Dictionary;			// keeps a strong reference to each IAsyncCommand until completed or canceled
-		private var executing:Dictionary;				// the type of the currently executing script, used to avoid unwanted recursion
-		
+		protected var d:DomainControllerData;
 		
 		public function DomainController()
 		{
-			commandClasses = [];
-			typesByCommand = new Dictionary(true);
-			asyncExecutions = new Dictionary();
-			executing = new Dictionary();
-			
-			Registry.register(index, this, view);
+			d = Registry.getInstance(DomainControllerData, index) as DomainControllerData;
+			if(!d.initialized)
+			{
+				d.initialized = true;
+				init();
+			}
 		}
 		
-		[Bindable(event="propertyChange")]
-		override public function set view(value:IEventDispatcher):void
+		protected function init():void
 		{
-			if(view == value)
-				return;
-			
-			Registry.unregister(index, view);
-			super.view = value;
-			Registry.register(index, this, view);
+			d.commandClasses = [];
+			d.typesByCommand = new Dictionary(true);
+			d.asyncExecutions = new Dictionary();
+			d.executing = new Dictionary();
 		}
 		
 		protected function get index():Object
@@ -63,19 +46,14 @@ package flight.domain
 			return getType(this);
 		}
 		
-		override public function initialized(document:Object, id:String):void
-		{
-			// do NOT set view automatically as does Controller
-		}
-		
 		/**
 		 * Registers a command class with a unique id for later access.
 		 */
 		public function addCommand(type:String, commandClass:Class):void
 		{
-			delete typesByCommand[ commandClasses[type] ];
-			commandClasses[type] = commandClass;
-			typesByCommand[commandClass] = type;
+			delete d.typesByCommand[ d.commandClasses[type] ];
+			d.commandClasses[type] = commandClass;
+			d.typesByCommand[commandClass] = type;
 		}
 		
 		/**
@@ -94,12 +72,12 @@ package flight.domain
 		 */
 		public function getCommandClass(type:String):Class
 		{
-			return commandClasses[type];
+			return d.commandClasses[type];
 		}
 		
 		public function getCommandType(command:ICommand):String
 		{
-			return typesByCommand[ command["constructor"] ];
+			return d.typesByCommand[ command["constructor"] ];
 		}
 		
 		/**
@@ -116,20 +94,21 @@ package flight.domain
 			if("client" in command)
 				command["client"] = this;
 			
-			if(properties is Array)
-			{
-				var argumentList:XMLList = Type.describeProperties(command, "Argument");
-				for(var i:String in argumentList)
-				{
-					if(i in properties)
-						command[ argumentList[i].@name ] = properties[i];
-				}
-			}
 			
-			for(i in properties)
+			for(var i:String in properties)
 			{
 				if(i in command)
 					command[i] = properties[i];
+			}
+			
+			if(properties is Array)
+			{
+				var list:Array = getArgumentList(command);
+				for(i in list)
+				{
+					if(i in properties)
+						command[ list[i] ] = properties[i];
+				}
 			}
 			
 			return command;
@@ -140,13 +119,13 @@ package flight.domain
 		 */
 		public function execute(type:String, properties:Object = null):Boolean
 		{
-			if(executing[type])
+			if(d.executing[type])
 				return false;
 			
-			executing[type] = true;
+			d.executing[type] = true;
 			var command:ICommand = getCommand(type, properties);
 			var success:Boolean = (command != null) ? executeCommand(command) : executeScript(type, properties);
-			executing[type] = false;
+			d.executing[type] = false;
 			
 			return success;
 		}
@@ -162,9 +141,9 @@ package flight.domain
 			if(command is IAsyncCommand)
 				catchAsyncCommand(command as IAsyncCommand);
 			
-			var success:Boolean = (invoker != null)
-						? invoker.executeCommand(command)
-						: command.execute();
+			var success:Boolean = (d.invoker != null)
+								 ? d.invoker.executeCommand(command)
+								 : command.execute();
 			
 			if( !(command is IAsyncCommand) )
 				dispatchEvent(new CommandEvent(getCommandType(command), command, success));
@@ -185,7 +164,7 @@ package flight.domain
 		
 		protected function catchAsyncCommand(command:IAsyncCommand):void
 		{
-			asyncExecutions[command] = true;
+			d.asyncExecutions[command] = true;
 			command.addEventListener(Event.COMPLETE, asyncHandler);
 			command.addEventListener(Event.CANCEL, asyncHandler);
 		}
@@ -194,7 +173,7 @@ package flight.domain
 		{
 			command.removeEventListener(Event.COMPLETE, asyncHandler);
 			command.removeEventListener(Event.CANCEL, asyncHandler);
-			delete asyncExecutions[command];
+			delete d.asyncExecutions[command];
 		}
 		
 		/**
@@ -208,5 +187,82 @@ package flight.domain
 			dispatchEvent(new CommandEvent(getCommandType(command), command, Boolean(event.type == Event.COMPLETE) ));
 		}
 		
+		private static function getArgumentList(command:ICommand):Array
+		{
+			var list:Array = [];
+			
+			var argumentList:XMLList = Type.describeProperties(command, "Argument");
+			for each(var argument:XML in argumentList)
+			{
+				if(argument.metadata.arg.@value.length() > 0)
+					list[argument.metadata.arg.@value] = argument.@name;
+			}
+			return list;
+		}
+		
+		
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
+		{
+			if(d.eventDispatcher == null)
+				d.eventDispatcher = new EventDispatcher(this);
+			
+			d.eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
+		{
+			if(d.eventDispatcher != null)
+				d.eventDispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		public function dispatchEvent(event:Event):Boolean
+		{
+			if(d.eventDispatcher != null)
+				return d.eventDispatcher.dispatchEvent(event);
+			return false;
+		}
+		
+		public function hasEventListener(type:String):Boolean
+		{
+			if(d.eventDispatcher != null)
+				return d.eventDispatcher.hasEventListener(type);
+			return false;
+		}
+		
+		public function willTrigger(type:String):Boolean
+		{
+			if(d.eventDispatcher != null)
+				return d.eventDispatcher.willTrigger(type);
+			return false;
+		}
+		
 	}
 }
+
+import flight.commands.ICommandInvoker;
+import flash.utils.Dictionary;
+import flash.events.EventDispatcher;	
+
+class DomainControllerData
+{
+	public var initialized:Boolean;
+	
+	public var invoker:ICommandInvoker;
+	
+	/**
+	 * Associative array of command classes organized by their designated type.
+	 */
+	public var commandClasses:Array;
+	
+	/**
+	 * Stores each command's type for dispatching.
+	 */
+	public var typesByCommand:Dictionary;
+	
+	public var eventDispatcher:EventDispatcher;
+	
+	public var asyncExecutions:Dictionary;			// keeps a strong reference to each IAsyncCommand until completed or canceled
+	public var executing:Dictionary;				// the type of the currently executing script, used to avoid unwanted recursion
+
+}
+

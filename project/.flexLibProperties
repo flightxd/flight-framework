@@ -12,7 +12,6 @@
 <classEntry path="flight.commands.ICommandHistory"/>
 <classEntry path="flight.commands.ICommandInvoker"/>
 <classEntry path="flight.commands.IUndoableCommand"/>
-<classEntry path="flight.commands.MacroCommand"/>
 <classEntry path="flight.config.Config"/>
 <classEntry path="flight.config.FlashVarsConfig"/>
 <classEntry path="flight.config.SharedObjectConfig"/>
@@ -24,6 +23,7 @@
 <classEntry path="flight.domain.DomainController"/>
 <classEntry path="flight.domain.DomainModel"/>
 <classEntry path="flight.domain.HistoryController"/>
+<classEntry path="flight.domain.MacroCommand"/>
 <classEntry path="flight.errors.AbstractMethodCallError"/>
 <classEntry path="flight.errors.InstantiationError"/>
 <classEntry path="flight.errors.InvalidConstructorError"/>
@@ -42,8 +42,10 @@
 <classEntry path="flight.utils.DynamicObject"/>
 <classEntry path="flight.utils.IValueObject"/>
 <classEntry path="flight.utils.Registry"/>
+<classEntry path="flight.utils.Simpleton"/>
 <classEntry path="flight.utils.Type"/>
 <classEntry path="flight.utils.ValueObject"/>
+<classEntry path="flight.utils.config"/>
 <classEntry path="flight.utils.getClassName"/>
 <classEntry path="flight.utils.getType"/>
 </includeClasses>

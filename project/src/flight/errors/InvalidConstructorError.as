@@ -1,6 +1,6 @@
 package flight.errors
 {
-	import flight.utils.getType;
+	import flight.utils.getClassName;
 	
 	public class InvalidConstructorError extends TypeError
 	{
@@ -11,7 +11,7 @@ package flight.errors
 		
 		public function InvalidConstructorError(classObject:Object)
 		{
-			super("Error #1115: " + getType(classObject) + " is not a constructor.");
+			super("Error #1115: " + getClassName(classObject) + " is not a constructor.");
 		}
 	}
 }

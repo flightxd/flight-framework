@@ -8,7 +8,7 @@
 	<component id="DomainController"		class="flight.domain.DomainController"/>
 	<component id="DomainModel"				class="flight.domain.DomainModel"/>
 	<component id="HistoryController"		class="flight.domain.HistoryController"/>
-	<component id="MacroCommand"			class="flight.commands.MacroCommand"/>
+	<component id="MacroCommand"			class="flight.domain.MacroCommand"/>
 	<component id="ValueObject"				class="flight.utils.ValueObject"/>
 	
 	<!-- configs -->

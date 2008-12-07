@@ -56,11 +56,8 @@ package flight.utils
 			return scopeIndex[null][index];
 		}
 		
-		public static function lookupInstance(classObject:Class, scope:Object = null):Object
+		public static function getInstance(classObject:Class, scope:Object = null):Object
 		{
-			if(scopeIndex[scope] == null)
-				scopeIndex[scope] = new Dictionary();
-			
 			var instance:Object = lookup(classObject, scope);
 			if(instance == null)
 			{

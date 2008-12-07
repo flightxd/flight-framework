@@ -1,8 +1,11 @@
-package flight.commands
+package flight.domain
 {
 	import flash.events.Event;
 	
-	import flight.domain.AsyncCommand;
+	import flight.commands.IAsyncCommand;
+	import flight.commands.ICombinableCommand;
+	import flight.commands.ICommand;
+	import flight.commands.IUndoableCommand;
 	
 	[DefaultProperty("commands")]
 	/**

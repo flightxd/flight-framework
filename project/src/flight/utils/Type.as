@@ -1,5 +1,7 @@
 package flight.utils
 {
+	import flash.net.registerClassAlias;
+	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
@@ -8,12 +10,40 @@ package flight.utils
 	public class Type
 	{
 		private static var typeCache:Dictionary = new Dictionary();
+		private static var registeredTypes:Dictionary = new Dictionary();
 		private static var inheritanceCache:Dictionary = new Dictionary();
 		private static var propertyCache:Dictionary = new Dictionary();
 		private static var methodCache:Dictionary = new Dictionary(); 
 		
 		public function Type()
 		{
+		}
+		
+		public static function equals(value1:Object, value2:Object):Boolean
+		{
+			if(value1 == value2)
+				return true;
+			
+			Type.registerType(value1);
+			
+			var so1:ByteArray = new ByteArray();
+	       	so1.writeObject(value1);
+	        
+			var so2:ByteArray = new ByteArray();
+        	so2.writeObject(value2);
+			
+			return Boolean(so1.toString() == so2.toString());
+		}
+		
+		public static function clone(value:Object):Object
+		{
+			Type.registerType(value);
+			
+			var so:ByteArray = new ByteArray();
+	        so.writeObject(value);
+	        
+	        so.position = 0;
+	        return so.readObject();
 		}
 		
 		public static function isType(value:Object, type:Class):Boolean
@@ -49,6 +79,17 @@ package flight.utils
 			var propList:XMLList = describeProperties(value).(@type == typeName);
 			
 			return (propList.length() > 0) ? propList[0].@name : "";
+		}
+		
+		public static function registerType(value:Object):Boolean
+		{
+			if( !(value is Class) )
+				value = getType(value);
+			
+			if(!registeredTypes[value])		// no need to register a class more than once
+				registeredTypes[value] = registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
+			
+			return true;
 		}
 		
 		public static function describeType(value:Object):XML

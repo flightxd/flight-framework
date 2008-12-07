@@ -1,62 +1,63 @@
 package flight.domain
 {
+	import flash.utils.Dictionary;
+	
+	import flight.errors.InvalidConstructorError;
 	import flight.utils.Type;
 	import flight.utils.ValueObject;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
 	
-	public class DomainModel extends ValueObject
+	public class DomainModel
 	{
-		private var source:DomainModel;
+		private static var source:Dictionary = new Dictionary(true);
 		
 		public function DomainModel()
 		{
+			InvalidConstructorError.staticConstructor(this);
 		}
 		
-		public function edit():DomainModel
+		public static function edit(target:ValueObject):ValueObject
 		{
-			var delegate:DomainModel = clone() as DomainModel;
-			delegate.source = this;
+			var delegate:ValueObject = target.clone() as ValueObject;
+			source[delegate] = target;
 			return delegate;
 		}
 		
-		public function revert():void
+		public static function revert(delegate:ValueObject):void
 		{
-			if(source)
-				merge(source);
-		}
-				
-		public function commit():void
-		{
-			if(source)
-				source.merge(this);
+			if(source[delegate] != null)
+				merge(source[delegate], delegate);
 		}
 		
-		public function merge(value:DomainModel):void
+		public static function commit(delegate:ValueObject):void
 		{
-			var type:Class = getType(value);
-			if( !(this is type) )
+			if(source[delegate] != null)
+				merge(delegate, source[delegate]);
+		}
+		
+		public static function merge(source:ValueObject, target:ValueObject):void
+		{
+			var type:Class = getType(source);
+			if( !(target is type) )
 				throw new TypeError("Attempted merge with incompatible type " + getClassName(type));
 			
-			var propList:XMLList = Type.describeProperties(value);
+			var propList:XMLList = Type.describeProperties(source);
 			
 			for each(var prop:XML in propList)
 			{
 				var name:String = prop.@name;
-				if(value[name] !== undefined)
+				if(source[name] !== undefined)
 				{
-					if(this[name] is DomainModel)
-						DomainModel(this[name]).merge(value[name]);
-					else
-						this[name] = value[name];
+					target[name] = source[name];
 				}
 			}
 		}
 		
-		public function modified():Boolean
+		public static function modified(delegate:ValueObject):Boolean
 		{
-			if(source != null)
-				return !source.equals(this);
+			if(source[delegate] != null)
+				return !delegate.equals(source[delegate]);
 			return false;
 		}
 		

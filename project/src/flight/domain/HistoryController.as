@@ -4,6 +4,7 @@ package flight.domain
 	import flight.commands.ICommand;
 	import flight.commands.ICommandHistory;
 	import flight.events.CommandEvent;
+	import flight.utils.Registry;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.events.PropertyChangeEvent;
@@ -14,14 +15,20 @@ package flight.domain
 	 */
 	public class HistoryController extends DomainController implements ICommandHistory
 	{
-		private var _commandHistory:CommandHistory;
-		private var _canUndo:Boolean = false;
-		private var _canRedo:Boolean = false;
+		private var h:HistoryControllerData;
 		
 		public function HistoryController()
 		{
+			h = Registry.getInstance(HistoryControllerData, index) as HistoryControllerData;
+			super();		// TODO: review a way to avoid calling super...
+		}
+		
+		override protected function init():void
+		{
+			super.init();
 			commandHistory = new CommandHistory();
 			
+			// TODO: remove binding and _canUndo/_canRedo - reflect commandHistory
 			BindingUtils.bindProperty(this, "canUndo", this, ["commandHistory", "canUndo"]);
 			BindingUtils.bindProperty(this, "canRedo", this, ["commandHistory", "canRedo"]);
 		}
@@ -32,16 +39,16 @@ package flight.domain
 		[Bindable(event="propertyChange")]
 		public function get commandHistory():CommandHistory
 		{
-			return _commandHistory;
+			return h._commandHistory;
 		}
 		public function set commandHistory(value:CommandHistory):void
 		{
-			if(_commandHistory == value)
+			if(h._commandHistory == value)
 				return;
 			
-			var oldValue:CommandHistory = _commandHistory;
-			_commandHistory = value;
-			invoker = _commandHistory;
+			var oldValue:CommandHistory = h._commandHistory;
+			h._commandHistory = value;
+			d.invoker = h._commandHistory;
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "commandHistory", oldValue, value));
 		}
 		
@@ -51,18 +58,18 @@ package flight.domain
 		[Bindable(event="propertyChange")]
 		public function get canUndo():Boolean
 		{
-			return _canUndo;
+			return h._canUndo;
 		}
 		/**
 		 * @private 
 		 */		
 		public function set canUndo(value:Boolean):void
 		{
-			if(_canUndo == value)
+			if(h._canUndo == value)
 				return;
 			
-			var oldValue:Boolean = _canUndo;
-			_canUndo = value;
+			var oldValue:Boolean = h._canUndo;
+			h._canUndo = value;
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "canUndo", oldValue, value));
 		}
 		
@@ -72,18 +79,18 @@ package flight.domain
 		[Bindable(event="propertyChange")]
 		public function get canRedo():Boolean
 		{
-			return _canRedo;
+			return h._canRedo;
 		}
 		/**
 		 * @private 
 		 */
 		public function set canRedo(value:Boolean):void
 		{
-			if(_canRedo == value)
+			if(h._canRedo == value)
 				return;
 			
-			var oldValue:Boolean = _canRedo;
-			_canRedo = value;
+			var oldValue:Boolean = h._canRedo;
+			h._canRedo = value;
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "canRedo", oldValue, value));
 		}
 		
@@ -144,3 +151,13 @@ package flight.domain
 		
 	}
 }
+
+import flight.commands.CommandHistory;
+
+class HistoryControllerData
+{
+	public var _commandHistory:CommandHistory;
+	public var _canUndo:Boolean = false;
+	public var _canRedo:Boolean = false;
+}
+
