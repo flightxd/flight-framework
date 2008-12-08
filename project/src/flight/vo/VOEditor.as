@@ -1,18 +1,18 @@
-package flight.domain
+package flight.vo
 {
 	import flash.utils.Dictionary;
 	
 	import flight.errors.InvalidConstructorError;
 	import flight.utils.Type;
-	import flight.utils.ValueObject;
+	import flight.vo.ValueObject;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
 	
-	public class DomainModel
+	public class VOEditor
 	{
 		private static var source:Dictionary = new Dictionary(true);
 		
-		public function DomainModel()
+		public function VOEditor()
 		{
 			InvalidConstructorError.staticConstructor(this);
 		}

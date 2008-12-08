@@ -3,7 +3,7 @@ package flight.services.remoting
 	import flash.net.NetConnection;
 	import flash.net.Responder;
 	
-	import flight.utils.ValueObject;
+	import flight.vo.ValueObject;
 	
 	[Event(name="result", type="flight.services.remoting.ResultEvent")]
 	[Event(name="fault", type="flight.services.remoting.FaultEvent")]

@@ -15,44 +15,21 @@ package flight.config
 	dynamic public class Config extends EventDispatcher implements IMXMLObject
 	{
 		private static const REGISTRY_SCOPE:String = "Config";
-		public static function getInstance(id:Object):Config
-		{
-			return Registry.lookup(id, REGISTRY_SCOPE) as Config;
-		}
 		
-		public static var main:Config;
+		public static var main:Config = new Config();
 		
 		private var _id:Object;
-		private var _source:Object;
+		private var _source:Array;
+		
 		private var _configurations:Object;
 		private var _viewReference:DisplayObject;
 		
-		public function Config(id:Object = null, configView:DisplayObject = null)
+		public function Config()
 		{
-			if (id != 'global')
-			{
-				if (!main)
-					Registry.register('global', main = new Config('global'), REGISTRY_SCOPE);
-				
+			if (main != null)
 				main.source = main.source.concat(this);
-			}
 			
-			this.id = id;
-			this.viewReference = configView;
 			source = [];
-		}
-		
-		public function get id():Object
-		{
-			return _id;
-		}
-		public function set id(value:Object):void
-		{
-			if(_id == value)
-				return;
-			
-			_id = value;
-			Registry.register(_id, this, REGISTRY_SCOPE);
 		}
 		
 		[Bindable(event="propertyChange")]
@@ -66,17 +43,17 @@ package flight.config
 				return;
 			
 			var oldValue:Object = _configurations;
-			var newValue:Object = {};
-			
-			for (var i:String in _configurations)
-				newValue[i] = _configurations[i];
-			
-			for (i in value)
-			{
-				newValue[i] = value[i];
-				// subclass configs may not be dynamic, we will fail silently
-				try { this[i] = value[i]; } catch(e:Error) { }
-			}
+var newValue:Object = {};
+
+for (var i:String in _configurations)
+	newValue[i] = _configurations[i];
+
+for (i in value)
+{
+	newValue[i] = value[i];
+	// subclass configs may not be dynamic, we will fail silently
+	try { this[i] = value[i]; } catch(e:Error) { }
+}
 			
 			_configurations = newValue;
 			
@@ -84,40 +61,40 @@ package flight.config
 		}
 		
 		[Bindable(event="propertyChange")]
-		public function get source():Object
+		public function get source():Array
 		{
 			return _source;
 		}
-		public function set source(value:Object):void
+		public function set source(value:Array):void
 		{
 			if(_source == value)
 				return;
 			
-			var oldValue:Object = _source;
+			var oldValue:Array = _source;
 			_source = value;
 			
-			if (value is Array)
-			{
-				var mainSourceAltered:Boolean = false;
-				if (main && this != main)
-					var mainSource:Array = main.source.concat();
-				
-				for each(var source:Config in _source)
-				{
-					// let's not duplicate sources in main, they'll all filter up
-					var index:int;
-					if (mainSource && (index = mainSource.indexOf(source)) != -1)
-					{
-						mainSource.splice(index, 1);
-						mainSourceAltered = true;
-					}
-					
-					BindingUtils.bindSetter(update, source, "configurations");
-				}
-				
-				if (mainSource && mainSourceAltered)
-					main.source = mainSource;
-			}
+if (value is Array)
+{
+	var mainSourceAltered:Boolean = false;
+	if (main && this != main)
+		var mainSource:Array = main.source.concat();
+	
+	for each(var source:Config in _source)
+	{
+		// let's not duplicate sources in main, they'll all filter up
+		var index:int;
+		if (mainSource && (index = mainSource.indexOf(source)) != -1)
+		{
+			mainSource.splice(index, 1);
+			mainSourceAltered = true;
+		}
+		
+		BindingUtils.bindSetter(update, source, "configurations");
+	}
+	
+	if (mainSource && mainSourceAltered)
+		main.source = mainSource;
+}
 			
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "source", oldValue, value));
 		}
@@ -136,6 +113,7 @@ package flight.config
 			_viewReference = value;
 			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "viewReference", oldValue, value));
 		}
+		
 		private var inited:uint;
 		public function initialized(document:Object, id:String):void
 		{

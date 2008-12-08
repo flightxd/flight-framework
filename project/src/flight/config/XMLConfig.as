@@ -10,10 +10,10 @@ package flight.config
 		
 		public function XMLConfig(source:String = null)
 		{
-			this.source = source;
+			this.source = [source];
 		}
 		
-		public override function set source(value:Object):void
+		public override function set source(value:Array):void
 		{
 			if(super.source == value)
 				return;

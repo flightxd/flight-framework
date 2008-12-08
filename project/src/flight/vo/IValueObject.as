@@ -1,4 +1,4 @@
-package flight.utils
+package flight.vo
 {
 	public interface IValueObject
 	{

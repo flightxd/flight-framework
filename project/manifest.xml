@@ -6,10 +6,10 @@
 	<component id="CommandItem"				class="flight.commands.CommandItem"/>
 	<component id="Controller"				class="flight.controller.Controller"/>
 	<component id="DomainController"		class="flight.domain.DomainController"/>
-	<component id="DomainModel"				class="flight.domain.DomainModel"/>
 	<component id="HistoryController"		class="flight.domain.HistoryController"/>
 	<component id="MacroCommand"			class="flight.domain.MacroCommand"/>
-	<component id="ValueObject"				class="flight.utils.ValueObject"/>
+	<component id="ValueObject"				class="flight.vo.ValueObject"/>
+	<component id="DynamicObject"			class="flight.vo.DynamicObject"/>
 	
 	<!-- configs -->
 	<component id="Config"					class="flight.config.Config"/>

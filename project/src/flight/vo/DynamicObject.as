@@ -1,10 +1,11 @@
-package flight.utils
+package flight.vo
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.utils.ByteArray;
 	import flash.utils.Proxy;
+	
+	import flight.utils.Type;
 	
 	dynamic public class DynamicObject extends Proxy implements IEventDispatcher, IValueObject
 	{

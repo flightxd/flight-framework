@@ -1,9 +1,10 @@
-package flight.utils
+package flight.vo
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.utils.ByteArray;
+	
+	import flight.utils.Type;
 	
 	public class ValueObject implements IEventDispatcher, IValueObject
 	{
