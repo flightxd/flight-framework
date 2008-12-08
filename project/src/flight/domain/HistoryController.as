@@ -19,20 +19,21 @@ package flight.domain
 		
 		public function HistoryController()
 		{
-			h = Registry.getInstance(HistoryControllerData, index) as HistoryControllerData;
+			h = Registry.getInstance(HistoryControllerData, type) as HistoryControllerData;
 			super();		// TODO: review a way to avoid calling super...
 		}
 		
-		override protected function init():void
+		override internal function preInit():void
 		{
-			super.init();
+			super.preInit();
+			
 			commandHistory = new CommandHistory();
 			
 			// TODO: remove binding and _canUndo/_canRedo - reflect commandHistory
 			BindingUtils.bindProperty(this, "canUndo", this, ["commandHistory", "canUndo"]);
 			BindingUtils.bindProperty(this, "canRedo", this, ["commandHistory", "canRedo"]);
 		}
-		
+
 		/**
 		 * A reference to the current commandHistory.
 		 */

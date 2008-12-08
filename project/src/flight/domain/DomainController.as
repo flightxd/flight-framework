@@ -25,15 +25,16 @@ package flight.domain
 		
 		public function DomainController()
 		{
-			d = Registry.getInstance(DomainControllerData, index) as DomainControllerData;
+			d = Registry.getInstance(DomainControllerData, type) as DomainControllerData;
 			if(!d.initialized)
 			{
 				d.initialized = true;
+				preInit();
 				init();
 			}
 		}
 		
-		protected function init():void
+		internal function preInit():void
 		{
 			d.commandClasses = [];
 			d.typesByCommand = new Dictionary(true);
@@ -41,7 +42,12 @@ package flight.domain
 			d.executing = new Dictionary();
 		}
 		
-		protected function get index():Object
+		protected function init():void
+		{
+			
+		}
+		
+		protected function get type():Object
 		{
 			return getType(this);
 		}

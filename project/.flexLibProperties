@@ -42,7 +42,6 @@
 <classEntry path="flight.utils.DynamicObject"/>
 <classEntry path="flight.utils.IValueObject"/>
 <classEntry path="flight.utils.Registry"/>
-<classEntry path="flight.utils.Simpleton"/>
 <classEntry path="flight.utils.Type"/>
 <classEntry path="flight.utils.ValueObject"/>
 <classEntry path="flight.utils.config"/>
