@@ -44,7 +44,6 @@ package flight.domain
 		
 		protected function init():void
 		{
-			
 		}
 		
 		protected function get type():Object

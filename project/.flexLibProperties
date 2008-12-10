@@ -2,50 +2,57 @@
 <flexLibProperties version="1">
 <includeClasses>
 <classEntry path="flight.binding.utils.BindingUtils"/>
-<classEntry path="flight.domain.HistoryController"/>
-<classEntry path="flight.errors.InvalidConstructorError"/>
-<classEntry path="flight.domain.Command"/>
-<classEntry path="flight.utils.config"/>
-<classEntry path="flight.config.XMLConfig"/>
-<classEntry path="flight.errors.InstantiationError"/>
-<classEntry path="flight.controller.Controller"/>
-<classEntry path="flight.commands.ICommand"/>
-<classEntry path="flight.commands.ICombinableCommand"/>
-<classEntry path="flight.events.CommandEvent"/>
-<classEntry path="flight.services.RemotingService"/>
-<classEntry path="flight.services.remoting.ResultEvent"/>
-<classEntry path="flight.errors.AbstractMethodCallError"/>
-<classEntry path="flight.utils.Type"/>
-<classEntry path="flight.commands.IAsyncCommand"/>
-<classEntry path="flight.config.FlashVarsConfig"/>
-<classEntry path="flight.commands.ICommandHistory"/>
-<classEntry path="flight.services.remoting.PendingCall"/>
-<classEntry path="flight.services.HTTPService"/>
-<classEntry path="flight.commands.ICommandInvoker"/>
-<classEntry path="flight.config.SharedObjectConfig"/>
-<classEntry path="flight.config.Config"/>
-<classEntry path="flight.log.MessageLog"/>
-<classEntry path="flight.services.FileIOService"/>
-<classEntry path="flight.utils.Registry"/>
-<classEntry path="flight.config.URLConfig"/>
-<classEntry path="flight.domain.AsyncCommand"/>
-<classEntry path="flight.events.MessageLogEvent"/>
-<classEntry path="flight.domain.DomainController"/>
-<classEntry path="flight.utils.getClassName"/>
-<classEntry path="flight.log.MessageLogPriority"/>
-<classEntry path="flight.commands.CommandItem"/>
-<classEntry path="flight.services.JSONService"/>
-<classEntry path="flight.domain.MacroCommand"/>
-<classEntry path="flight.commands.IUndoableCommand"/>
-<classEntry path="flight.services.remoting.FaultEvent"/>
-<classEntry path="flight.commands.CommandHistory"/>
-<classEntry path="flight.utils.getType"/>
 <classEntry path="flight.binding.utils.DispatcherProxy"/>
+<classEntry path="flight.commands.CommandHistory"/>
+<classEntry path="flight.commands.CommandItem"/>
+<classEntry path="flight.commands.IAsyncCommand"/>
+<classEntry path="flight.commands.ICombinableCommand"/>
+<classEntry path="flight.commands.ICommand"/>
 <classEntry path="flight.commands.ICommandFactory"/>
+<classEntry path="flight.commands.ICommandHistory"/>
+<classEntry path="flight.commands.ICommandInvoker"/>
+<classEntry path="flight.commands.IUndoableCommand"/>
+<classEntry path="flight.config.Config"/>
+<classEntry path="flight.config.FlashVarsConfig"/>
+<classEntry path="flight.config.SharedObjectConfig"/>
+<classEntry path="flight.config.URLConfig"/>
+<classEntry path="flight.config.XMLConfig"/>
+<classEntry path="flight.controller.Controller"/>
+<classEntry path="flight.domain.AsyncCommand"/>
+<classEntry path="flight.domain.Command"/>
+<classEntry path="flight.domain.DomainController"/>
+<classEntry path="flight.domain.HistoryController"/>
+<classEntry path="flight.domain.MacroCommand"/>
+<classEntry path="flight.errors.AbstractMethodCallError"/>
+<classEntry path="flight.errors.InstantiationError"/>
+<classEntry path="flight.errors.InvalidConstructorError"/>
+<classEntry path="flight.events.CommandEvent"/>
+<classEntry path="flight.events.MessageLogEvent"/>
+<classEntry path="flight.list.ArrayContainer"/>
+<classEntry path="flight.list.IList"/>
+<classEntry path="flight.list.XMLContainer"/>
+<classEntry path="flight.log.MessageLog"/>
+<classEntry path="flight.log.MessageLogPriority"/>
+<classEntry path="flight.services.FileIOService"/>
+<classEntry path="flight.services.HTTPService"/>
+<classEntry path="flight.services.JSONService"/>
+<classEntry path="flight.services.RemotingService"/>
 <classEntry path="flight.services.XMLService"/>
+<classEntry path="flight.services.remoting.FaultEvent"/>
+<classEntry path="flight.services.remoting.PendingCall"/>
+<classEntry path="flight.services.remoting.ResultEvent"/>
+<classEntry path="flight.utils.Registry"/>
+<classEntry path="flight.utils.Type"/>
+<classEntry path="flight.utils.config"/>
+<classEntry path="flight.utils.getClassName"/>
+<classEntry path="flight.utils.getType"/>
+<classEntry path="flight.vo.DynamicObject"/>
+<classEntry path="flight.vo.IValueObject"/>
+<classEntry path="flight.vo.VOEditor"/>
+<classEntry path="flight.vo.ValueObject"/>
 </includeClasses>
 <includeResources/>
 <namespaceManifests>
-<namespaceManifestEntry manifest="../manifest.xml" namespace="http://www.flightux.com/flight"/>
+<namespaceManifestEntry manifest="../manifest.xml" namespace="http://ns.flightux.com/flight/2009"/>
 </namespaceManifests>
 </flexLibProperties>
