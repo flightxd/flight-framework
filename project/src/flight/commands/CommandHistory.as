@@ -3,9 +3,8 @@ package flight.commands
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
+	import flight.events.PropertyChangeEvent;
 	import flight.utils.getType;
-	
-	import mx.events.PropertyChangeEvent;
 	
 	/**
 	 * The CommandHistory executes and stores undoable commands as a history,
@@ -50,9 +49,7 @@ package flight.commands
 			if(_currentCommand == value)
 				return;
 			
-			var oldValue:IUndoableCommand = _currentCommand;
-			_currentCommand = value;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "currentCommand", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "currentCommand", _currentCommand, _currentCommand = value);
 		}
 		
 		/**
@@ -83,34 +80,25 @@ package flight.commands
 		}
 		public function set currentPosition(value:int):void
 		{
-			if(_currentPosition == value)
-				return;
-			
 			var oldValue:int = _currentPosition;
 			_currentPosition = value;
 			
 			if(_currentPosition > undoLevel)
 			{
 				_history.splice(0, _currentPosition - undoLevel);
-				_currentPosition = value = undoLevel;
-				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "history", oldValue, value));
+				PropertyChangeEvent.dispatchPropertyChange(this, "history", _history, _history);
+				_currentPosition = undoLevel;
 			}
 			
 			currentCommand = _history[_currentPosition-1];
 			
 			// update canUndo and canRedo
 			if(_canUndo != Boolean(_currentPosition > 0))
-			{
-				_canUndo = !_canUndo;
-				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "canUndo", !_canUndo, _canUndo));
-			}
+				PropertyChangeEvent.dispatchPropertyChange(this, "canUndo", _canUndo, _canUndo = !_canUndo);
 			if(_canRedo != Boolean(_currentPosition < _history.length))
-			{
-				_canRedo = !_canRedo;
-				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "canRedo", !_canRedo, _canRedo));
-			}
+				PropertyChangeEvent.dispatchPropertyChange(this, "canRedo", _canRedo, _canRedo = !_canRedo);
 			
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "currentPosition", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "currentPosition", oldValue, _currentPosition);
 		}
 		
 		/**
@@ -128,11 +116,7 @@ package flight.commands
 			
 			_undoLevel = value;
 			if(currentPosition > undoLevel)
-			{
-				_history.splice(0, currentPosition - undoLevel);
-				currentPosition = undoLevel;
-				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "history", _history, _history));
-			}
+				currentPosition = currentPosition;
 		}
 		
 		/**
@@ -164,8 +148,8 @@ package flight.commands
 				if( !(command is IAsyncCommand) || IAsyncCommand(command).hasEventListener(Event.CANCEL))
 				{
 					_history.splice(currentPosition, _history.length, command);
+					PropertyChangeEvent.dispatchPropertyChange(this, "history", _history, _history);
 					currentPosition++;
-					dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "history", _history, _history));
 				}
 			}
 			return success;
@@ -216,12 +200,11 @@ package flight.commands
 		 */
 		public function clearHistory():Boolean
 		{
-			if(_history == null || _history.length == 0)
+			if(_history.length == 0)
 				return false;
 			
-			_history = [];
+			PropertyChangeEvent.dispatchPropertyChange(this, "history", _history, _history = []);
 			currentPosition = 0;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "history", _history, _history));
 			return true;
 		}
 		
@@ -235,8 +218,8 @@ package flight.commands
 			if(_history.indexOf(command) != -1)
 			{
 				_history.splice(_history.indexOf(command), 1);
+				PropertyChangeEvent.dispatchPropertyChange(this, "history", _history, _history);
 				currentPosition--;
-				dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "history", _history, _history));
 			}
 		}
 		

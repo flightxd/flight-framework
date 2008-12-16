@@ -4,10 +4,10 @@ package flight.domain
 	import flight.commands.ICommand;
 	import flight.commands.ICommandHistory;
 	import flight.events.CommandEvent;
+	import flight.events.PropertyChangeEvent;
 	import flight.utils.Registry;
 	
 	import mx.binding.utils.BindingUtils;
-	import mx.events.PropertyChangeEvent;
 	
 	/**
 	 * HistoryDomain acts as an interface to a CommandHistory.
@@ -33,7 +33,7 @@ package flight.domain
 			BindingUtils.bindProperty(this, "canUndo", this, ["commandHistory", "canUndo"]);
 			BindingUtils.bindProperty(this, "canRedo", this, ["commandHistory", "canRedo"]);
 		}
-
+		
 		/**
 		 * A reference to the current commandHistory.
 		 */
@@ -47,10 +47,8 @@ package flight.domain
 			if(h._commandHistory == value)
 				return;
 			
-			var oldValue:CommandHistory = h._commandHistory;
-			h._commandHistory = value;
-			d.invoker = h._commandHistory;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "commandHistory", oldValue, value));
+			d.invoker = value;
+			PropertyChangeEvent.dispatchPropertyChange(this, "commandHistory", h._commandHistory, h._commandHistory = value);
 		}
 		
 		/**
@@ -69,9 +67,7 @@ package flight.domain
 			if(h._canUndo == value)
 				return;
 			
-			var oldValue:Boolean = h._canUndo;
-			h._canUndo = value;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "canUndo", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "canUndo", h._canUndo, h._canUndo = value);
 		}
 		
 		/**
@@ -92,7 +88,7 @@ package flight.domain
 			
 			var oldValue:Boolean = h._canRedo;
 			h._canRedo = value;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "canRedo", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "canRedo", oldValue, value);
 		}
 		
 		/**

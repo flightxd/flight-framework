@@ -2,9 +2,8 @@ package flight.list
 {
 	import flash.events.Event;
 	
+	import flight.events.PropertyChangeEvent;
 	import flight.vo.ValueObject;
-	
-	import mx.events.PropertyChangeEvent;
 	
 	public class ArrayContainer extends ValueObject implements IList
 	{
@@ -28,9 +27,7 @@ package flight.list
 			if(_source == value)
 				return;
 			
-			var oldValue:Object = _source;
-			_source = value;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "source", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
 			dispatchEvent(new Event(Event.CHANGE));
 		}
 		

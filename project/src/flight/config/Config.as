@@ -4,12 +4,11 @@ package flight.config
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
 	
-	import flight.utils.Registry;
+	import flight.events.PropertyChangeEvent;
 	import flight.utils.Type;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.core.IMXMLObject;
-	import mx.events.PropertyChangeEvent;
 	
 	[DefaultProperty("source")]
 	dynamic public class Config extends EventDispatcher implements IMXMLObject
@@ -42,7 +41,6 @@ package flight.config
 			if(_configurations == value)
 				return;
 			
-			var oldValue:Object = _configurations;
 var newValue:Object = {};
 
 for (var i:String in _configurations)
@@ -55,9 +53,7 @@ for (i in value)
 	try { this[i] = value[i]; } catch(e:Error) { }
 }
 			
-			_configurations = newValue;
-			
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "configurations", oldValue, newValue));
+			PropertyChangeEvent.dispatchPropertyChange(this, "configurations", _configurations, _configurations = newValue);
 		}
 		
 		[Bindable(event="propertyChange")]
@@ -70,16 +66,13 @@ for (i in value)
 			if(_source == value)
 				return;
 			
-			var oldValue:Array = _source;
-			_source = value;
-			
 if (value is Array)
 {
 	var mainSourceAltered:Boolean = false;
 	if (main && this != main)
 		var mainSource:Array = main.source.concat();
 	
-	for each(var source:Config in _source)
+	for each(var source:Config in value)
 	{
 		// let's not duplicate sources in main, they'll all filter up
 		var index:int;
@@ -96,7 +89,7 @@ if (value is Array)
 		main.source = mainSource;
 }
 			
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "source", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
 		}
 		
 		[Bindable(event="propertyChange")]
@@ -109,9 +102,7 @@ if (value is Array)
 			if(_viewReference == value)
 				return;
 			
-			var oldValue:Object = _viewReference;
-			_viewReference = value;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, "viewReference", oldValue, value));
+			PropertyChangeEvent.dispatchPropertyChange(this, "viewReference", _viewReference, _viewReference = value);
 		}
 		
 		private var inited:uint;

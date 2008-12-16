@@ -40,7 +40,7 @@ package flight.vo
 		
 		public function dispatchEvent(event:Event):Boolean
 		{
-			if(eventDispatcher != null)
+			if(eventDispatcher != null && eventDispatcher.hasEventListener(event.type))
 				return eventDispatcher.dispatchEvent(event);
 			return false;
 		}
