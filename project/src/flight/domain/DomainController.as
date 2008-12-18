@@ -199,8 +199,8 @@ package flight.domain
 			var argumentList:XMLList = Type.describeProperties(command, "Argument");
 			for each(var argument:XML in argumentList)
 			{
-				if(argument.metadata.arg.@value.length() > 0)
-					list[argument.metadata.arg.@value] = argument.@name;
+				if(argument.metadata.(@name == "Argument").arg.@value.length() > 0)
+					list[argument.metadata.(@name == "Argument").arg.@value] = argument.@name;
 			}
 			return list;
 		}

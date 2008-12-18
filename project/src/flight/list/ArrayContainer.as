@@ -15,7 +15,7 @@ package flight.list
 				this.source = source;
 		}
 		
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get source():Object
 		{
 			if(_source == null)

@@ -30,7 +30,7 @@ package flight.commands
 		 * The actual list of commands, in order of occurance. This list should
 		 * not be manipultated directly and should be treated as read only.
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get history():Array
 		{
 			return _history;
@@ -39,7 +39,7 @@ package flight.commands
 		/**
 		 * The current command in the _history, often the last command executed.
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get currentCommand():IUndoableCommand
 		{
 			return _currentCommand;
@@ -55,7 +55,7 @@ package flight.commands
 		/**
 		 * Indicates whether there are commands availble to undo
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get canUndo():Boolean
 		{
 			return _canUndo;
@@ -64,7 +64,7 @@ package flight.commands
 		/**
 		 * Indicates whether there are commands availble to redo
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get canRedo():Boolean
 		{
 			return _canRedo;
@@ -73,7 +73,7 @@ package flight.commands
 		/**
 		 * The internal position of the _history at the present time.
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get currentPosition():int
 		{
 			return _currentPosition;

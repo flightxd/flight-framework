@@ -31,7 +31,7 @@ package flight.config
 			source = [];
 		}
 		
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get configurations():Object
 		{
 			return _configurations;
@@ -56,7 +56,7 @@ for (i in value)
 			PropertyChangeEvent.dispatchPropertyChange(this, "configurations", _configurations, _configurations = newValue);
 		}
 		
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get source():Array
 		{
 			return _source;
@@ -92,7 +92,7 @@ if (value is Array)
 			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
 		}
 		
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get viewReference():DisplayObject
 		{
 			return _viewReference;

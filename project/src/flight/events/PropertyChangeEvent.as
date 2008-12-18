@@ -8,14 +8,14 @@ package flight.events
 		public static const _CHANGE:String = "Change";
 		public static const PROPERTY_CHANGE:String = "property" + _CHANGE;
 		
-		public static function dispatchPropertyChange(source:IEventDispatcher, property:Object,
+		public static function dispatchPropertyChange(target:IEventDispatcher, property:Object,
 													  oldValue:Object, newValue:Object):void
 		{
-			if( source.hasEventListener(property + _CHANGE) )
-				source.dispatchEvent( new PropertyChangeEvent(property + _CHANGE, property, oldValue, newValue) );
+			if( target.hasEventListener(property + _CHANGE) )
+				target.dispatchEvent( new PropertyChangeEvent(property + _CHANGE, property, oldValue, newValue) );
 			
-			if( source.hasEventListener(PROPERTY_CHANGE) )
-				source.dispatchEvent( new PropertyChangeEvent(PROPERTY_CHANGE, property, oldValue, newValue) );
+			if( target.hasEventListener(PROPERTY_CHANGE) )
+				target.dispatchEvent( new PropertyChangeEvent(PROPERTY_CHANGE, property, oldValue, newValue) );
 		}
 		
 		private var _property:Object;

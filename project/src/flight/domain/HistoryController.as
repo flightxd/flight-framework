@@ -37,7 +37,7 @@ package flight.domain
 		/**
 		 * A reference to the current commandHistory.
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get commandHistory():CommandHistory
 		{
 			return h._commandHistory;
@@ -54,7 +54,7 @@ package flight.domain
 		/**
 		 * Shows that undo can be called successfully.
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get canUndo():Boolean
 		{
 			return h._canUndo;
@@ -73,7 +73,7 @@ package flight.domain
 		/**
 		 * Shows that redo can be called successfully.
 		 */
-		[Bindable(event="propertyChange")]
+		[Bindable(event="propertyChange", flight="true")]
 		public function get canRedo():Boolean
 		{
 			return h._canRedo;
