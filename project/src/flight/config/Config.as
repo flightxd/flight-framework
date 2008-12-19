@@ -109,8 +109,8 @@ if (value is Array)
 		public function initialized(document:Object, id:String):void
 		{
 			if(id != null)
-				this.id = id;
-			trace("Initialized", ++inited, "times");
+				this._id = id;
+//			trace("Initialized", ++inited, "times");
 			if(viewReference != null)
 				return;
 			if(document is DisplayObject)
