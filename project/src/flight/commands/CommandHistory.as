@@ -120,6 +120,27 @@ package flight.commands
 		}
 		
 		/**
+		 * Will step throught the undo / redo to a given position executing all commands
+		 * within that sequence.
+		 */
+		public function setCurrentPosition( index:uint ):void
+		{
+			var count:int;
+			
+			if(currentPosition > index) {
+				count = (currentPosition - 1) - index;
+				while(count-- && canUndo) {
+					undo();
+				}
+			} else {
+				count = index - (currentPosition - 1);
+				while (count-- && canRedo) {
+					redo();
+				}					
+			}
+		}
+		
+		/**
 		 * Adds a command to the _history before executing it. This is how all commands should
 		 * be introduced to the CommandHistory, to ensure undo can rely on an initial execution.
 		 */
