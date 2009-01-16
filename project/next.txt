@@ -1,0 +1,22 @@
+
+
+* add global config property that references Config.main
+
+fix CommandItem (commands don't require constructor args anymore)
+
+* update DomainController so it can be instantiated 100's of times and still point to the same data.
+ (all properties are stored globally)
+* allow model to be referenced from DomainController as a single (global) property
+
+*fix Arguments with index and optional=true/false
+
+*update DomainModel to take out it's innards - making it a static VO class edit tool (move VO and IVO into the same package)
+
+create base EventDispatcher (just in time, ondemand) outside of VO??
+
+
+make dynamic object a proxy
+
+add some semblance of hierarchy to Config ... merge=true merges it to its parent, and to the global.
+
+clean up Config, allow merge=false or something that allows nested properties.

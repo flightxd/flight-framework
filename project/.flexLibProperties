@@ -2,6 +2,7 @@
 <flexLibProperties version="1">
 <includeClasses>
 <classEntry path="flight.binding.Bind"/>
+<classEntry path="flight.binding.Binding"/>
 <classEntry path="flight.binding.utils.BindingUtils"/>
 <classEntry path="flight.binding.utils.DispatcherProxy"/>
 <classEntry path="flight.commands.CommandHistory"/>
@@ -49,8 +50,8 @@
 <classEntry path="flight.utils.getType"/>
 <classEntry path="flight.vo.DynamicObject"/>
 <classEntry path="flight.vo.IValueObject"/>
-<classEntry path="flight.vo.VOEditor"/>
 <classEntry path="flight.vo.ValueObject"/>
+<classEntry path="flight.vo.ValueObjectEditor"/>
 </includeClasses>
 <includeResources/>
 <namespaceManifests>
