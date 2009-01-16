@@ -14,16 +14,23 @@ package flight.binding
 	 */
 	public class Binding extends EventDispatcher
 	{
-//		public var pairedBinding:Binding;
+		protected var indicesIndex:Dictionary = new Dictionary(true);
+		protected var bindIndex:Dictionary = new Dictionary(true);
 		
+		private var explicitValue:Object;
 		private var updating:Boolean = false;
-		private var setterValue:Object;
-		private var indices:Dictionary = new Dictionary(true);
-		
 		private var _value:Object;
 		private var _property:String;
 		private var _sourcePath:Array;
 		
+		
+		public function Binding(source:Object, sourcePath:String)
+		{
+			_sourcePath = sourcePath.split(".");
+			_property = _sourcePath[ _sourcePath.length-1 ];
+			
+			update(source, 0);
+		}
 		
 		public function get value():Object
 		{
@@ -35,8 +42,11 @@ package flight.binding
 				return;
 			}
 			
-			_value = value;
-			// TODO: update binding
+			explicitValue = value;
+			var source:Object = getSource(_sourcePath.length - 1);
+			if(source != null) {
+				source[property] = value;
+			}
 		}
 		
 		public function get property():String
@@ -44,35 +54,41 @@ package flight.binding
 			return _property;
 		}
 		
-		public function get sourcePath():Array
+		public function get sourcePath():String
 		{
-			return _sourcePath;
+			return _sourcePath.join(".");
 		}
 		
-		public function Binding(source:Object, sourcePath:String, listener:Function = null)
+		public function bind(target:Object, property:String):void
 		{
-			this._sourcePath = sourcePath.split(".");
-			_property = this._sourcePath[this._sourcePath.length-1];
-//			bindingIndex[source] = this;
-			indices[source] = -1;
+			var bindList:Array = bindIndex[target];
+			if(bindList == null) {
+				bindList = bindIndex[target] = [];
+			}
 			
-			update(source, -1);
-			if(listener != null)
-				addListener(listener);
+			if(bindList.indexOf(property) == -1) {
+				bindList.push(property);
+			}
+			target[property] = _value;
 		}
 		
-		public function bind(target:Object, targetPath:String):void
+		public function unbind(target:Object, property:String):void
 		{
-		}
-		
-		public function unbind(target:Object, targetPath:String):void
-		{
+			var bindList:Array = bindIndex[target];
+			if(bindList == null) {
+				return;
+			}
+			
+			var i:int = bindList.indexOf(property);
+			if(i != -1) {
+				bindList.splice(i, 1);
+			}
 		}
 		
 		public function addListener(listener:Function):void
 		{
 			addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, listener, false, 0, true);
-			listener( new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, _property, value, value) );
+			listener( new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, _property, _value, _value) );
 		}
 		
 		public function removeListener(listener:Function):void
@@ -82,44 +98,26 @@ package flight.binding
 		
 		public function release():void
 		{
-			unbindPath(-1);
-//			delete bindingIndex[getSource];
-			
-//			if(pairedBinding)
-//			{
-//				pairedBinding.pairedBinding = null;
-//				pairedBinding.release();
-//				pairedBinding = null;
-//			}
+			unbindPath(0);
 		}
-		
-		// invoked from another Binding instance
-//		public function setter(event:PropertyChangeEvent):void
-//		{
-//			var target:Object = getSource(sourcePath.length-2);
-//			if(target != null)
-//				target[property] = event.newValue;
-//			else
-//				setterValue = event.newValue;
-//		}
-		
-		
-		
-		
 		
 		private function update(source:Object, pathIndex:int = 0):void
 		{
-			if(updating)
+			if(updating) {
 				return;
-			
+			}
 			updating = true;
-			var newValue:Object;
-			if(pathIndex+1 == _sourcePath.length-1)
-				newValue = source[_property];	// last bindable object
-			else
-				newValue = bindPath(source, pathIndex);
 			
-			PropertyChangeEvent.dispatchPropertyChange(this, _property, value, value = newValue);
+			var newValue:Object = bindPath(source, pathIndex);		// udpate full path
+			PropertyChangeEvent.dispatchPropertyChange(this, _property, _value, _value = newValue);
+			
+			for(var target:* in bindIndex) {
+				var bindList:Array = bindIndex[target];
+				for(var i:int = 0; i < bindList.length; i++) {
+					target[bindList[i]] = newValue;
+				}
+			}
+			
 			updating = false;
 		}
 		
@@ -127,70 +125,73 @@ package flight.binding
 		{
 			unbindPath(pathIndex+1);
 			
-			var object:Object = source;
-			for(var i:int = pathIndex+1; i < _sourcePath.length; i++)
-			{
-				var prop:String = _sourcePath[i];
-				if(object == null || !(prop in object))
-				{
-					object = null;
+			var prop:String;
+			var newValue:Object = source;
+			for(var i:int = pathIndex; i < _sourcePath.length; i++) {
+				
+				source = newValue;
+				prop = _sourcePath[i];
+				if(source == null || !(prop in source)) {
+					newValue = null;
 					break;
 				}
 				
-				if(object is IEventDispatcher)
-				{
-					var changeEvent:String = getBindingEvent(object, prop);
-					IEventDispatcher(object).addEventListener(changeEvent, onPropertyChange);
+				if(source is IEventDispatcher) {
+					var changeEvent:String = getBindingEvent(source, prop);
+					IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
 				}
-				indices[object] = i-1;
-				object = object[prop];
+				indicesIndex[source] = i;
+				newValue = source[prop];
 			}
 			
-			if(setterValue != null && i == _sourcePath.length)
-			{
-				object = setterValue;	// TODO: set to object!
-				setterValue = null;
+			if(explicitValue != null && i == _sourcePath.length) {
+				source[prop] = newValue = explicitValue;
+				explicitValue = null;
 			}
 			
-			return object;
+			return newValue;
 		}
 		
 		private function unbindPath(pathIndex:int):void
 		{
-			for(var o:* in indices)
-			{
-				var index:int = indices[o];
-				if(index < pathIndex)
+			for(var source:* in indicesIndex) {
+				var index:int = indicesIndex[source];
+				if(index < pathIndex) {
 					continue;
-				
-				if(o is IEventDispatcher)
-				{
-					var changeEvent:String = getBindingEvent(o, _sourcePath[index]);
-					IEventDispatcher(o).removeEventListener(changeEvent, onPropertyChange);
 				}
-				delete indices[o];
+				
+				if(source is IEventDispatcher) {
+					var changeEvent:String = getBindingEvent(source, _sourcePath[index]);
+					IEventDispatcher(source).removeEventListener(changeEvent, onPropertyChange);
+				}
+				delete indicesIndex[source];
 			}
 		}
 		
-		private function getSource(pathIndex:int = -1):Object
+		private function getSource(pathIndex:int = 0):Object
 		{
-			for(var o:* in indices)
-			{
-				if(indices[o] == pathIndex)
-					return o;
+			for(var source:* in indicesIndex) {
+				if(indicesIndex[source] != pathIndex) {
+					continue;
+				}
+				return source;
 			}
-			if(pathIndex == -1)	// if the source has been removed from memory
-				release();		// TODO: remove from Bind dictionaries, also pair Source/Target bindings
+			
+			if(pathIndex == 0)	{	// if the source has been removed from memory
+				release();			// TODO: remove from Bind dictionaries, also pair Source/Target bindings
+			}
+			
 			return null;
 		}
 		
 		private function onPropertyChange(event:Event):void
 		{
 			var source:Object = event.target;
-			var pathIndex:int = indices[source];
-			var prop:String = _sourcePath[pathIndex+1];
-			if("property" in event && event["property"] != prop)
+			var pathIndex:int = indicesIndex[source];
+			var prop:String = _sourcePath[pathIndex];
+			if("property" in event && event["property"] != prop) {
 				return;
+			}
 			
 			update(source, pathIndex);
 		}
@@ -201,24 +202,24 @@ package flight.binding
 		private static function getBindingEvent(target:Object, property:String):String
 		{
 			var bindings:Array = describeBindings(target);
-			if(bindings[property] == null)
+			if(bindings[property] == null) {
 				bindings[property] = property + PropertyChangeEvent._CHANGE;
+			}
 			return bindings[property];
 		}
 		
 		private static var bindingsCache:Dictionary = new Dictionary();
 		private static function describeBindings(value:Object):Array
 		{
-			if( !(value is Class) )
+			if( !(value is Class) ) {
 				value = getType(value);
+			}
 			
-			if(bindingsCache[value] == null)
-			{
+			if(bindingsCache[value] == null) {
 				var desc:XMLList = Type.describeProperties(value, "Bindable");
 				var bindings:Array = bindingsCache[value] = [];
 				
-				for each(var prop:XML in desc)
-				{
+				for each(var prop:XML in desc) {
 					var property:String = prop.@name;
 					var changeEvent:String;
 					var bindable:XMLList = prop.metadata.(@name == "Bindable");

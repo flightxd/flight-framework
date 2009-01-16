@@ -21,9 +21,12 @@ package flight.binding
 		{
 		}
 		
+		// TODO: change this to bindSetter or something like
 		public static function getBinding(source:Object, sourcePath:String, listener:Function = null):Binding
 		{
-			return new Binding(source, sourcePath, listener);
+			var binding:Binding = new Binding(source, sourcePath);
+			binding.addListener(listener);
+			return binding;
 		}
 		
 		public static function addBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
