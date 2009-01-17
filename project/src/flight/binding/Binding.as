@@ -38,6 +38,8 @@ package flight.binding
 	 */
 	public class Binding extends EventDispatcher
 	{
+		public var updateOnly:Boolean = false;
+		
 		private var indicesIndex:Dictionary = new Dictionary(true);
 		private var bindIndex:Dictionary = new Dictionary(true);
 		
@@ -229,7 +231,9 @@ package flight.binding
 			
 			if(explicitValue != null && i == _sourcePath.length) {
 				source[prop] = newValue = explicitValue;
-				explicitValue = null;
+				if(!updateOnly) {
+					explicitValue = null;
+				}
 			}
 			
 			return newValue;
@@ -281,7 +285,9 @@ package flight.binding
 				var binding2:Binding = Binding.getBinding(target, targetPath);
 				
 				success = binding.bind(binding2, "value");
-				if(twoWay) {
+				if(!twoWay) {
+					binding2.updateOnly = true;
+				} else {
 					binding2.bind(binding, "value");
 				}
 			} else {
@@ -357,6 +363,9 @@ package flight.binding
 			return binding;
 		}
 		
+		/**
+		 * 
+		 */
 		public static function releaseBinding(binding:Binding):Boolean
 		{
 			var source:Object = binding.getSource(0);
