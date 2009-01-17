@@ -1,3 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.config
 {
 	import flash.display.DisplayObject;
@@ -25,8 +49,9 @@ package flight.config
 		
 		public function Config()
 		{
-			if (main != null)
+			if (main != null) {
 				main.source = main.source.concat(this);
+			}
 			
 			source = [];
 		}
@@ -38,19 +63,23 @@ package flight.config
 		}
 		public function set configurations(value:Object):void
 		{
-			if(_configurations == value)
+			if(_configurations == value) {
 				return;
+			}
 			
 var newValue:Object = {};
 
-for (var i:String in _configurations)
+for (var i:String in _configurations) {
 	newValue[i] = _configurations[i];
+}
 
-for (i in value)
-{
+for (i in value) {
 	newValue[i] = value[i];
 	// subclass configs may not be dynamic, we will fail silently
-	try { this[i] = value[i]; } catch(e:Error) { }
+	try {
+		this[i] = value[i];
+	} catch(e:Error) {
+	}
 }
 			
 			PropertyChangeEvent.dispatchPropertyChange(this, "configurations", _configurations, _configurations = newValue);
@@ -63,21 +92,20 @@ for (i in value)
 		}
 		public function set source(value:Array):void
 		{
-			if(_source == value)
+			if(_source == value) {
 				return;
+			}
 			
-if (value is Array)
-{
+if (value is Array) {
 	var mainSourceAltered:Boolean = false;
-	if (main && this != main)
+	if (main && this != main) {
 		var mainSource:Array = main.source.concat();
+	}
 	
-	for each(var source:Config in value)
-	{
+	for each(var source:Config in value) {
 		// let's not duplicate sources in main, they'll all filter up
 		var index:int;
-		if (mainSource && (index = mainSource.indexOf(source)) != -1)
-		{
+		if (mainSource && (index = mainSource.indexOf(source)) != -1) {
 			mainSource.splice(index, 1);
 			mainSourceAltered = true;
 		}
@@ -85,8 +113,9 @@ if (value is Array)
 		BindingUtils.bindSetter(update, source, "configurations");
 	}
 	
-	if (mainSource && mainSourceAltered)
+	if (mainSource && mainSourceAltered) {
 		main.source = mainSource;
+	}
 }
 			
 			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
@@ -99,8 +128,9 @@ if (value is Array)
 		}
 		public function set viewReference(value:DisplayObject):void
 		{
-			if(_viewReference == value)
+			if(_viewReference == value) {
 				return;
+			}
 			
 			PropertyChangeEvent.dispatchPropertyChange(this, "viewReference", _viewReference, _viewReference = value);
 		}
@@ -108,21 +138,24 @@ if (value is Array)
 		private var inited:uint;
 		public function initialized(document:Object, id:String):void
 		{
-			if(id != null)
+			if(id != null) {
 				this._id = id;
+			}
 //			trace("Initialized", ++inited, "times");
-			if(viewReference != null)
+			if(viewReference != null) {
 				return;
-			if(document is DisplayObject)
+			}
+			if(document is DisplayObject) {
 				viewReference = document as DisplayObject;
-			else if(document is Config)
+			}
+			else if(document is Config) {
 				BindingUtils.bindProperty(this, "viewReference", document, "viewReference");
+			}
 			
 			// initialize the configurations object
 			var configurations:Object = {};
 			var propList:XMLList = getProperties();
-			for each(var prop:XML in propList)
-			{
+			for each(var prop:XML in propList) {
 				var name:String = prop.@name;
 				configurations[name] = this[name];
 			}
@@ -136,12 +169,10 @@ if (value is Array)
 		{
 			var propList:XMLList = getProperties();
 			
-			for (var name:String in source)
-			{
+			for (var name:String in source) {
 				var prop:XMLList = propList.(@name == name);
 				var value:Object = source[name];
-				if(value != null && prop.length())
-				{
+				if(value != null && prop.length()) {
 					var type:Class = getDefinitionByName(prop.@type.toString()) as Class;
 					source[name] = (type == Boolean && value == "false") ? false : type(value);
 				}
@@ -155,29 +186,30 @@ if (value is Array)
 		{
 			// if the configurations have not been initialized yet (they are null or
 			// or empty) then we won't process them yet
-			if (data == null)
+			if (data == null) {
 				return;
+			}
 			
 			var empty:Boolean = true;
-			for (var prop:String in data)
-			{
+			for (var prop:String in data) {
 				empty = false;
 				break;
 			}
 			
-			if (empty)
+			if (empty) {
 				return;
+			}
 			
 			// can't just update using data, because of overrides, must do all sources
 			var sources:Array = source as Array;
 			var newConfigurations:Object = {};
 			
-			for each (var config:Config in sources)
-			{
+			for each (var config:Config in sources) {
 				// populate the dynamic properties
 				var configurations:Object = config.configurations;
-				for (var i:String in configurations)
+				for (var i:String in configurations) {
 					newConfigurations[i] = configurations[i];
+				}
 			}
 			
 			this.configurations = newConfigurations;

@@ -1,3 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.domain
 {
 	import flash.events.Event;
@@ -26,8 +50,7 @@ package flight.domain
 		public function DomainController()
 		{
 			d = Registry.getInstance(DomainControllerData, type) as DomainControllerData;
-			if(!d.initialized)
-			{
+			if(!d.initialized) {
 				d.initialized = true;
 				preInit();
 				init();
@@ -92,27 +115,28 @@ package flight.domain
 		public function getCommand(type:String, properties:Object = null):ICommand
 		{
 			var commandClass:Class = getCommandClass(type);
-			if(commandClass == null)
+			if(commandClass == null) {
 				return null;
-			
-			var command:ICommand = new commandClass() as ICommand;
-			if("client" in command)
-				command["client"] = this;
-			
-			
-			for(var i:String in properties)
-			{
-				if(i in command)
-					command[i] = properties[i];
 			}
 			
-			if(properties is Array)
-			{
+			var command:ICommand = new commandClass() as ICommand;
+			if("client" in command) {
+				command["client"] = this;
+			}
+			
+			
+			for(var i:String in properties) {
+				if(i in command) {
+					command[i] = properties[i];
+				}
+			}
+			
+			if(properties is Array) {
 				var list:Array = getArgumentList(command);
-				for(i in list)
-				{
-					if(i in properties)
+				for(i in list) {
+					if(i in properties) {
 						command[ list[i] ] = properties[i];
+					}
 				}
 			}
 			
@@ -124,8 +148,9 @@ package flight.domain
 		 */
 		public function execute(type:String, properties:Object = null):Boolean
 		{
-			if(d.executing[type])
+			if(d.executing[type]) {
 				return false;
+			}
 			
 			d.executing[type] = true;
 			var command:ICommand = getCommand(type, properties);
@@ -140,28 +165,32 @@ package flight.domain
 		 */
 		public function executeCommand(command:ICommand):Boolean
 		{
-			if(command == null)
+			if(command == null) {
 				return false;
+			}
 			
-			if(command is IAsyncCommand)
+			if(command is IAsyncCommand) {
 				catchAsyncCommand(command as IAsyncCommand);
+			}
 			
 			var success:Boolean = (d.invoker != null)
 								 ? d.invoker.executeCommand(command)
 								 : command.execute();
 			
-			if( !(command is IAsyncCommand) )
+			if( !(command is IAsyncCommand) ) {
 				dispatchEvent(new CommandEvent(getCommandType(command), command, success));
-			else if(!success)
+			} else if(!success) {
 				releaseAsyncCommand(command as IAsyncCommand);
+			}
 			
 			return success;
 		}
 		
 		protected function executeScript(type:String, properties:Object = null):Boolean
 		{
-			if( !(type in this && this[type] is Function) )
+			if( !(type in this && this[type] is Function) ) {
 				return false;
+			}
 			
 			var script:Function = this[type];
 			return (properties != null) ? script.apply(null, [].concat(properties)) : script();
@@ -197,10 +226,10 @@ package flight.domain
 			var list:Array = [];
 			
 			var argumentList:XMLList = Type.describeProperties(command, "Argument");
-			for each(var argument:XML in argumentList)
-			{
-				if(argument.metadata.(@name == "Argument").arg.@value.length() > 0)
+			for each(var argument:XML in argumentList) {
+				if(argument.metadata.(@name == "Argument").arg.@value.length() > 0) {
 					list[argument.metadata.(@name == "Argument").arg.@value] = argument.@name;
+				}
 			}
 			return list;
 		}
@@ -208,36 +237,41 @@ package flight.domain
 		
 		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
 		{
-			if(d.eventDispatcher == null)
+			if(d.eventDispatcher == null) {
 				d.eventDispatcher = new EventDispatcher(this);
+			}
 			
 			d.eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
 		}
 		
 		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
 		{
-			if(d.eventDispatcher != null)
+			if(d.eventDispatcher != null) {
 				d.eventDispatcher.removeEventListener(type, listener, useCapture);
+			}
 		}
 		
 		public function dispatchEvent(event:Event):Boolean
 		{
-			if(d.eventDispatcher != null)
+			if(d.eventDispatcher != null) {
 				return d.eventDispatcher.dispatchEvent(event);
+			}
 			return false;
 		}
 		
 		public function hasEventListener(type:String):Boolean
 		{
-			if(d.eventDispatcher != null)
+			if(d.eventDispatcher != null) {
 				return d.eventDispatcher.hasEventListener(type);
+			}
 			return false;
 		}
 		
 		public function willTrigger(type:String):Boolean
 		{
-			if(d.eventDispatcher != null)
+			if(d.eventDispatcher != null) {
 				return d.eventDispatcher.willTrigger(type);
+			}
 			return false;
 		}
 		

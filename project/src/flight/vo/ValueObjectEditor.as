@@ -1,3 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.vo
 {
 	import flash.events.Event;
@@ -18,8 +42,9 @@ package flight.vo
 		
 		public static function getProxy( value:IValueObject ):ValueObjectEditor
 		{
-			if(_proxies[value] == null)
+			if(_proxies[value] == null) {
 				_proxies[value] = new ValueObjectEditor( value );
+			}
 			return _proxies[value] as ValueObjectEditor;
 		}
 		
@@ -52,24 +77,24 @@ package flight.vo
 		}
 		
 		override flash_proxy function hasProperty(name:*):Boolean 
-	    {
-	    	return name in _copy;
-	    }
+		{
+			return name in _copy;
+		}
 		
 		override flash_proxy function getProperty(name:*):* 
 		{
-        	return _copy[name];
-	    }
+			return _copy[name];
+		}
 	
-	    override flash_proxy function setProperty(name:*, value:*):void 
-	    {
-	        var oldValue:* = _copy[name];
-            _copy[name] = value;
-            var kind:String = PropertyChangeEventKind.UPDATE;
-            dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, name, oldValue, value));
-	    }
-	    
-	    public static function commit( editor:ValueObjectEditor ):void
+		override flash_proxy function setProperty(name:*, value:*):void 
+		{
+			var oldValue:* = _copy[name];
+			_copy[name] = value;
+			var kind:String = PropertyChangeEventKind.UPDATE;
+			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, name, oldValue, value));
+		}
+		
+		public static function commit( editor:ValueObjectEditor ):void
 		{
 			merge ( editor, editor._copy ); 
 		}
@@ -97,52 +122,53 @@ package flight.vo
 		}
 
 		public function hasEventListener(type:String):Boolean
-        {
-            return eventDispatcher.hasEventListener(type);
-        }
-       
-        public function willTrigger(type:String):Boolean
-        {
-            return eventDispatcher.willTrigger(type);
-        }
-       
-        public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0.0, useWeakReference:Boolean=false):void
-        {
-            eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-        }
-       
-        public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
-        {
-            eventDispatcher.removeEventListener(type, listener, useCapture);
-        }
-       
-        public function dispatchEvent(event:Event):Boolean
-        {
-            return eventDispatcher.dispatchEvent(event);
-        }
-        
+		{
+			return eventDispatcher.hasEventListener(type);
+		}
+		
+		public function willTrigger(type:String):Boolean
+		{
+			return eventDispatcher.willTrigger(type);
+		}
+		
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0.0, useWeakReference:Boolean=false):void
+		{
+			eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
+		{
+			eventDispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		public function dispatchEvent(event:Event):Boolean
+		{
+			return eventDispatcher.dispatchEvent(event);
+		}
+		
 		/*		
 		override flash_proxy function deleteProperty(name:*):Boolean 
 		{
-	      return delete items[name];
-	    }
+			return delete items[name];
+		}
 	
-	    override flash_proxy function nextNameIndex(index:int):int 
-	    {
-	      if (index > items.length)
-	        return 0;
-	      return index + 1;
-	    }
+		override flash_proxy function nextNameIndex(index:int):int 
+		{
+			if (index > items.length) {
+				return 0;
+			}
+			return index + 1;
+		}
 	
-	    override flash_proxy function nextName(index:int):String 
-	    {
-	      return String(index - 1);
-	    }
+		override flash_proxy function nextName(index:int):String 
+		{
+			return String(index - 1);
+		}
 	
-	    override flash_proxy function nextValue(index:int):* 
-	    {
-	      return items[index - 1];
-	    }
+		override flash_proxy function nextValue(index:int):* 
+		{
+			return items[index - 1];
+		}
 		*/
 	}
 }

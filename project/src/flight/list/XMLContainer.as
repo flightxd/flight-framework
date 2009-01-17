@@ -1,3 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.list
 {
 	import flash.events.Event;
@@ -11,21 +35,24 @@ package flight.list
 		
 		public function XMLContainer(source:XMLList = null)
 		{
-			if(source != null)
+			if(source != null) {
 				this.source = source;
+			}
 		}
 		
 		[Bindable(event="propertyChange", flight="true")]
 		public function get source():XMLList
 		{
-			if(_source == null)
+			if(_source == null) {
 				_source = new XMLList();
+			}
 			return _source;
 		}
 		public function set source(value:XMLList):void
 		{
-			if(_source == value)
+			if(_source == value) {
 				return;
+			}
 			
 			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
 			dispatchEvent(new Event(Event.CHANGE));
@@ -45,10 +72,11 @@ package flight.list
 		
 		public function addItemAt(item:Object, index:int):Object
 		{
-			if(index == 0)
+			if(index == 0) {
 				source[0] = source.length() == 0 ? item : item + source[0];
-			else
+			} else {
 				source[index-1] += item;
+			}
 			dispatchEvent(new Event(Event.CHANGE));
 			return item;
 		}
@@ -60,10 +88,10 @@ package flight.list
 		
 		public function getItemIndex(item:Object):int
 		{
-			for(var i:String in source)
-			{
-				if(source[i] == item)
+			for(var i:String in source) {
+				if(source[i] == item) {
 					return Number(i);
+				}
 			}
 			return -1;
 		}
@@ -83,8 +111,7 @@ package flight.list
 		
 		public function removeItems():void
 		{
-			for(var i:String in source)
-			{
+			for(var i:String in source) {
 				delete source[i];
 			}
 			dispatchEvent(new Event(Event.CHANGE));
@@ -108,15 +135,12 @@ package flight.list
 			var item1:XML = source[index1];
 			var item2:XML = source[index2];
 			
-			if(index1 < index2)
-			{
+			if(index1 < index2) {
 				delete source[index2];
 				delete source[index1];
 				source[index2-1] += item1;
 				addItemAt(item2, index1);
-			}
-			else
-			{
+			} else {
 				delete source[index1];
 				delete source[index2];
 				source[index1-1] += item2;

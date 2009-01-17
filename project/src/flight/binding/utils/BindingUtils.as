@@ -1,3 +1,27 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.binding.utils
 {
 	import flash.events.IEventDispatcher;
@@ -12,18 +36,21 @@ package flight.binding.utils
 		public static function bindProperty(site:Object, prop:String, host:Object, chain:Object, useWeakReference:Boolean = false):ChangeWatcher
 		{
 			var changeWatcher:ChangeWatcher;
-			if(useWeakReference)
-			{
+			if(useWeakReference) {
 				var siteReference:BindProxy = new BindProxy(site);
 				changeWatcher = siteReference.changeWatcher = mx.binding.utils.BindingUtils.bindProperty(siteReference, prop, host, chain);
-			}
-			else
+			} else {
 				changeWatcher = mx.binding.utils.BindingUtils.bindProperty(site, prop, host, chain);
+			}
 			
-			if(endPoints[site] == null) endPoints[site] = [];
+			if(endPoints[site] == null) {
+				endPoints[site] = [];
+			}
 			endPoints[site].push(changeWatcher);
 			
-			if(endPoints[host] == null) endPoints[host] = [];
+			if(endPoints[host] == null) {
+				endPoints[host] = [];
+			}
 			endPoints[host].push(changeWatcher);
 			return changeWatcher;
 		}
@@ -31,22 +58,27 @@ package flight.binding.utils
 		public static function bindSetter(site:Object, setter:Function, host:Object, chain:Object, useWeakReference:Boolean = false):ChangeWatcher
 		{
 			var changeWatcher:ChangeWatcher;
-			if(useWeakReference)
-			{
-				if( !(site is IEventDispatcher) )
+			if(useWeakReference) {
+				if( !(site is IEventDispatcher) ) {
 					throw new Error("Weak referenced bindSetter is available only for IEventDispatcher's. This limitation is a result of Flash Player's treatment of method closures within a Dictionary.");
+				}
 				site.addEventListener("$bindSetter", setter);
 				var setterReference:BindProxy = new BindProxy(setter);
 				var proxySetter:Function = getProxySetter(setterReference);
 				changeWatcher = setterReference.changeWatcher = mx.binding.utils.BindingUtils.bindSetter(proxySetter, host, chain);
 			}
-			else
+			else {
 				changeWatcher = mx.binding.utils.BindingUtils.bindSetter(setter, host, chain);
+			}
 			
-			if(endPoints[site] == null) endPoints[site] = [];
+			if(endPoints[site] == null) {
+				endPoints[site] = [];
+			}
 			endPoints[site].push(changeWatcher);
 			
-			if(endPoints[host] == null) endPoints[host] = [];
+			if(endPoints[host] == null) {
+				endPoints[host] = [];
+			}
 			endPoints[host].push(changeWatcher);
 			return changeWatcher;
 		}
@@ -71,19 +103,18 @@ package flight.binding.utils
 		
 		public static function setListening(site:Object, isListening:Boolean = true):void
 		{
-			if(isListening)
+			if(isListening) {
 				delete DispatcherProxy.sitesBlocked[site];
-			else
+			} else {
 				DispatcherProxy.sitesBlocked[site] = true;
+			}
 		}
 		
 		public static function releaseBindings(target:Object):void
 		{
 			var queue:Array = endPoints[target];
-			if(queue != null)
-			{
-				for(var i:uint = 0; i < queue.length; i++)
-				{
+			if(queue != null) {
+				for(var i:uint = 0; i < queue.length; i++) {
 					ChangeWatcher(queue[i]).setHandler(null);
 					ChangeWatcher(queue[i]).unwatch();
 				}
@@ -93,10 +124,11 @@ package flight.binding.utils
 		
 		private static function getProxySetter(setterReference:BindProxy):Function
 		{
-			return function(value:*):void
-			{
+			return function(value:*):void {
 				var setter:Function = setterReference.getItem() as Function;
-				if(setter != null) setter(value);
+				if(setter != null) {
+					setter(value);
+				}
 			}
 		}
 		
@@ -130,18 +162,20 @@ dynamic class BindProxy extends Proxy
 	override flash_proxy function setProperty(name:*, value:*):void
 	{
 		var item:Object = getItem();
-		if(item == null) return;
+		if(item == null) {
+			return;
+		}
 		
-		if(!setter)
+		if(!setter) {
 			item[name] = value;
-		else
+		} else {
 			item[name](value);
+		}
 	}
 	
 	public function getItem():*
 	{
-		for(var i:* in dictionary)
-		{
+		for(var i:* in dictionary) {
 			return i;
 		}
 		changeWatcher.setHandler(null);

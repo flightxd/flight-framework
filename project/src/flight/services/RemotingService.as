@@ -1,6 +1,26 @@
-/*
- * Based on NetConnection wrapper by Thibault Imbert (bytearray.org)
- */
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
 
 package flight.services
 {
@@ -50,8 +70,9 @@ package flight.services
 			_connection.addEventListener( SecurityErrorEvent.SECURITY_ERROR, handleEvent );
 			_connection.addEventListener( AsyncErrorEvent.ASYNC_ERROR, handleEvent );
 			
-			if (gateway)
-				gatewayURL = gateway;	
+			if (gateway) {
+				gatewayURL = gateway;
+			}	
 		}
 		
 		/**
@@ -162,14 +183,14 @@ package flight.services
 			
 			_rpc = new PendingCall ( _connection, _call, parameters);
 			
-			if(_enableLimiter)
-			{
+			if(_enableLimiter) {
 			
 				// Same call has already been made, that is currently in process
 				var inService:PendingCall = getInService(_rpc);
 				
-				if(inService)
-					return inService;			
+				if(inService) {
+					return inService;
+				}			
 			
 			}
 			
@@ -198,10 +219,10 @@ package flight.services
 		{
 			var inService:PendingCall;
 			
-			for each(inService in _calls)
-			{
-				if(_rpc.equals(inService))
+			for each(inService in _calls) {
+				if(_rpc.equals(inService)) {
 					return inService;
+				}
 			}
 			
 			return null;
@@ -211,10 +232,8 @@ package flight.services
 		{
 			var e:String;
 			
-			for(e in _calls)
-			{
-				if(_rpc == _calls[e])
-				{
+			for(e in _calls) {
+				if(_rpc == _calls[e]) {
 					_calls.splice(int(e), 1);
 					return true;
 				}
