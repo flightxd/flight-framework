@@ -186,7 +186,11 @@ package flight.commands
 				if(combiningCommand == null || getType(combiningCommand) != getType(command)) {
 					combiningCommand = command as ICombinableCommand;
 				} else {
-					return combiningCommand.combine(command as ICombinableCommand);
+					if (combiningCommand.combine(command as ICombinableCommand)) {
+						return true;
+					} else {
+						combiningCommand = command as ICombinableCommand;
+					}
 				}
 			}
 			else {

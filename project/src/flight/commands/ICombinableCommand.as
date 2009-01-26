@@ -38,7 +38,8 @@ package flight.commands
 		/**
 		 * Gives the first executed command the opportunity to combine itself with
 		 * another combinable command which was called later and return the success
-		 * of the combination
+		 * of the combination. If the combination fails, will execute the combining
+		 * command as a new command.
 		 */
 		 function combine(command:ICombinableCommand):Boolean;
 	}
