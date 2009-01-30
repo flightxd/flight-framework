@@ -29,7 +29,7 @@ package flight.config
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	
-	dynamic public class XMLConfig extends Config
+	dynamic public class XMLConfig extends BaseConfig
 	{
 		
 		public function XMLConfig(source:String = null)

@@ -27,7 +27,7 @@ package flight.config
 	import flash.external.ExternalInterface;
 	import flash.net.URLVariables;
 	
-	dynamic public class URLConfig extends Config
+	dynamic public class URLConfig extends BaseConfig
 	{
 		public function URLConfig()
 		{

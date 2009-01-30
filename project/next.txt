@@ -1,5 +1,13 @@
 
 
+* review to see if a Config can be made into an implicit singleton (for instantiation and auto-complete)
+
+* update history with correct bindings.
+* update history to have a currentTotalPosition and totalLength (or similar)
+* update history to reset combining upon execution of a command that does not match the currentTotalPosition (eg, undo has occured)
+
+
+
 * add global config property that references Config.main
 
 fix CommandItem (commands don't require constructor args anymore)

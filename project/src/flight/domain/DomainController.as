@@ -45,33 +45,29 @@ package flight.domain
 	 */
 	public class DomainController implements IEventDispatcher, ICommandInvoker, ICommandFactory
 	{
-		protected var d:DomainControllerData;
+		private var d:DomainControllerData;
 		
 		public function DomainController()
 		{
-			d = Registry.getInstance(DomainControllerData, type) as DomainControllerData;
+			d = Registry.getInstance(DomainControllerData, getType(this)) as DomainControllerData;
+			
 			if(!d.initialized) {
 				d.initialized = true;
-				preInit();
 				init();
 			}
 		}
 		
-		internal function preInit():void
+		protected function get invoker():ICommandInvoker
 		{
-			d.commandClasses = [];
-			d.typesByCommand = new Dictionary(true);
-			d.asyncExecutions = new Dictionary();
-			d.executing = new Dictionary();
+			return d.invoker;
+		}
+		protected function set invoker(value:ICommandInvoker):void
+		{
+			d.invoker = value;
 		}
 		
 		protected function init():void
 		{
-		}
-		
-		protected function get type():Object
-		{
-			return getType(this);
 		}
 		
 		/**
@@ -253,7 +249,7 @@ package flight.domain
 		
 		public function dispatchEvent(event:Event):Boolean
 		{
-			if(d.eventDispatcher != null) {
+			if(d.eventDispatcher != null && d.eventDispatcher.hasEventListener(event.type)) {
 				return d.eventDispatcher.dispatchEvent(event);
 			}
 			return false;
@@ -291,17 +287,17 @@ class DomainControllerData
 	/**
 	 * Associative array of command classes organized by their designated type.
 	 */
-	public var commandClasses:Array;
+	public var commandClasses:Array = [];
 	
 	/**
 	 * Stores each command's type for dispatching.
 	 */
-	public var typesByCommand:Dictionary;
+	public var typesByCommand:Dictionary = new Dictionary(true);
 	
 	public var eventDispatcher:EventDispatcher;
 	
-	public var asyncExecutions:Dictionary;			// keeps a strong reference to each IAsyncCommand until completed or canceled
-	public var executing:Dictionary;				// the type of the currently executing script, used to avoid unwanted recursion
-
+	public var asyncExecutions:Dictionary = new Dictionary();		// keeps a strong reference to each IAsyncCommand until completed or canceled
+	public var executing:Dictionary = new Dictionary();				// the type of the currently executing script, used to avoid unwanted recursion
+	
 }
 

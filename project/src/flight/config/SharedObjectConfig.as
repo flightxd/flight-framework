@@ -26,7 +26,7 @@ package flight.config
 {
 	import flash.net.SharedObject;
 	
-	dynamic public class SharedObjectConfig extends Config
+	dynamic public class SharedObjectConfig extends BaseConfig
 	{
 		private var _sharedObject:SharedObject;
 		private var _id:Object;
