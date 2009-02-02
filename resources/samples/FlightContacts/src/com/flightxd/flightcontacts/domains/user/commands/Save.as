@@ -1,4 +1,4 @@
-package com.flightux.contacts.domains.user.commands
+package com.flightxd.flightcontacts.domains.user.commands
 {
 	import flight.commands.AsyncCommand;
 

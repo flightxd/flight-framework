@@ -1,4 +1,4 @@
-package com.flightux.contacts.domains.contact
+package com.flightxd.flightcontacts.domains.contact
 {
 	import flight.domain.DomainController;
 

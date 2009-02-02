@@ -1,4 +1,4 @@
-package com.flightux.contacts.domains.contact
+package com.flightxd.flightcontacts.domains.user
 {
 	import com.flightux.contacts.domains.user.commands.*;
 	
@@ -12,7 +12,7 @@ package com.flightux.contacts.domains.contact
 		public const RESET_PASSWORD:String = "resetPassword";
 		public const SAVE:String = "save";
 		
-		public function UserController()
+		public function init():void
 		{
 			addCommand(LOGIN, Login);
 			addCommand(LOGOUT, Logout);

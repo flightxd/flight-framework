@@ -1,10 +1,10 @@
-package com.flightux.contacts.domains.user.commands
+package com.flightxd.flightcontacts.domains.user.commands
 {
 	import flight.commands.AsyncCommand;
 
-	public class ResetPassword extends AsyncCommand
+	public class Register extends AsyncCommand
 	{
-		public function ResetPassword(email:String)
+		public function Register(user:String)
 		{
 		}
 		

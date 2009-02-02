@@ -1,10 +1,10 @@
-package com.flightux.contacts.domains.user.commands
+package com.flightxd.flightcontacts.domains.user.commands
 {
 	import flight.commands.AsyncCommand;
 
-	public class Login extends AsyncCommand
+	public class Logout extends AsyncCommand
 	{
-		public function Login(email:String, password:String)
+		public function Logout()
 		{
 		}
 		
