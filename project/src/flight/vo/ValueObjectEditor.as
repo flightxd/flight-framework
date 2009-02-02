@@ -29,11 +29,9 @@ package flight.vo
 	import flash.events.IEventDispatcher;
 	import flash.utils.*;
 	
+	import flight.events.PropertyEvent;
 	import flight.utils.Type;
 	import flight.utils.getType;
-	
-	import mx.events.PropertyChangeEvent;
-	import mx.events.PropertyChangeEventKind;
 	
 	[Bindable("propertyChange")]
 	dynamic public class ValueObjectEditor extends Proxy implements IEventDispatcher
@@ -90,8 +88,7 @@ package flight.vo
 		{
 			var oldValue:* = _copy[name];
 			_copy[name] = value;
-			var kind:String = PropertyChangeEventKind.UPDATE;
-			dispatchEvent(PropertyChangeEvent.createUpdateEvent(this, name, oldValue, value));
+			PropertyEvent.dispatchChange(this, name, oldValue, value);
 		}
 		
 		public static function commit( editor:ValueObjectEditor ):void

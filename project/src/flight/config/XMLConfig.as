@@ -55,43 +55,43 @@ package flight.config
 		
 		private function configureListeners(dispatcher:IEventDispatcher):void
 		{
-			dispatcher.addEventListener(Event.COMPLETE, completeHandler);
-//			dispatcher.addEventListener(Event.OPEN, openHandler);
-//			dispatcher.addEventListener(ProgressEvent.PROGRESS, progressHandler);
-//			dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
-//			dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpStatusHandler);
-//			dispatcher.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
+			dispatcher.addEventListener(Event.COMPLETE, onComplete);
+//			dispatcher.addEventListener(Event.OPEN, onOpen);
+//			dispatcher.addEventListener(ProgressEvent.PROGRESS, onProgress);
+//			dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+//			dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHttpStatus);
+//			dispatcher.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 		}
 		
-		private function completeHandler(event:Event):void
+		private function onComplete(event:Event):void
 		{
 			var loader:URLLoader = URLLoader(event.target);
 			configurations = formatSource(XML(loader.data));
 		}
 		
-//		private function openHandler(event:Event):void
+//		private function onOpen(event:Event):void
 //		{
-//			trace("openHandler: " + event);
+//			trace("onOpen: " + event);
 //		}
 //		
-//		private function progressHandler(event:ProgressEvent):void
+//		private function onProgress(event:ProgressEvent):void
 //		{
-//			trace("progressHandler loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
+//			trace("onProgress loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
 //		}
 //		
-//		private function securityErrorHandler(event:SecurityErrorEvent):void
+//		private function onSecurityError(event:SecurityErrorEvent):void
 //		{
-//			trace("securityErrorHandler: " + event);
+//			trace("onSecurityError: " + event);
 //		}
 //		
-//		private function httpStatusHandler(event:HTTPStatusEvent):void
+//		private function onHttpStatus(event:HTTPStatusEvent):void
 //		{
-//			trace("httpStatusHandler: " + event);
+//			trace("onHttpStatus: " + event);
 //		}
 //		
-//		private function ioErrorHandler(event:IOErrorEvent):void
+//		private function onIOError(event:IOErrorEvent):void
 //		{
-//			trace("ioErrorHandler: " + event);
+//			trace("onIOError: " + event);
 //		}
 
 	}

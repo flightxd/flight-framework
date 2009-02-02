@@ -25,7 +25,8 @@
 package flight.commands
 {
 	import flash.events.IEventDispatcher;
-
+	
+	// dispatches the "complete" or "cancel" event
 	public interface IAsyncCommand extends ICommand, IEventDispatcher
 	{
 		

@@ -6,7 +6,6 @@
 	<component id="HistoryController"		class="flight.domain.HistoryController"/>
 	<component id="MacroCommand"			class="flight.domain.MacroCommand"/>
 	<component id="CommandHistory"			class="flight.commands.CommandHistory"/>
-	<component id="CommandItem"				class="flight.commands.CommandItem"/>
 	<component id="ValueObject"				class="flight.vo.ValueObject"/>
 	<component id="DynamicObject"			class="flight.vo.DynamicObject"/>
 	<component id="ArrayContainer"			class="flight.list.ArrayContainer"/>

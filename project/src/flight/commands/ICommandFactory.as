@@ -39,12 +39,12 @@ package flight.commands
 		/**
 		 * Retrieves the command class registered with this type.
 		 */
-		function getCommandClass(type:String):Class;
+		function getCommand(type:String):Class;
 		
 		/**
 		 * Primary method responsible for command class instantiation, hiding the details
 		 * of class inheritance, implementation, origin, etc. Allows instantiation parameters.
 		 */
-		function getCommand(type:String, properties:Object = null):ICommand;
+		function createCommand(type:String, properties:Object = null):ICommand;
 	}
 }

@@ -24,15 +24,13 @@
 
 package flight.domain
 {
+	import flight.binding.Bind;
 	import flight.commands.CommandHistory;
 	import flight.commands.ICommand;
 	import flight.commands.ICommandHistory;
 	import flight.events.CommandEvent;
-	import flight.events.PropertyChangeEvent;
+	import flight.events.PropertyEvent;
 	import flight.utils.Registry;
-	import flight.utils.getType;
-	
-	import mx.binding.utils.BindingUtils;
 	
 	/**
 	 * HistoryDomain acts as an interface to a CommandHistory.
@@ -40,33 +38,16 @@ package flight.domain
 	 */
 	public class HistoryController extends DomainController implements ICommandHistory
 	{
-		private var d:HistoryControllerData;
+		private var d:Data = Registry.getInstance(Data, type) as Data;
 		
 		public function HistoryController()
 		{
-			d = Registry.getInstance(HistoryControllerData, getType(this)) as HistoryControllerData;
-			
-			// TODO: replace with Flight Binding and ensure binds only happen once (instead of on each Controller instance)
-			BindingUtils.bindProperty(this, "canUndo", this, ["commandHistory", "canUndo"]);
-			BindingUtils.bindProperty(this, "canRedo", this, ["commandHistory", "canRedo"]);
-		}
-		
-		/**
-		 * A reference to the current commandHistory.
-		 */
-		[Bindable(event="propertyChange", flight="true")]
-		public function get commandHistory():CommandHistory
-		{
-			return d._commandHistory;
-		}
-		public function set commandHistory(value:CommandHistory):void
-		{
-			if(d._commandHistory == value) {
-				return;
+			if(!d.initialized) {
+				d.initialized = true;
+				Bind.addListener(onHistoryChange, this, "commandHistory.canUndo");
+				Bind.addListener(onHistoryChange, this, "commandHistory.canRedo");
+				Bind.addListener(onHistoryChange, this, "commandHistory.undoLimit");
 			}
-			
-			invoker = value;
-			PropertyChangeEvent.dispatchPropertyChange(this, "commandHistory", d._commandHistory, d._commandHistory = value);
 		}
 		
 		/**
@@ -75,18 +56,7 @@ package flight.domain
 		[Bindable(event="propertyChange", flight="true")]
 		public function get canUndo():Boolean
 		{
-			return d._canUndo;
-		}
-		/**
-		 * @private 
-		 */		
-		public function set canUndo(value:Boolean):void
-		{
-			if(d._canUndo == value) {
-				return;
-			}
-			
-			PropertyChangeEvent.dispatchPropertyChange(this, "canUndo", d._canUndo, d._canUndo = value);
+			return commandHistory.canUndo;
 		}
 		
 		/**
@@ -95,35 +65,40 @@ package flight.domain
 		[Bindable(event="propertyChange", flight="true")]
 		public function get canRedo():Boolean
 		{
-			return d._canRedo;
-		}
-		/**
-		 * @private 
-		 */
-		public function set canRedo(value:Boolean):void
-		{
-			if(d._canRedo == value) {
-				return;
-			}
-			
-			var oldValue:Boolean = d._canRedo;
-			d._canRedo = value;
-			PropertyChangeEvent.dispatchPropertyChange(this, "canRedo", oldValue, value);
+			return commandHistory.canRedo;
 		}
 		
 		/**
 		 * The limit to the length of the commandHistory; the number of commands that are stored.
 		 */
-		public function get undoLevel():uint
+		[Bindable(event="propertyChange", flight="true")]
+		public function get undoLimit():int
 		{
-			return commandHistory.undoLevel;
+			return commandHistory.undoLimit;
 		}
-		/**
-		 * @private 
-		 */
-		public function set undoLevel(value:uint):void
+		public function set undoLimit(value:int):void
 		{
-			commandHistory.undoLevel = value;
+			commandHistory.undoLimit = value;
+		}
+		
+		/**
+		 * A reference to the current commandHistory.
+		 */
+		[Bindable(event="propertyChange", flight="true")]
+		public function get commandHistory():CommandHistory
+		{
+			return d.commandHistory;
+		}
+		public function set commandHistory(value:CommandHistory):void
+		{
+			if(d.commandHistory == value) {
+				var oldValue:Object = d.commandHistory;
+				
+				d.commandHistory = value;
+				invoker = value;
+				
+				PropertyEvent.dispatchChange(this, "commandHistory", oldValue, d.commandHistory);
+			}
 		}
 		
 		/**
@@ -168,15 +143,21 @@ package flight.domain
 			return commandHistory.clearHistory();
 		}
 		
+		private function onHistoryChange(event:PropertyEvent):void
+		{
+			PropertyEvent.dispatchChange(this, event.property, event.oldValue, event.newValue);
+		}
+		
 	}
 }
 
 import flight.commands.CommandHistory;
 
-class HistoryControllerData
+class Data
 {
-	public var _commandHistory:CommandHistory = new CommandHistory();
-	public var _canUndo:Boolean = false;
-	public var _canRedo:Boolean = false;
+	public var initialized:Boolean = false;
+	
+	public var commandHistory:CommandHistory = new CommandHistory();
+	
 }
 

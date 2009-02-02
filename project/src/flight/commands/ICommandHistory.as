@@ -43,8 +43,8 @@ package flight.commands
 		/**
 		 * The limit to the length of the history; the number of commands that are stored.
 		 */
-		function get undoLevel():uint;
-		function set undoLevel(value:uint):void;
+		function get undoLimit():int;
+		function set undoLimit(value:int):void;
 		
 		/**
 		 * The history undo, restoring state to a certain point in time.

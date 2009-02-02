@@ -36,20 +36,8 @@ package flight.domain
 	 * An abstract command class that supports Asynchronous commands through dispatching
 	 * the ExecutionComplete event upon completion of the asynchronous action.
 	 */
-	public class AsyncCommand extends EventDispatcher implements IAsyncCommand
+	public class AsyncCommand extends Command implements IAsyncCommand
 	{
-		public function AsyncCommand()
-		{
-			
-		}
-		
-		/**
-		 * The execute method should be overridden
-		 */
-		public function execute():Boolean
-		{
-			return false;
-		}
 		
 		/**
 		 * To be called when the Asynchronous action has been completed.

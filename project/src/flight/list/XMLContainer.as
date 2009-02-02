@@ -26,8 +26,10 @@ package flight.list
 {
 	import flash.events.Event;
 	
-	import flight.events.PropertyChangeEvent;
+	import flight.events.PropertyEvent;
 	import flight.vo.ValueObject;
+	
+	[Event(name="change", type="flash.events.Event")]
 	
 	public class XMLContainer extends ValueObject implements IList
 	{
@@ -54,8 +56,10 @@ package flight.list
 				return;
 			}
 			
-			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
+			var oldValue:XMLList = _source;
+			_source = value;
 			dispatchEvent(new Event(Event.CHANGE));
+			PropertyEvent.dispatchChange(this, "source", oldValue, _source);
 		}
 		
 		public function get numItems():int

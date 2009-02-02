@@ -27,34 +27,42 @@ package flight.domain
 	import flash.events.Event;
 	
 	import flight.commands.IAsyncCommand;
-	import flight.commands.ICombinableCommand;
 	import flight.commands.ICommand;
 	import flight.commands.IUndoableCommand;
+	import flight.events.PropertyEvent;
 	
-	[DefaultProperty("commands")]
 	/**
 	 * The MacroCommand class is a single command that executes
 	 * a list of many commands.
 	 */
-	public class MacroCommand extends AsyncCommand implements ICombinableCommand
+	[DefaultProperty("commands")]
+	public class MacroCommand extends AsyncCommand implements IUndoableCommand
 	{
-		/**
-		 * The list of commands to be executed.
-		 */
-		public var commands:Array;
-		
 		public var queue:Boolean = true;
 		
-		private var lastCommand:ICommand;
+		private var currentCommand:ICommand;
+		private var undone:Boolean;
+		private var _commands:Array;
 		
 		public function MacroCommand(commands:Array = null)
 		{
 			this.commands = commands != null ? commands : [];
 		}
 		
-		public function get combining():Boolean
+		/**
+		 * The list of commands to be executed.
+		 */
+		public function get commands():Array
 		{
-			return false;
+			return _commands;
+		}
+		public function set commands(value:Array):void
+		{
+			if(_commands != value) {
+				var oldValue:Object = _commands;
+				_commands = value;
+				PropertyEvent.dispatchChange(this, "commands", oldValue, _commands);
+			}
 		}
 		
 		/**
@@ -62,7 +70,7 @@ package flight.domain
 		 */
 		override public function execute():Boolean
 		{
-			lastCommand = null;
+			currentCommand = null;
 			return executeNext();
 		}
 		
@@ -72,50 +80,61 @@ package flight.domain
 		 */
 		public function undo():void
 		{
-			var i:int = (lastCommand != null) ? commands.indexOf(lastCommand) : commands.length-1;
-			for(i; i >= 0; i--) {
-				var command:ICommand = commands[i];
-				if(command is IUndoableCommand) {
-					IUndoableCommand(command).undo();
+			var i:int = (currentCommand != null) ? commands.indexOf(currentCommand) :
+												commands.length - 1;
+			if(i == commands.length-1) {
+				
+				for(i; i >= 0; i--) {
+					var command:ICommand = commands[i];
+					if(command is IUndoableCommand) {
+						IUndoableCommand(command).undo();
+					}
 				}
+				currentCommand = null;
+				undone = true;
 			}
 		}
 		
 		public function redo():void
 		{
-			lastCommand = null;
-			executeNext();
-		}
-		
-		public function combine(command:ICombinableCommand):Boolean
-		{
-			commands.push(command);
-			return true;
+			if(undone) {
+				
+				for(var i:int = 0; i < commands.length; i++) {
+					var command:ICommand = commands[i];
+					if(command is IUndoableCommand) {
+						IUndoableCommand(command).redo();
+					}
+				}
+				currentCommand = command;
+				undone = false;
+			}
 		}
 		
 		protected function executeNext(event:Event = null):Boolean
 		{
-			var i:int = (lastCommand != null) ? commands.indexOf(lastCommand) + 1 : 0;
-			if(i >= commands.length) {
-				dispatchComplete();
-				return true;
-			}
-			
-			lastCommand = commands[i];
-			if(lastCommand is IAsyncCommand && queue) {
-				var asyncCommand:IAsyncCommand = lastCommand as IAsyncCommand;
-				if(!asyncCommand.hasEventListener(Event.COMPLETE)) {
-					asyncCommand.addEventListener(Event.COMPLETE, executeNext);
-					asyncCommand.addEventListener(Event.CANCEL, dispatchCancel);
+			var i:int = (currentCommand != null) ? commands.indexOf(currentCommand) + 1 : 0;
+			if(i < commands.length) {
+				
+				currentCommand = commands[i];
+				
+				if(currentCommand is IAsyncCommand && queue) {
+					
+					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
+					if(!asyncCommand.hasEventListener(Event.COMPLETE) ) {
+						asyncCommand.addEventListener(Event.COMPLETE, executeNext);
+						asyncCommand.addEventListener(Event.CANCEL, dispatchCancel);
+					}
+					
+					return asyncCommand.execute();
+				} else if( currentCommand.execute() ) {
+					return executeNext();
+				} else {
+					return false;
 				}
-				return asyncCommand.execute();
 			}
 			
-			if(lastCommand.execute()) {
-				return executeNext();
-			} else {
-				return false;
-			}
+			dispatchComplete();
+			return true;
 		}
 		
 	}

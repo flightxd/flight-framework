@@ -196,8 +196,8 @@ package flight.services
 			
 			_calls.push(_rpc);
 			
-			_rpc.addEventListener(ResultEvent.RESULT, resultHandler, false, 0);
-			_rpc.addEventListener(FaultEvent.FAULT, faultHandler, false, 0);
+			_rpc.addEventListener(ResultEvent.RESULT, onResult, false, 0);
+			_rpc.addEventListener(FaultEvent.FAULT, onFault, false, 0);
 			
 			_rpc.execute();
 			
@@ -205,12 +205,12 @@ package flight.services
 			
 		}
 		
-		private function resultHandler(event:ResultEvent):void
+		private function onResult(event:ResultEvent):void
 		{
 			removeInService(event.target as PendingCall);
 		}
 		
-		private function faultHandler(event:FaultEvent):void
+		private function onFault(event:FaultEvent):void
 		{
 			removeInService(event.target as PendingCall);
 		}

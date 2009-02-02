@@ -28,7 +28,7 @@ package flight.config
 	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
 	
-	import flight.events.PropertyChangeEvent;
+	import flight.events.PropertyEvent;
 	import flight.utils.Type;
 	
 	import mx.binding.utils.BindingUtils;
@@ -81,8 +81,9 @@ for (i in value) {
 	} catch(e:Error) {
 	}
 }
-			
-			PropertyChangeEvent.dispatchPropertyChange(this, "configurations", _configurations, _configurations = newValue);
+			var oldValue:Object = _configurations;
+			_configurations = newValue;
+			PropertyEvent.dispatchChange(this, "configurations", oldValue, _configurations);
 		}
 		
 		[Bindable(event="propertyChange", flight="true")]
@@ -117,8 +118,9 @@ if (value is Array) {
 		main.source = mainSource;
 	}
 }
-			
-			PropertyChangeEvent.dispatchPropertyChange(this, "source", _source, _source = value);
+			var oldValue:Array = _source;
+			_source = value;
+			PropertyEvent.dispatchChange(this, "source", oldValue, _source);
 		}
 		
 		[Bindable(event="propertyChange", flight="true")]
@@ -132,7 +134,9 @@ if (value is Array) {
 				return;
 			}
 			
-			PropertyChangeEvent.dispatchPropertyChange(this, "viewReference", _viewReference, _viewReference = value);
+			var oldValue:DisplayObject = _viewReference;
+			_viewReference = value;
+			PropertyEvent.dispatchChange(this, "viewReference", oldValue, _viewReference);
 		}
 		
 		private var inited:uint;

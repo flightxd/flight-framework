@@ -30,6 +30,8 @@ package flight.log
 	import flash.utils.*;
 	
 	import flight.events.MessageLogEvent;
+	
+	[Event(name="log", type="flight.events.MessageLogEvent")]
 
 	dynamic public class MessageLog extends Proxy implements IEventDispatcher
 	{

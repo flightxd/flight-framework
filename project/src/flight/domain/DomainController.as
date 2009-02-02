@@ -29,7 +29,6 @@ package flight.domain
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import flight.commands.CommandItem;
 	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
 	import flight.commands.ICommandFactory;
@@ -37,6 +36,7 @@ package flight.domain
 	import flight.events.CommandEvent;
 	import flight.utils.Registry;
 	import flight.utils.Type;
+	import flight.utils.getClassName;
 	import flight.utils.getType;
 	
 	/**
@@ -45,16 +45,19 @@ package flight.domain
 	 */
 	public class DomainController implements IEventDispatcher, ICommandInvoker, ICommandFactory
 	{
-		private var d:DomainControllerData;
+		private var d:Data = Registry.getInstance(Data, type) as Data;
 		
 		public function DomainController()
 		{
-			d = Registry.getInstance(DomainControllerData, getType(this)) as DomainControllerData;
-			
 			if(!d.initialized) {
 				d.initialized = true;
 				init();
 			}
+		}
+		
+		public function get type():Class
+		{
+			return getType(this);
 		}
 		
 		protected function get invoker():ICommandInvoker
@@ -83,39 +86,49 @@ package flight.domain
 		/**
 		 * Registers a command class with a unique id for later access.
 		 */
-		public function addCommands(commandItems:Array):void
+		public function addCommands(commandIndex:Object):void
 		{
-			for each(var item:CommandItem in commandItems)
+			for(var i:String in commandIndex)
 			{
-				addCommand(item.type, item.commandClass);
+				var command:ICommand = commandIndex[i] as ICommand;
+				if(command != null) {
+					addCommand(i, getType(command));
+				}
 			}
 		}
 		
 		/**
 		 * Retrieves the command class registered with this type.
 		 */
-		public function getCommandClass(type:String):Class
+		public function getCommand(type:String):Class
 		{
 			return d.commandClasses[type];
 		}
 		
-		public function getCommandType(command:ICommand):String
+		public function getCommandType(command:Object):String
 		{
-			return d.typesByCommand[ command["constructor"] ];
+			if( !(command is Class) ) {
+				command = getType(command);
+			}
+			return d.typesByCommand[command];
 		}
 		
 		/**
 		 * Primary method responsible for command class instantiation, hiding the details
 		 * of class inheritance, implementation, origin, etc.
 		 */
-		public function getCommand(type:String, properties:Object = null):ICommand
+		public function createCommand(type:String, properties:Object = null):ICommand
 		{
-			var commandClass:Class = getCommandClass(type);
+			var commandClass:Class = getCommand(type);
 			if(commandClass == null) {
 				return null;
 			}
 			
 			var command:ICommand = new commandClass() as ICommand;
+			if(command == null) {
+				throw new Error("Command " + getClassName(commandClass) + " is not of type ICommand.");
+			}
+			
 			if("client" in command) {
 				command["client"] = this;
 			}
@@ -144,16 +157,17 @@ package flight.domain
 		 */
 		public function execute(type:String, properties:Object = null):Boolean
 		{
-			if(d.executing[type]) {
-				return false;
+			if(!d.executing[type]) {
+				d.executing[type] = true;
+				
+				var command:ICommand = createCommand(type, properties);
+				var success:Boolean = (command != null) ? executeCommand(command) :
+														  executeScript(type, properties);
+				
+				d.executing[type] = false;
+				return success;
 			}
-			
-			d.executing[type] = true;
-			var command:ICommand = getCommand(type, properties);
-			var success:Boolean = (command != null) ? executeCommand(command) : executeScript(type, properties);
-			d.executing[type] = false;
-			
-			return success;
+			return false;
 		}
 		
 		/**
@@ -169,9 +183,8 @@ package flight.domain
 				catchAsyncCommand(command as IAsyncCommand);
 			}
 			
-			var success:Boolean = (d.invoker != null)
-								 ? d.invoker.executeCommand(command)
-								 : command.execute();
+			var success:Boolean = (d.invoker != null) ? d.invoker.executeCommand(command) :
+														command.execute();
 			
 			if( !(command is IAsyncCommand) ) {
 				dispatchEvent(new CommandEvent(getCommandType(command), command, success));
@@ -195,21 +208,21 @@ package flight.domain
 		protected function catchAsyncCommand(command:IAsyncCommand):void
 		{
 			d.asyncExecutions[command] = true;
-			command.addEventListener(Event.COMPLETE, asyncHandler);
-			command.addEventListener(Event.CANCEL, asyncHandler);
+			command.addEventListener(Event.COMPLETE, onAsyncEvent);
+			command.addEventListener(Event.CANCEL, onAsyncEvent);
 		}
 		
 		protected function releaseAsyncCommand(command:IAsyncCommand):void
 		{
-			command.removeEventListener(Event.COMPLETE, asyncHandler);
-			command.removeEventListener(Event.CANCEL, asyncHandler);
+			command.removeEventListener(Event.COMPLETE, onAsyncEvent);
+			command.removeEventListener(Event.CANCEL, onAsyncEvent);
 			delete d.asyncExecutions[command];
 		}
 		
 		/**
 		 * Catches asynchronous commands upon completion and dispatches an event.
 		 */
-		protected function asyncHandler(event:Event):void
+		protected function onAsyncEvent(event:Event):void
 		{
 			var command:IAsyncCommand = event.target as IAsyncCommand;
 			releaseAsyncCommand(command);
@@ -278,9 +291,9 @@ import flight.commands.ICommandInvoker;
 import flash.utils.Dictionary;
 import flash.events.EventDispatcher;	
 
-class DomainControllerData
+class Data
 {
-	public var initialized:Boolean;
+	public var initialized:Boolean = false;
 	
 	public var invoker:ICommandInvoker;
 	

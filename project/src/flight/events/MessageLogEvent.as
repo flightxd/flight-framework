@@ -28,7 +28,7 @@ package flight.events
 
 	public class MessageLogEvent extends Event
 	{
-		public static const LOG:String = 'message';
+		public static const LOG:String = 'log';
 		
 		private var _priority:int;
 		private var _message:String;

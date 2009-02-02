@@ -24,10 +24,15 @@
 
 package flight.domain
 {
-	public class Command
+	import flight.commands.ICommand;
+	import flight.vo.ValueObject;
+	
+	public class Command extends ValueObject implements ICommand
 	{
-		public function Command()
+		
+		public function execute():Boolean
 		{
+			return false;
 		}
 		
 	}

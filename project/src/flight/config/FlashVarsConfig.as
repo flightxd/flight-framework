@@ -44,14 +44,14 @@ package flight.config
 			if(viewReference.root != null) {
 				configurations = viewReference.root.loaderInfo.parameters;
 			} else {
-				viewReference.addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+				viewReference.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 			}
 		}
 		
-		private function addedToStageHandler(event:Event):void
+		private function onAddedToStage(event:Event):void
 		{
 			configurations = formatSource(viewReference.root.loaderInfo.parameters);
-			viewReference.removeEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			viewReference.removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 		}
 	}
 }
