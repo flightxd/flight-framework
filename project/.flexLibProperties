@@ -6,6 +6,7 @@
 <classEntry path="flight.binding.utils.BindingUtils"/>
 <classEntry path="flight.binding.utils.DispatcherProxy"/>
 <classEntry path="flight.commands.CommandHistory"/>
+<classEntry path="flight.commands.CommandItem"/>
 <classEntry path="flight.commands.IAsyncCommand"/>
 <classEntry path="flight.commands.ICombinableCommand"/>
 <classEntry path="flight.commands.ICommand"/>

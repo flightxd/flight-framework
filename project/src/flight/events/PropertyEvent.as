@@ -27,28 +27,45 @@ package flight.events
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	
-	public class PropertyChangeEvent extends Event
+	public class PropertyEvent extends Event
 	{
 		public static const _CHANGE:String = "Change";
 		public static const PROPERTY_CHANGE:String = "property" + _CHANGE;
 		
-		public static function dispatchPropertyChange(target:IEventDispatcher, property:Object,
-													  oldValue:Object, newValue:Object):void
+		/**
+		 * 
+		 */
+		public static function dispatchChange(target:IEventDispatcher, property:String, oldValue:Object, newValue:Object):void
 		{
 			if( target.hasEventListener(property + _CHANGE) ) {
-				target.dispatchEvent( new PropertyChangeEvent(property + _CHANGE, property, oldValue, newValue) );
+				target.dispatchEvent( new PropertyEvent(property + _CHANGE, property, oldValue, newValue) );
 			}
 			
 			if( target.hasEventListener(PROPERTY_CHANGE) ) {
-				target.dispatchEvent( new PropertyChangeEvent(PROPERTY_CHANGE, property, oldValue, newValue) );
+				target.dispatchEvent( new PropertyEvent(PROPERTY_CHANGE, property, oldValue, newValue) );
 			}
 		}
 		
-		private var _property:Object;
+		/**
+		 * 
+		 */
+		public static function dispatchChangeList(target:IEventDispatcher, properties:Array, oldValues:Array):void
+		{
+			for(var i:int = 0; i < properties.length; i++) {
+				var property:String = properties[i];
+				var oldValue:Object = oldValues[i];
+				var newValue:Object = target[property];
+				if(oldValue != newValue || newValue is Array) {
+			 		dispatchChange(target, property, oldValue, newValue);
+			 	}
+	 		}
+		}
+		
+		private var _property:String;
 		private var _oldValue:Object;
 		private var _newValue:Object;
 		
-		public function PropertyChangeEvent(type:String, property:Object, oldValue:Object, newValue:Object)
+		public function PropertyEvent(type:String, property:String, oldValue:Object, newValue:Object)
 		{
 			super(type);
 			_property = property;
@@ -56,7 +73,7 @@ package flight.events
 			_newValue = newValue;
 		}
 		
-		public function get property():Object
+		public function get property():String
 		{
 			return _property;
 		}
