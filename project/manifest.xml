@@ -12,7 +12,7 @@
 	<component id="XMLContainer"			class="flight.list.XMLContainer"/>
 	
 	<!-- configs -->
-	<component id="BaseConfig"					class="flight.config.BaseConfig"/>
+	<component id="Config"					class="flight.config.Config"/>
 	<component id="FlashVarsConfig"			class="flight.config.FlashVarsConfig"/>
 	<component id="SharedObjectConfig"		class="flight.config.SharedObjectConfig"/>
 	<component id="URLConfig"				class="flight.config.URLConfig"/>

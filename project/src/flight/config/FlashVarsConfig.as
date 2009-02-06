@@ -27,7 +27,7 @@ package flight.config
 	import flash.display.DisplayObject;
 	import flash.events.Event;
 	
-	dynamic public class FlashVarsConfig extends BaseConfig
+	dynamic public class FlashVarsConfig extends Config
 	{
 		public function FlashVarsConfig(viewReference:DisplayObject = null)
 		{

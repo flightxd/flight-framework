@@ -14,7 +14,7 @@
 <classEntry path="flight.commands.ICommandHistory"/>
 <classEntry path="flight.commands.ICommandInvoker"/>
 <classEntry path="flight.commands.IUndoableCommand"/>
-<classEntry path="flight.config.BaseConfig"/>
+<classEntry path="flight.config.Config"/>
 <classEntry path="flight.config.FlashVarsConfig"/>
 <classEntry path="flight.config.SharedObjectConfig"/>
 <classEntry path="flight.config.URLConfig"/>

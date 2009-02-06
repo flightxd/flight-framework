@@ -24,7 +24,7 @@
 
 package flight.utils
 {
-	import flight.config.BaseConfig;
+	import flight.config.Config;
 	
-	public var config:BaseConfig = BaseConfig.main;
+	public var config:Config = Config.main;
 }

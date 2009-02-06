@@ -35,11 +35,11 @@ package flight.config
 	import mx.core.IMXMLObject;
 	
 	[DefaultProperty("source")]
-	dynamic public class BaseConfig extends EventDispatcher implements IMXMLObject
+	dynamic public class Config extends EventDispatcher implements IMXMLObject
 	{
 		private static const REGISTRY_SCOPE:String = "Config";
 		
-		public static var main:BaseConfig = new BaseConfig();
+		public static var main:Config = new Config();
 		
 		private var _id:Object;
 		private var _source:Array;
@@ -47,7 +47,7 @@ package flight.config
 		private var _configurations:Object;
 		private var _viewReference:DisplayObject;
 		
-		public function BaseConfig()
+		public function Config()
 		{
 			if (main != null) {
 				main.source = main.source.concat(this);
@@ -103,7 +103,7 @@ if (value is Array) {
 		var mainSource:Array = main.source.concat();
 	}
 	
-	for each(var source:BaseConfig in value) {
+	for each(var source:Config in value) {
 		// let's not duplicate sources in main, they'll all filter up
 		var index:int;
 		if (mainSource && (index = mainSource.indexOf(source)) != -1) {
@@ -152,7 +152,7 @@ if (value is Array) {
 			if(document is DisplayObject) {
 				viewReference = document as DisplayObject;
 			}
-			else if(document is BaseConfig) {
+			else if(document is Config) {
 				BindingUtils.bindProperty(this, "viewReference", document, "viewReference");
 			}
 			
@@ -208,7 +208,7 @@ if (value is Array) {
 			var sources:Array = source as Array;
 			var newConfigurations:Object = {};
 			
-			for each (var config:BaseConfig in sources) {
+			for each (var config:Config in sources) {
 				// populate the dynamic properties
 				var configurations:Object = config.configurations;
 				for (var i:String in configurations) {
