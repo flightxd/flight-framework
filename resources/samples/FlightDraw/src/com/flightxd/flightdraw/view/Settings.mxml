@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+		   xmlns:state="com.flightxd.flightdraw.domains.state.*"
+		   xmlns:draw="com.flightxd.flightdraw.domains.draw.*">
+	
+	<!-- domain controllers -->
+	<state:Controller id="state"/>
+	<draw:Controller id="draw"/>
+	
+	<!-- view -->
+	<mx:Canvas width="300" height="200" horizontalCenter="0" verticalCenter="0" backgroundColor="#0066FF" backgroundAlpha="0.1" borderStyle="solid" borderColor="#FFFFFF" cornerRadius="8" alpha="0.5">
+		
+		<mx:Label text="Document Settings" horizontalCenter="0" y="10"/>
+		
+		<!-- Document Title -->
+		<mx:Label x="54" y="58" text="Title:" textAlign="right"/>
+		<mx:TextInput x="96" y="56" id="titleTxt" text="Default Document"/>
+		
+		<!-- Width Definition -->
+		<mx:Label x="46" y="88" text="Width:" textAlign="right"/>
+		<mx:TextInput x="96" y="86" id="widthTxt" width="120" text="400"/>
+		
+		<!-- Height Definition -->
+		<mx:Label x="42" y="118" text="Height:" textAlign="right"/>
+		<mx:TextInput x="96" y="116" id="heightTxt" width="120" text="300"/>
+		
+		<!-- Call both 'updateDocument' and 'beginDrawing' methods on click -->
+		<mx:Button label="Begin Drawing" horizontalCenter="0" bottom="10"
+			click="
+				draw.updateDocument(titleTxt.text, parseFloat(widthTxt.text), parseFloat(heightTxt.text));
+	   			state.beginDrawing();
+			"/>
+		
+	</mx:Canvas>
+	
+</mx:Canvas>

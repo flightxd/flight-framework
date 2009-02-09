@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:view="com.flightxd.flightdraw.view.*" backgroundGradientAlphas="[1.0, 1.0]" backgroundGradientColors="[#334455, #FFFFFF]" xmlns:config="com.flightxd.flightdraw.config.*" xmlns:state="com.flightxd.flightdraw.domains.state.*">
 	
-	<config:Config/>
+	<!-- by simply creating your main config its properties become available
+		 through global getter flight.utils.config -->
+	<config:Main/>
 	
-	<!-- Application view is driven by the state domain -->
+	<!-- Application flow is driven by the state domain -->
 	<state:Controller id="state"/>
 	
+	<!-- and here is my main view -->
 	<mx:ViewStack id="drawingWizard" width="100%" height="100%" selectedIndex="{state.model.phaseIndex}">
 		
 		<view:Settings label="Settings" width="100%" height="100%"/>
