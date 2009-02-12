@@ -29,39 +29,42 @@ package flight.vo
 	import flash.events.IEventDispatcher;
 	import flash.utils.*;
 	
-	import flight.events.PropertyEvent;
+	import flight.events.ValueObjectEditorEvent;
 	import flight.utils.Type;
 	import flight.utils.getType;
+	
+	import mx.events.PropertyChangeEvent;
+	import mx.events.PropertyChangeEventKind;
 	
 	[Bindable("propertyChange")]
 	dynamic public class ValueObjectEditor extends Proxy implements IEventDispatcher
 	{
-		private static var _proxies:Dictionary = new Dictionary(true);
-		
-		public static function getProxy( value:IValueObject ):ValueObjectEditor
-		{
-			if(_proxies[value] == null) {
-				_proxies[value] = new ValueObjectEditor( value );
-			}
-			return _proxies[value] as ValueObjectEditor;
-		}
-		
 		protected var eventDispatcher:EventDispatcher;
 		
 		private var _copy:IValueObject;
-		private var _source:IValueObject;
+		private var _source:IValueObject;		
+		private var _props:Array;
 		
 		public function ValueObjectEditor( value:IValueObject )
 		{
 			_source = value;
 			_copy = _source.clone() as IValueObject;
+			_props = new Array();
 			
 			eventDispatcher = new EventDispatcher(this);
+					
+			var propList:XMLList = Type.describeProperties( value );
+				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
+
+			for each(var prop:XML in propList) {			
+				var name:String = prop.@name;
+				_props.push(name);
+			}
 		}
 		
-		public function revert():void
+		public function get modified():Boolean
 		{
-			merge( this, _source);
+			return !_copy.equals(_source);
 		}
 						
 		public function get source():IValueObject
@@ -69,9 +72,63 @@ package flight.vo
 			return _source;
 		}
 		
+		public function revert():void
+		{
+			var type:Class = getType(_source);
+			var src:IValueObject = _source;
+			
+			var propList:XMLList = Type.describeProperties( src );
+				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
+
+			for each(var prop:XML in propList) {
+				
+				var name:String = prop.@name;
+				if(_source[name] !== undefined) {
+					this[name] = _source[name];
+				}
+			}
+			
+			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.REVERT));
+		}
+		
+		public function commit( ):void
+		{
+			merge ( _copy ); 
+			
+			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.COMMIT));
+		}
+		
+		public function merge( data:Object ):void
+		{
+			var type:Class = getType(data);
+			var src:IValueObject = _source;
+			
+			var propList:XMLList = Type.describeProperties( src );
+				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
+
+			for each(var prop:XML in propList) {
+				
+				var name:String = prop.@name;
+				if(data[name] !== undefined) {
+					_source[name] = data[name];
+				}
+			}
+			
+			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.MERGE));
+		}
+				
+		public function toString():String
+		{
+			return String(_copy);
+		}
+		
+		/**
+		 * Flash Proxy methods
+		 */
+		
 		override flash_proxy function callProperty(methodName:*, ... args):*
 		{
-			Function(this[methodName]).apply(this, args);
+			return _copy[methodName.localName].apply(_copy, args);
 		}
 		
 		override flash_proxy function hasProperty(name:*):Boolean 
@@ -88,35 +145,38 @@ package flight.vo
 		{
 			var oldValue:* = _copy[name];
 			_copy[name] = value;
-			PropertyEvent.dispatchChange(this, name, oldValue, value);
-		}
-		
-		public static function commit( editor:ValueObjectEditor ):void
-		{
-			merge ( editor, editor._copy ); 
-		}
-		
-		public static function merge( editor:ValueObjectEditor, data:Object ):void
-		{
-			var type:Class = getType(data);
-			var src:IValueObject = editor.source;
 			
-			var propList:XMLList = Type.describeProperties( src );
-				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
-
-			for each(var prop:XML in propList) {
-				
-				var name:String = prop.@name;
-				if(data[name] !== undefined) {
-					editor[name] = data[name];
-				}
-			}
+			var kind:String = PropertyChangeEventKind.UPDATE;
+			dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, kind, name, oldValue, value, this));
+			
+			// Currently produces a bug
+			//PropertyEvent.dispatchChange(this, name, oldValue, value);
 		}
 		
-		public function get modified():Boolean
+		override flash_proxy function deleteProperty(name:*):Boolean 
 		{
-			return !_copy.equals(_source);
+			return delete _copy[name];
 		}
+		
+		override flash_proxy function nextNameIndex (index:int):int 
+		{
+		    if (index < _props.length)
+		        return index + 1;
+		    return 0;
+		}
+		 
+		override flash_proxy function nextName(index:int):String {
+		    return _props[index - 1];
+		}
+	
+		override flash_proxy function nextValue(index:int):* 
+		{ 
+			return _props[index - 1];
+		}
+		
+		/**
+		 * Event Dispatcher methods
+		 */
 
 		public function hasEventListener(type:String):Boolean
 		{
@@ -141,31 +201,6 @@ package flight.vo
 		public function dispatchEvent(event:Event):Boolean
 		{
 			return eventDispatcher.dispatchEvent(event);
-		}
-		
-		/*		
-		override flash_proxy function deleteProperty(name:*):Boolean 
-		{
-			return delete items[name];
-		}
-	
-		override flash_proxy function nextNameIndex(index:int):int 
-		{
-			if (index > items.length) {
-				return 0;
-			}
-			return index + 1;
-		}
-	
-		override flash_proxy function nextName(index:int):String 
-		{
-			return String(index - 1);
-		}
-	
-		override flash_proxy function nextValue(index:int):* 
-		{
-			return items[index - 1];
-		}
-		*/
+		}		
 	}
 }
