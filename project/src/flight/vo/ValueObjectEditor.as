@@ -44,6 +44,7 @@ package flight.vo
 		private var _copy:IValueObject;
 		private var _source:IValueObject;		
 		private var _props:Array;
+		private var _lastModified:Boolean;
 		
 		public function ValueObjectEditor( value:IValueObject )
 		{
@@ -93,6 +94,9 @@ package flight.vo
 		
 		public function commit( ):void
 		{
+			// forces modified property change to fire
+			_lastModified = !_lastModified;
+			
 			merge ( _copy ); 
 			
 			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.COMMIT));
@@ -115,11 +119,23 @@ package flight.vo
 			}
 			
 			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.MERGE));
+			
+			dispatchModifyEvent();
 		}
 				
 		public function toString():String
 		{
 			return String(_copy);
+		}
+		
+		private function dispatchModifyEvent():void
+		{
+			var kind:String = PropertyChangeEventKind.UPDATE;
+			var modify:Boolean = modified;
+			if(_lastModified !== modify) {
+				_lastModified = modify;
+				dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, kind, 'modified', !modify, modify, this));
+			}
 		}
 		
 		/**
@@ -148,6 +164,9 @@ package flight.vo
 			
 			var kind:String = PropertyChangeEventKind.UPDATE;
 			dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, kind, name, oldValue, value, this));
+			
+			var modify:Boolean = modified;
+			dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, kind, 'modified', !modify, modify, this));
 			
 			// Currently produces a bug
 			//PropertyEvent.dispatchChange(this, name, oldValue, value);
