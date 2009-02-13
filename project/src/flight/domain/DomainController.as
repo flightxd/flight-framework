@@ -187,7 +187,7 @@ package flight.domain
 														command.execute();
 			
 			if( !(command is IAsyncCommand) ) {
-				dispatchEvent(new CommandEvent(getCommandType(command), command, success));
+				dispatchCommand(getCommandType(command), command, success);
 			} else if(!success) {
 				releaseAsyncCommand(command as IAsyncCommand);
 			}
@@ -202,7 +202,12 @@ package flight.domain
 			}
 			
 			var script:Function = this[type];
-			return (properties != null) ? script.apply(null, [].concat(properties)) : script();
+			
+			var success:Boolean = (properties != null) ? script.apply(null, [].concat(properties)) :
+														 script();
+			
+			dispatchCommand(type, null, success);
+			return success;
 		}
 		
 		protected function catchAsyncCommand(command:IAsyncCommand):void
@@ -219,15 +224,22 @@ package flight.domain
 			delete d.asyncExecutions[command];
 		}
 		
+		protected function dispatchCommand(type:String, command:ICommand = null, success:Boolean = true):void
+		{
+			if(willTrigger(type)) {
+				dispatchEvent( new CommandEvent(type, command, success) );
+			}
+		}
+		
 		/**
 		 * Catches asynchronous commands upon completion and dispatches an event.
 		 */
-		protected function onAsyncEvent(event:Event):void
+		private function onAsyncEvent(event:Event):void
 		{
 			var command:IAsyncCommand = event.target as IAsyncCommand;
 			releaseAsyncCommand(command);
 			
-			dispatchEvent(new CommandEvent(getCommandType(command), command, Boolean(event.type == Event.COMPLETE) ));
+			dispatchCommand(getCommandType(command), command, Boolean(event.type == Event.COMPLETE));
 		}
 		
 		private static function getArgumentList(command:ICommand):Array
