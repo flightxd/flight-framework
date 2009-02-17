@@ -85,7 +85,7 @@ package flight.binding
 		}
 		public function set value(value:Object):void
 		{
-			if(_value == value) {
+			if(_value == value || (value == null && !applyOnly) ) {
 				return;
 			}
 			

@@ -10,6 +10,7 @@
 	<component id="DynamicObject"			class="flight.vo.DynamicObject"/>
 	<component id="ArrayContainer"			class="flight.list.ArrayContainer"/>
 	<component id="XMLContainer"			class="flight.list.XMLContainer"/>
+	<component id="Bind"					class="flight.binding.Bind"/>
 	
 	<!-- configs -->
 	<component id="Config"					class="flight.config.Config"/>
