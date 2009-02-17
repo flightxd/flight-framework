@@ -195,7 +195,7 @@ package flight.binding
 		
 		/**
 		 * Allows Bind to automatically set target and source to the host MXML component. This
-		 * method is reserved for MXML instantiated components using Bind nodes.
+		 * method is reserved for internal use by MXML instantiated components.
 		 * 
 		 * @param	document		The MXML component where the Bind is defined.
 		 * @param	id				The id of the Bind isn't used internally.
@@ -240,13 +240,18 @@ package flight.binding
 		 * to the source, their values will synchronize immediately and on each subsequent change on
 		 * the source. When enabling a two-way bind the source will also update to match the target.
 		 * 
-		 * @param	target			..
-		 * @param	targetPath
-		 * @param	source
-		 * @param	sourcePath
-		 * @param	twoWay
+		 * @param	target			A reference to the initial object in the target end point, the
+		 * 							recipient of binding updates.
+		 * @param	targetPath		A property or dot-separated property chain to be resolved in the
+		 * 							target end point.
+		 * @param	source			A reference to the initial object in the source end point, the
+		 * 							initiator of binding updates.
+		 * @param	sourcePath		A property or dot-separated property chain to be resolved in the
+		 * 							source end point.
+		 * @param	twoWay			When enabled, two-way binding updates both target <em>and</em>
+		 * 							source upon changes to either.
 		 * 
-		 * @return					..
+		 * @return					Considered successful if the binding has not already been established.
 		 */
 		public static function addBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Boolean
 		{
@@ -269,17 +274,20 @@ package flight.binding
 		}
 		
 		/**
-		 * Global utility method destroying bindings made via <code>addBinding</code>...
-		 * to the source, their values will synchronize immediately and on each subsequent change on
-		 * the source. When enabling a two-way bind the source will also update to match the target.
+		 * Global utility method destroying bindings made via <code>addBinding</code>. Once the binding
+		 * is no longer in effect the properties will not be synchronized. However, source and target
+		 * values will not be changed by removing the binding, so they will still match initially.
 		 * 
-		 * @param	target			..
-		 * @param	targetPath
-		 * @param	source
-		 * @param	sourcePath
-		 * @param	twoWay
+		 * @param	target			A reference to the initial object in the target end point, the
+		 * 							recipient of binding updates.
+		 * @param	targetPath		A property or dot-separated property chain to be resolved in the
+		 * 							target end point.
+		 * @param	source			A reference to the initial object in the source end point, the
+		 * 							initiator of binding updates.
+		 * @param	sourcePath		A property or dot-separated property chain to be resolved in the
+		 * 							source end point.
 		 * 
-		 * @return					..
+		 * @return					Considered successful if the specified binding was available.
 		 */
 		public static function removeBinding(target:Object, targetPath:String, source:Object, sourcePath:String):Boolean
 		{
@@ -303,7 +311,17 @@ package flight.binding
 		}
 		
 		/**
+		 * Global utility method binding an event listener to a data source. Once a listener is bound
+		 * to the source, it will receive notification when source values change.
 		 * 
+		 * @param	listener			An event listener object to be registered with the source binding.
+		 * @param	source				A reference to the initial object in the source end point, the
+		 * 								initiator of binding updates.
+		 * @param	sourcePath			A property or dot-separated property chain to be resolved in the
+		 * 								source end point.
+		 * @param	useWeakReference	Determines whether the reference to the listener is strong or weak.
+		 * 								A weak reference (the default) allows your listener to be garbage-
+		 * 								collected. A strong reference does not.
 		 */
 		public static function addListener(listener:Function, source:Object, sourcePath:String, useWeakReference:Boolean = true):void
 		{
@@ -312,7 +330,14 @@ package flight.binding
 		}
 		
 		/**
+		 * Global utility method removing an event listener from a source binding. Once the binding
+		 * is no longer in effect the listener will not receive notification when source values change.
 		 * 
+		 * @param	listener			An event listener object to be removed from the source binding.
+		 * @param	source				A reference to the initial object in the source end point, the
+		 * 								initiator of binding updates.
+		 * @param	sourcePath			A property or dot-separated property chain to be resolved in the
+		 * 								source end point.
 		 */
 		public static function removeListener(listener:Function, source:Object, sourcePath:String):void
 		{
