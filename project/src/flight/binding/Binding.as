@@ -31,6 +31,7 @@ package flight.binding
 	
 	import flight.events.PropertyEvent;
 	import flight.utils.Type;
+	import flight.utils.getClassName;
 	import flight.utils.getType;
 	
 	[Event(name="propertyChange", type="flight.events.PropertyEvent")]
@@ -85,7 +86,7 @@ package flight.binding
 		}
 		public function set value(value:Object):void
 		{
-			if(_value == value || (value == null && !applyOnly) ) {
+			if(_value == value) {
 				return;
 			}
 			
@@ -140,9 +141,9 @@ package flight.binding
 		/**
 		 * 
 		 */
-		public function bindListener(listener:Function):void
+		public function bindListener(listener:Function, useWeakReference:Boolean = true):void
 		{
-			addEventListener(PropertyEvent.PROPERTY_CHANGE, listener, false, 0, true);
+			addEventListener(PropertyEvent.PROPERTY_CHANGE, listener, false, 0, useWeakReference);
 			listener( new PropertyEvent(PropertyEvent.PROPERTY_CHANGE, _property, _value, _value) );
 		}
 		
@@ -174,16 +175,13 @@ package flight.binding
 			unbindPath(0);
 		}
 		
-		public function reset(source:Object = null, sourcePath:String = null):void
+		public function reset(source:Object, sourcePath:String = null):void
 		{
 			release();
 			
 			if(sourcePath != null) {
 				_sourcePath = sourcePath.split(".");
 				_property = _sourcePath[ _sourcePath.length-1 ];
-			} else {
-				_sourcePath = [];
-				_property = null;
 			}
 			
 			update(source, 0);
@@ -242,8 +240,12 @@ package flight.binding
 				
 				source = newValue;
 				prop = _sourcePath[i];
-				if(source == null || !(prop in source)) {
-					newValue = null;
+				
+				if( !(prop in source) ) {
+					trace("Binding access of undefined property " + prop + " in " + getClassName(source) + ".");
+					source = newValue = null;
+				}
+				if(source == null) {
 					break;
 				}
 				
@@ -309,13 +311,10 @@ package flight.binding
 				bindingList = bindingIndex[source] = [];
 			}
 			
-			var binding:Binding;
-			var i:int = bindingList.indexOf(sourcePath);
-			if(i == -1) {
+			var binding:Binding = bindingList[sourcePath];
+			if(binding == null) {
 				binding = new Binding(source, sourcePath);
-				bindingList.push(binding);
-			} else {
-				binding = bindingList[i];
+				bindingList[sourcePath] = binding;
 			}
 			
 			return binding;
@@ -342,13 +341,13 @@ package flight.binding
 				return false;
 			}
 			
-			var i:int = bindingList.indexOf(sourcePath);
-			if(i == -1) {
+			var binding:Binding = bindingList[sourcePath];
+			if(binding == null) {
 				return false;
 			}
 			
-			var binding:Binding = bindingList.splice(i, 1)[0];
-				binding.release();
+			delete bindingList[sourcePath];
+			binding.release();
 			
 			return true;
 		}

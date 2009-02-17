@@ -45,11 +45,23 @@ package flight.binding
 		private var _target:Object;
 		private var _targetPath:String;
 		
+		public function Bind(target:Object = null, targetPath:String = null,
+							 source:Object = null, sourcePath:String = null, twoWay:Boolean = false):void
+		{
+			_target = target;
+			_targetPath = targetPath;
+			_source = source;
+			_sourcePath = sourcePath;
+			_twoWay = twoWay;
+			updateBind([]);
+		}
+		
 		/**
 		 * The isBound flag represents whether a target and source have been fully defined (are
 		 * not null), and whether the Bind is not disabled. isBound does <em>not</em> reflect the
 		 * current state of the binding's resolution, whether or not its paths can be resolved.
 		 */
+		[Transient]
 		[Bindable(event="propertyChange", flight="true")]
 		public function get isBound():Boolean
 		{
@@ -293,10 +305,10 @@ package flight.binding
 		/**
 		 * 
 		 */
-		public static function addListener(listener:Function, source:Object, sourcePath:String):void
+		public static function addListener(listener:Function, source:Object, sourcePath:String, useWeakReference:Boolean = true):void
 		{
 			var binding:Binding = Binding.getBinding(source, sourcePath);
-			binding.bindListener(listener);
+			binding.bindListener(listener, useWeakReference);
 		}
 		
 		/**
