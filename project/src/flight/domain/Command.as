@@ -33,9 +33,8 @@ package flight.domain
 	public class Command extends ValueObject implements ICommand, IMXMLObject
 	{
 		
-		public function execute():Boolean
+		public function execute():void
 		{
-			return false;
 		}
 		
 		

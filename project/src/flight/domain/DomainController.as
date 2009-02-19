@@ -156,44 +156,50 @@ package flight.domain
 		/**
 		 * Primary method for invoking commands in the Domain class.
 		 */
-		public function execute(type:String, properties:Object = null):Boolean
+		public function execute(type:String, properties:Object = null):void
 		{
 			if(!d.executing[type]) {
 				d.executing[type] = true;
 				
 				var command:ICommand = createCommand(type, properties);
-				var success:Boolean = (command != null) ? executeCommand(command) :
-														  executeScript(type, properties);
+				if(command != null) {
+					executeCommand(command);
+				} else {
+					executeScript(type, properties);
+				}
 				
 				d.executing[type] = false;
-				return success;
 			}
-			return false;
 		}
 		
 		/**
 		 * Receives an ICommand instance ready for execution and returns its success or failure.
 		 */
-		public function executeCommand(command:ICommand):Boolean
+		public function executeCommand(command:ICommand):void
 		{
 			if(command == null) {
-				return false;
+				return;
 			}
 			
 			if(command is IAsyncCommand) {
 				catchAsyncCommand(command as IAsyncCommand);
 			}
 			
-			var success:Boolean = (d.invoker != null) ? d.invoker.executeCommand(command) :
-														command.execute();
-			
-			if( !(command is IAsyncCommand) ) {
-				dispatchCommand(getCommandType(command), command, success);
-			} else if(!success) {
-				releaseAsyncCommand(command as IAsyncCommand);
+			try {
+				if(d.invoker != null) {
+					d.invoker.executeCommand(command);
+				} else {
+					command.execute();
+				}
+			} catch(e:Error) {
+				if(command is IAsyncCommand) {
+					releaseAsyncCommand(command as IAsyncCommand);
+				}
 			}
 			
-			return success;
+			if( !(command is IAsyncCommand) ) {
+				dispatchCommand(getCommandType(command), command);
+			}
 		}
 		
 		protected function executeScript(type:String, properties:Object = null):Boolean
@@ -204,11 +210,14 @@ package flight.domain
 			
 			var script:Function = this[type];
 			
-			var success:Boolean = (properties != null) ? script.apply(null, [].concat(properties)) :
-														 script();
+			if(properties != null) {
+				script.apply(null, [].concat(properties));
+			} else {
+				script();
+			}
 			
-			dispatchCommand(type, null, success);
-			return success;
+			dispatchCommand(type, null);
+			return true;
 		}
 		
 		protected function catchAsyncCommand(command:IAsyncCommand):void

@@ -32,6 +32,7 @@ package flight.domain
 	import flight.commands.IUndoableCommand;
 	import flight.events.PropertyEvent;
 	import flight.utils.Type;
+	import flight.utils.getClassName;
 	
 	/**
 	 * The MacroCommand class is a single command that executes
@@ -72,10 +73,10 @@ package flight.domain
 		/**
 		 * Runs through the command list in order, executing each.
 		 */
-		override public function execute():Boolean
+		override public function execute():void
 		{
 			currentCommand = null;
-			return executeNext();
+			executeNext();
 		}
 		
 		/**
@@ -114,21 +115,22 @@ package flight.domain
 			}
 		}
 		
-		public function continueExecution(command:ICommand):Boolean
+		protected function executeNext(command:ICommand = null):void
 		{
-			var i:int = commands.indexOf(command);
+			var i:int = 0;
 			
-			if (i == -1) {
-				throw new Error("Command does not exist in this macro command");
+			if(command != null) {
+				
+				i = commands.indexOf(command);
+				if(i == -1) {
+					throw new Error("Comand does not exist in macro " + getClassName(this));
+				}
+				
+			} else if(currentCommand != null) {
+				i = commands.indexOf(currentCommand) + 1;
 			}
 			
-			currentCommand = (i == 0) ? null : commands[i - 1];
-			return executeNext();
-		}
-		
-		protected function executeNext(event:Event = null):Boolean
-		{
-			var i:int = (currentCommand != null) ? commands.indexOf(currentCommand) + 1 : 0;
+			
 			if(i < commands.length) {
 				
 				currentCommand = commands[i];
@@ -141,20 +143,23 @@ package flight.domain
 					
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
 					if(!asyncCommand.hasEventListener(Event.COMPLETE) ) {
-						asyncCommand.addEventListener(Event.COMPLETE, executeNext);
+						asyncCommand.addEventListener(Event.COMPLETE, onCommandComplete);
 						asyncCommand.addEventListener(Event.CANCEL, dispatchCancel);
 					}
 					
-					return asyncCommand.execute();
-				} else if( currentCommand.execute() ) {
-					return executeNext();
+					asyncCommand.execute();
 				} else {
-					return false;
+					currentCommand.execute();
+					executeNext();
 				}
 			}
 			
 			dispatchComplete();
-			return true;
+		}
+		
+		private function onCommandComplete(event:Event):void
+		{
+			executeNext();
 		}
 		
 	}

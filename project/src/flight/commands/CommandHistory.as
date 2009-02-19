@@ -171,38 +171,37 @@ package flight.commands
 		 * Adds a command to the _history before executing it. This is how all commands should
 		 * be introduced to the CommandHistory, to ensure undo can rely on an initial execution.
 		 */
-		public function executeCommand(command:ICommand):Boolean
+		public function executeCommand(command:ICommand):void
 		{
 			if( !(command is IUndoableCommand) || _commands.indexOf(command) != -1) {
-				return command.execute();
-			}
-			
-			if(command is ICombinableCommand && ICombinableCommand(command).combining) {
+				command.execute();
+			} else {
 				
-				if(combiningCommand == null || getType(combiningCommand) != getType(command)) {
-					combiningCommand = command as ICombinableCommand;
-				} else {
+				if(command is ICombinableCommand && ICombinableCommand(command).combining) {
 					
-					var combined:Boolean = combiningCommand.combine(command as ICombinableCommand);
-					if(!combined) {
+					if(combiningCommand == null || getType(combiningCommand) != getType(command)) {
 						combiningCommand = command as ICombinableCommand;
 					} else {
-						return combined;
+						
+						var combined:Boolean = combiningCommand.combine(command as ICombinableCommand);
+						if(combined) {
+							return;
+						}
+						
+						combiningCommand = command as ICombinableCommand;
 					}
+					
+				} else {
+					combiningCommand = null;
 				}
 				
-			} else {
-				combiningCommand = null;
-			}
-			
-			asyncError = false;
-			if(command is IAsyncCommand) {
-				IAsyncCommand(command).addEventListener(Event.CANCEL, onAsyncError, false, 0, true);
-			}
-			
-			var success:Boolean = command.execute() && !asyncError;
-			
-			if(success) {
+				asyncError = false;
+				if(command is IAsyncCommand) {
+					IAsyncCommand(command).addEventListener(Event.CANCEL, onAsyncError, false, 0, true);
+				}
+				
+				command.execute() && !asyncError;
+				
 				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
 				_commands.splice(_currentPosition, _commands.length - _currentPosition, command);
@@ -218,8 +217,8 @@ package flight.commands
 				updateProperties();
 				
 				PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
+				
 			}
-			return success;
 		}
 		
 		/**

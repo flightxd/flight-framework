@@ -109,7 +109,7 @@ package flight.domain
 			var command:ICommand = commandHistory.currentCommand;
 			var success:Boolean = commandHistory.undo();
 			if(success) {
-				dispatchEvent(new CommandEvent(getCommandType(command), command, true));
+				dispatchEvent(new CommandEvent(getCommandType(command), command, false));
 			}
 			return success;
 		}
@@ -122,7 +122,7 @@ package flight.domain
 			var success:Boolean = commandHistory.redo();
 			var command:ICommand = commandHistory.currentCommand;
 			if(success) {
-				dispatchEvent(new CommandEvent(getCommandType(command), command, false));
+				dispatchEvent(new CommandEvent(getCommandType(command), command, true));
 			}
 			return success;
 		}

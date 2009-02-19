@@ -33,6 +33,6 @@ package flight.commands
 		/**
 		 * Receives an ICommand instance ready for execution and returns its success or failure.
 		 */
-		function executeCommand(command:ICommand):Boolean;
+		function executeCommand(command:ICommand):void;
 	}
 }
