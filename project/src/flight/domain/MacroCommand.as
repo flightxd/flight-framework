@@ -114,6 +114,18 @@ package flight.domain
 			}
 		}
 		
+		public function continueExecution(command:ICommand):Boolean
+		{
+			var i:int = commands.indexOf(command);
+			
+			if (i == -1) {
+				throw new Error("Command does not exist in this macro command");
+			}
+			
+			currentCommand = (i == 0) ? null : commands[i - 1];
+			return executeNext();
+		}
+		
 		protected function executeNext(event:Event = null):Boolean
 		{
 			var i:int = (currentCommand != null) ? commands.indexOf(currentCommand) + 1 : 0;
@@ -122,7 +134,7 @@ package flight.domain
 				currentCommand = commands[i];
 				if("client" in currentCommand) {
 					var clientClass:Class = Type.getPropertyType(currentCommand, "client");
-					currentCommand["client"] = (this is clientClass ? this : new clientClass());
+					currentCommand["client"] = (client is clientClass ? client : new clientClass());
 				}
 				
 				if(currentCommand is IAsyncCommand && queue) {
