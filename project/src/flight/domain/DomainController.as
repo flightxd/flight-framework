@@ -130,7 +130,8 @@ package flight.domain
 			}
 			
 			if("client" in command) {
-				command["client"] = this;
+				var clientClass:Class = Type.getPropertyType(command, "client");
+				command["client"] = (this is clientClass ? this : new clientClass());
 			}
 			
 			

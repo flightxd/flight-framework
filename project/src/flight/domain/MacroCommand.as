@@ -31,6 +31,7 @@ package flight.domain
 	import flight.commands.ICommandFactory;
 	import flight.commands.IUndoableCommand;
 	import flight.events.PropertyEvent;
+	import flight.utils.Type;
 	
 	/**
 	 * The MacroCommand class is a single command that executes
@@ -120,7 +121,8 @@ package flight.domain
 				
 				currentCommand = commands[i];
 				if("client" in currentCommand) {
-					currentCommand["client"] = client;
+					var clientClass:Class = Type.getPropertyType(currentCommand, "client");
+					currentCommand["client"] = (this is clientClass ? this : new clientClass());
 				}
 				
 				if(currentCommand is IAsyncCommand && queue) {
