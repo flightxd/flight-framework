@@ -42,7 +42,7 @@ package flight.domain
 		/**
 		 * To be called when the Asynchronous action has been completed.
 		 */
-		protected function dispatchComplete(event:Event = null):void
+		protected function complete(...args):void
 		{
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
@@ -50,7 +50,7 @@ package flight.domain
 		/**
 		 * To be called if the Asynchronous action has been canceled.
 		 */
-		protected function dispatchCancel(event:Event = null):void
+		protected function cancel(...args):void
 		{
 			dispatchEvent(new Event(Event.CANCEL));
 		}
