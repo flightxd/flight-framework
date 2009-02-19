@@ -241,7 +241,7 @@ package flight.binding
 				source = newValue;
 				prop = _sourcePath[i];
 				
-				if( !(prop in source) ) {
+				if(source != null && !(prop in source) ) {
 					trace("Binding access of undefined property " + prop + " in " + getClassName(source) + ".");
 					source = newValue = null;
 				}
