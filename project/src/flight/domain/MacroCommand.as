@@ -51,6 +51,7 @@ package flight.domain
 			this.commands = commands != null ? commands : [];
 		}
 		
+		[ArrayElementType("flight.commands.ICommand")]
 		/**
 		 * The list of commands to be executed.
 		 */
