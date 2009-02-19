@@ -31,7 +31,6 @@ package flight.vo
 	
 	import flight.events.ValueObjectEditorEvent;
 	import flight.utils.Type;
-	import flight.utils.getType;
 	
 	import mx.events.PropertyChangeEvent;
 	import mx.events.PropertyChangeEventKind;
@@ -75,19 +74,8 @@ package flight.vo
 		
 		public function revert():void
 		{
-			var type:Class = getType(_source);
-			var src:IValueObject = _source;
 			
-			var propList:XMLList = Type.describeProperties( src );
-				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
-
-			for each(var prop:XML in propList) {
-				
-				var name:String = prop.@name;
-				if(_source[name] !== undefined) {
-					this[name] = _source[name];
-				}
-			}
+			merge ( this, _source ); 
 			
 			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.REVERT));
 		}
@@ -97,30 +85,32 @@ package flight.vo
 			// forces modified property change to fire
 			_lastModified = !_lastModified;
 			
-			merge ( _copy ); 
+			merge ( _source, _copy ); 
 			
 			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.COMMIT));
+			dispatchModifyEvent();
 		}
 		
-		public function merge( data:Object ):void
+		public static function merge(target:Object, source:Object ):void
 		{
-			var type:Class = getType(data);
-			var src:IValueObject = _source;
-			
-			var propList:XMLList = Type.describeProperties( src );
+			var propList:XMLList = Type.describeProperties( source );
 				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
-
+			
+			// copy over class variables
 			for each(var prop:XML in propList) {
 				
 				var name:String = prop.@name;
-				if(data[name] !== undefined) {
-					_source[name] = data[name];
+				if(name in target && source[name] !== undefined) {
+					target[name] = source[name];
 				}
 			}
 			
-			dispatchEvent(new ValueObjectEditorEvent(ValueObjectEditorEvent.MERGE));
-			
-			dispatchModifyEvent();
+			// copy over dynamic properties
+			for(name in source) {
+				if(name in target && source[name] !== undefined) {
+					target[name] = source[name];
+				}
+			}
 		}
 				
 		public function toString():String

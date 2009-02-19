@@ -28,6 +28,7 @@ package flight.domain
 	
 	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
+	import flight.commands.ICommandFactory;
 	import flight.commands.IUndoableCommand;
 	import flight.events.PropertyEvent;
 	
@@ -39,6 +40,7 @@ package flight.domain
 	public class MacroCommand extends AsyncCommand implements IUndoableCommand
 	{
 		public var queue:Boolean = true;
+		public var client:ICommandFactory;
 		
 		private var currentCommand:ICommand;
 		private var undone:Boolean;
@@ -116,6 +118,9 @@ package flight.domain
 			if(i < commands.length) {
 				
 				currentCommand = commands[i];
+				if("client" in currentCommand) {
+					currentCommand["client"] = client;
+				}
 				
 				if(currentCommand is IAsyncCommand && queue) {
 					
