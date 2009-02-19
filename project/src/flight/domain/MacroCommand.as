@@ -144,7 +144,7 @@ package flight.domain
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
 					if(!asyncCommand.hasEventListener(Event.COMPLETE) ) {
 						asyncCommand.addEventListener(Event.COMPLETE, onCommandComplete);
-						asyncCommand.addEventListener(Event.CANCEL, dispatchCancel);
+						asyncCommand.addEventListener(Event.CANCEL, cancel);
 					}
 					
 					asyncCommand.execute();
@@ -154,7 +154,7 @@ package flight.domain
 				}
 			}
 			
-			dispatchComplete();
+			complete();
 		}
 		
 		private function onCommandComplete(event:Event):void
