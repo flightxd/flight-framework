@@ -78,7 +78,7 @@ package flight.net
 		
 		public function createResponder():Responder
 		{
-			return new Responder(complete, fault);
+			return new Responder(complete, cancel);
 		}
 		
 		
@@ -110,7 +110,7 @@ package flight.net
 		
 		protected function onFault(event:ErrorEvent):void
 		{
-			fault(event);
+			cancel(event);
 		}
 		
 		protected function removeEvents():void
