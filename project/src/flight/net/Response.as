@@ -82,23 +82,23 @@ package flight.net
 		}
 		
 		
-		public function complete(data:Object):void
+		public function complete(result:Object):void
 		{
 			removeEvents();
 			for each (var handler:Function in resultHandlers) {
-				var result:* = handler(data);
-				if (result !== undefined) { // i.e. return type was not void
-					data = result;
+				var data:* = handler(data);
+				if (data !== undefined) { // i.e. return type was not void
+					result = data;
 				}
 			}
 		}
 		
 		
-		public function fault(info:Object):void
+		public function cancel(fault:Object):void
 		{
 			removeEvents();
 			for each (var handler:Function in faultHandlers) {
-				handler(info);
+				handler(fault);
 			}
 		}
 		
