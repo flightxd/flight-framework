@@ -25,6 +25,7 @@
 package flight.domain
 {
 	import flight.commands.ICommand;
+	import flight.utils.Type;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
 	
@@ -42,7 +43,8 @@ package flight.domain
 		{
 			if (document is DomainController) {
 				if ("client" in this) {
-					this["client"] = document;
+					var clientClass:Class = Type.getPropertyType(this, "client");
+					this["client"] = (document is clientClass ? document : new clientClass());
 				}
 				DomainController(document).addCommand(id, getType(this));
 			}
