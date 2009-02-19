@@ -25,14 +25,28 @@
 package flight.domain
 {
 	import flight.commands.ICommand;
+	import flight.utils.getType;
 	import flight.vo.ValueObject;
 	
-	public class Command extends ValueObject implements ICommand
+	import mx.core.IMXMLObject;
+	
+	public class Command extends ValueObject implements ICommand, IMXMLObject
 	{
 		
 		public function execute():Boolean
 		{
 			return false;
+		}
+		
+		
+		public function initialized(document:Object, id:String):void
+		{
+			if (document is DomainController) {
+				if ("client" in this) {
+					this["client"] = document;
+				}
+				DomainController(document).addCommand(id, getType(this));
+			}
 		}
 		
 	}
