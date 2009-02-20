@@ -25,8 +25,10 @@
 <classEntry path="flight.domain.HistoryController"/>
 <classEntry path="flight.domain.MacroCommand"/>
 <classEntry path="flight.errors.AbstractMethodCallError"/>
+<classEntry path="flight.errors.CommandError"/>
 <classEntry path="flight.errors.InstantiationError"/>
 <classEntry path="flight.errors.InvalidConstructorError"/>
+<classEntry path="flight.errors.ResponseError"/>
 <classEntry path="flight.events.CommandEvent"/>
 <classEntry path="flight.events.MessageLogEvent"/>
 <classEntry path="flight.events.PropertyEvent"/>

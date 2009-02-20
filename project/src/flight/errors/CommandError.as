@@ -22,19 +22,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.events
+package flight.errors
 {
-	import flash.events.Event;
-
-	public class ValueObjectEditorEvent extends Event
+	public class CommandError extends Error
 	{
-		static public const COMMIT:String = 'commit';
-		static public const MERGE:String = 'merge';
-		static public const REVERT:String = 'revert';
-		
-		public function ValueObjectEditorEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
+		public function CommandError(message:String="", id:int=0)
 		{
-			super(type, bubbles, cancelable);
+			super(message, id);
 		}
 		
 	}

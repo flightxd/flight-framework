@@ -33,6 +33,7 @@ package flight.domain
 	import flight.commands.ICommand;
 	import flight.commands.ICommandFactory;
 	import flight.commands.ICommandInvoker;
+	import flight.errors.CommandError;
 	import flight.events.CommandEvent;
 	import flight.utils.Registry;
 	import flight.utils.Type;
@@ -191,7 +192,7 @@ package flight.domain
 				} else {
 					command.execute();
 				}
-			} catch(e:Error) {
+			} catch(e:CommandError) {
 				if(command is IAsyncCommand) {
 					releaseAsyncCommand(command as IAsyncCommand);
 				}

@@ -43,6 +43,7 @@ package flight.domain
 	{
 		public var queue:Boolean = true;
 		public var client:ICommandFactory;
+		public var atomic:Boolean = true;
 		
 		private var currentCommand:ICommand;
 		private var undone:Boolean;
@@ -144,7 +145,7 @@ package flight.domain
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
 					if(!asyncCommand.hasEventListener(Event.COMPLETE) ) {
 						asyncCommand.addEventListener(Event.COMPLETE, onCommandComplete);
-						asyncCommand.addEventListener(Event.CANCEL, cancel);
+						asyncCommand.addEventListener(Event.CANCEL, onCommandCancel);
 					}
 					
 					asyncCommand.execute();
@@ -160,6 +161,15 @@ package flight.domain
 		private function onCommandComplete(event:Event):void
 		{
 			executeNext();
+		}
+		
+		private function onCommandCancel(event:Event):void
+		{
+			if(atomic) {
+				cancel();
+			} else {
+				executeNext();
+			}
 		}
 		
 	}

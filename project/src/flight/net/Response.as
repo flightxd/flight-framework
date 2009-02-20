@@ -1,12 +1,34 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.net
 {
-	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
-	import flash.utils.getDefinitionByName;
 	
-	import flight.utils.getClassName;
+	import flight.errors.ResponseError;
 	
 	public class Response implements IResponse
 	{
@@ -81,7 +103,7 @@ package flight.net
 						result = data;
 					}
 				}
-			} catch (e:Error) {
+			} catch(e:ResponseError) {
 				cancel(e);
 			}
 		}
@@ -90,8 +112,8 @@ package flight.net
 		{
 			releaseEvents();
 			for each (var handler:Function in faultHandlers) {
-				var data:Error = handler(error) as Error;
-				if (data != null) { // i.e. return type was not void
+				var data:* = handler(error) as Error;
+				if (data !== undefined) { // i.e. return type was not void
 					error = data;
 				}
 			}
@@ -127,24 +149,20 @@ package flight.net
 			complete(event.target);
 		}
 		
-		protected function onCancel(event:ErrorEvent):void
+		protected function onCancel(event:Event):void
 		{
 			cancel(convertEventToError(event));
 		}
 		
-		protected function convertEventToError(event:ErrorEvent):Error
+		protected function convertEventToError(event:Event):Error
 		{
 			if ("error" in event) {
 				return event["error"];
+			} else if("text" in event) {
+				return new Error(event["text"]);
+			} else {
+				return new Error("Exception thrown on event type " + event.type);
 			}
-			
-			var errorName:String = getClassName(event).replace(/Event$/, '');
-			var errorType:Object;
-			if ( (errorType = getDefinitionByName(errorName)) || (errorType = getDefinitionByName("flash.errors." + errorName)) ) {
-				return new errorType(event.text);
-			}
-			
-			return new Error(event.text);
 		}
 	}
 }
