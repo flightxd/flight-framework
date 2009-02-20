@@ -1,23 +1,22 @@
 package flight.net
 {
-	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
-	import flash.utils.describeType;
 	
 	public class Response implements IResponse
 	{
-		protected var dispatcher:IEventDispatcher;
-		protected var resultEvent:String;
-		protected var faultEvents:Array;
+		protected var completeEvents:Array = [];
+		protected var cancelEvents:Array = [];
 		protected var resultHandlers:Array = [];
 		protected var faultHandlers:Array = [];
 		
-		public function Response(dispatcher:IEventDispatcher = null, resultEvent:String = "complete", faultEvents:Array = null)
+		public function Response(dispatcher:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
+																	 cancelEvent:String = Event.CANCEL)
 		{
 			if (dispatcher != null) {
-				setDispatcher(dispatcher, resultEvent, faultEvents);
+				addCompleteEvent(dispatcher, completeEvent);
+				addCancelEvent(dispatcher, cancelEvent);
 			}
 		}
 		
@@ -56,23 +55,38 @@ package flight.net
 			return this;
 		}
 		
-		
-		public function setDispatcher(dispatcher:IEventDispatcher, resultEvent:String = "complete", faultEvents:Array = null):IResponse
+		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String):void
 		{
-			this.dispatcher = dispatcher;
-			
-			this.resultEvent = resultEvent;
-			this.faultEvents = faultEvents;
-			
-			dispatcher.addEventListener(resultEvent, onComplete);
-			
-			if (faultEvents) {
-				for each (var faultEvent:String in faultEvents) {
-					dispatcher.addEventListener(faultEvent, onFault);
+			completeEvents.push(arguments);
+			eventDispatcher.addEventListener(eventType, onComplete);
+		}
+		
+		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String):void
+		{
+			cancelEvents.push(arguments);
+			eventDispatcher.addEventListener(eventType, onCancel);
+		}
+		
+		public function complete(result:Object):void
+		{
+			releaseEvents();
+			for each (var handler:Function in resultHandlers) {
+				var data:* = handler(data);
+				if (data !== undefined) { // i.e. return type was not void
+					result = data;
 				}
 			}
-			
-			return this;
+		}
+		
+		public function cancel(fault:Object):void
+		{
+			releaseEvents();
+			for each (var handler:Function in faultHandlers) {
+				var data:* = handler(data);
+				if (data !== undefined) { // i.e. return type was not void
+					fault = data;
+				}
+			}
 		}
 		
 		
@@ -82,49 +96,32 @@ package flight.net
 		}
 		
 		
-		public function complete(result:Object):void
+		protected function releaseEvents():void
 		{
-			removeEvents();
-			for each (var handler:Function in resultHandlers) {
-				var data:* = handler(data);
-				if (data !== undefined) { // i.e. return type was not void
-					result = data;
-				}
+			var eventDispatcher:IEventDispatcher;
+			var eventType:String;
+			var i:int;
+			
+			for(i = 0; i < completeEvents.length; i++) {
+				eventDispatcher = completeEvents[i][0];
+				eventType = completeEvents[i][1];
+				eventDispatcher.removeEventListener(eventType, onComplete);
+			}
+			for(i = 0; i < cancelEvents.length; i++) {
+				eventDispatcher = cancelEvents[i][0];
+				eventType = cancelEvents[i][1];
+				eventDispatcher.removeEventListener(eventType, onCancel);
 			}
 		}
 		
-		
-		public function cancel(fault:Object):void
+		private function onComplete(event:Event):void
 		{
-			removeEvents();
-			for each (var handler:Function in faultHandlers) {
-				handler(fault);
-			}
+			complete(event);
 		}
 		
-		
-		protected function onComplete(event:Event):void
-		{
-			complete(event.target);
-		}
-		
-		protected function onFault(event:ErrorEvent):void
+		private function onCancel(event:Event):void
 		{
 			cancel(event);
 		}
-		
-		protected function removeEvents():void
-		{
-			if (dispatcher != null) {
-				dispatcher.removeEventListener(resultEvent, onComplete);
-				
-				if (faultEvents) {
-					for each (var faultEvent:String in faultEvents) {
-						dispatcher.removeEventListener(faultEvent, onFault);
-					}
-				}
-			}
-		}
-		
 	}
 }

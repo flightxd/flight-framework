@@ -182,7 +182,7 @@ package flight.domain
 			}
 			
 			if(command is IAsyncCommand) {
-				catchAsyncCommand(command as IAsyncCommand);
+				registerAsyncCommand(command as IAsyncCommand);
 			}
 			
 			try {
@@ -220,7 +220,7 @@ package flight.domain
 			return true;
 		}
 		
-		protected function catchAsyncCommand(command:IAsyncCommand):void
+		protected function registerAsyncCommand(command:IAsyncCommand):void
 		{
 			d.asyncExecutions[command] = true;
 			command.addEventListener(Event.COMPLETE, onAsyncEvent);

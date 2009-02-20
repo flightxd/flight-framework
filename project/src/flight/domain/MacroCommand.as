@@ -123,7 +123,7 @@ package flight.domain
 				
 				i = commands.indexOf(command);
 				if(i == -1) {
-					throw new Error("Comand does not exist in macro " + getClassName(this));
+					throw new Error("Comand " + getClassName(command) + " does not exist in macro " + getClassName(this));
 				}
 				
 			} else if(currentCommand != null) {
