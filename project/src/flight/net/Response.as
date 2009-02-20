@@ -1,8 +1,12 @@
 package flight.net
 {
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
+	import flash.utils.getDefinitionByName;
+	
+	import flight.utils.getClassName;
 	
 	public class Response implements IResponse
 	{
@@ -70,21 +74,25 @@ package flight.net
 		public function complete(result:Object):void
 		{
 			releaseEvents();
-			for each (var handler:Function in resultHandlers) {
-				var data:* = handler(data);
-				if (data !== undefined) { // i.e. return type was not void
-					result = data;
+			try {
+				for each (var handler:Function in resultHandlers) {
+					var data:* = handler(result);
+					if (data !== undefined) { // i.e. return type was not void
+						result = data;
+					}
 				}
+			} catch (e:Error) {
+				cancel(e);
 			}
 		}
 		
-		public function cancel(fault:Object):void
+		public function cancel(error:Error):void
 		{
 			releaseEvents();
 			for each (var handler:Function in faultHandlers) {
-				var data:* = handler(data);
-				if (data !== undefined) { // i.e. return type was not void
-					fault = data;
+				var data:Error = handler(error) as Error;
+				if (data != null) { // i.e. return type was not void
+					error = data;
 				}
 			}
 		}
@@ -92,7 +100,7 @@ package flight.net
 		
 		public function createResponder():Responder
 		{
-			return new Responder(complete, cancel);
+			return new Responder(onComplete, onCancel);
 		}
 		
 		
@@ -114,14 +122,29 @@ package flight.net
 			}
 		}
 		
-		private function onComplete(event:Event):void
+		protected function onComplete(event:Event):void
 		{
-			complete(event);
+			complete(event.target);
 		}
 		
-		private function onCancel(event:Event):void
+		protected function onCancel(event:ErrorEvent):void
 		{
-			cancel(event);
+			cancel(convertEventToError(event));
+		}
+		
+		protected function convertEventToError(event:ErrorEvent):Error
+		{
+			if ("error" in event) {
+				return event["error"];
+			}
+			
+			var errorName:String = getClassName(event).replace(/Event$/, '');
+			var errorType:Object;
+			if ( (errorType = getDefinitionByName(errorName)) || (errorType = getDefinitionByName("flash.errors." + errorName)) ) {
+				return new errorType(event.text);
+			}
+			
+			return new Error(event.text);
 		}
 	}
 }
