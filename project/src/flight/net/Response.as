@@ -32,7 +32,7 @@ package flight.net
 	
 	public class Response implements IResponse
 	{
-		protected var events:Array = [];
+		protected var eventInfo:Array = [];
 		protected var resultHandlers:Array = [];
 		protected var faultHandlers:Array = [];
 		
@@ -84,31 +84,25 @@ package flight.net
 			return this;
 		}
 		
-		public function addResultEvent(eventDispatcher:IEventDispatcher, eventType:String):void
+		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String, resultProperty:String = "target"):void
 		{
-			events.push(arguments);
-			eventDispatcher.addEventListener(eventType, onResult);
-		}
-		
-		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String):void
-		{
-			events.push(arguments);
+			eventInfo.push( [eventDispatcher, eventType, resultProperty] );
 			eventDispatcher.addEventListener(eventType, onComplete);
 		}
 		
-		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String):void
+		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
 		{
-			events.push(arguments);
+			eventInfo.push( [eventDispatcher, eventType, faultProperty] );
 			eventDispatcher.addEventListener(eventType, onCancel);
 		}
 		
 		public function complete(result:Object):void
 		{
-			releaseEvents();
 			try {
 				for each(var params:Array in resultHandlers) {
 					var handler:Function = params[0];
-					var data:* = handler.apply(null, [result].concat(params.slice(1)) );
+					params[0] = result;
+					var data:* = handler.apply(null, params);
 					if (data !== undefined) { // i.e. return type was not void
 						result = data;
 					}
@@ -116,18 +110,22 @@ package flight.net
 			} catch(e:ResponseError) {
 				cancel(e);
 			}
+			
+			release();
 		}
 		
 		public function cancel(error:Error):void
 		{
-			releaseEvents();
 			for each(var params:Array in faultHandlers) {
 				var handler:Function = params[0];
-				var data:* = handler.apply(null, [error].concat(params.slice(1)) ) as Error;
+				params[0] = error;
+				var data:* = handler.apply(null, params) as Error;
 				if (data !== undefined) { // i.e. return type was not void
 					error = data;
 				}
 			}
+			
+			release();
 		}
 		
 		
@@ -137,43 +135,52 @@ package flight.net
 		}
 		
 		
-		protected function releaseEvents():void
+		protected function release():void
 		{
 			var eventDispatcher:IEventDispatcher;
 			var eventType:String;
 			var i:int;
 			
-			for(i = 0; i < events.length; i++) {
-				eventDispatcher = events[i][0];
-				eventType = events[i][1];
+			for(i = 0; i < eventInfo.length; i++) {
+				eventDispatcher = eventInfo[i][0];
+				eventType = eventInfo[i][1];
 				eventDispatcher.removeEventListener(eventType, onComplete);
 			}
 		}
 		
-		protected function onResult(event:Event):void
+		private function onComplete(event:Event):void
 		{
-			complete(event);
-		}
-		
-		protected function onComplete(event:Event):void
-		{
-			complete(event.target);
-		}
-		
-		protected function onCancel(event:Event):void
-		{
-			cancel(convertEventToError(event));
-		}
-		
-		protected function convertEventToError(event:Event):Error
-		{
-			if ("error" in event) {
-				return event["error"];
-			} else if("text" in event) {
-				return new Error(event["text"]);
+			var info:Array = getEventInfo(event);
+			if(info != null) {
+				complete(event[info[2]]);
 			} else {
-				return new Error("Exception thrown on event type " + event.type);
+				complete(event.target);
 			}
+		}
+		
+		private function onCancel(event:Event):void
+		{
+			var info:Array = getEventInfo(event);
+			var error:Object;
+			if(info != null) {
+				error = event[info[2]];
+				if( !(error is Error) ) {
+					error = new Error(event[info[2]]);
+				}
+				cancel(error as Error);
+			} else {
+				cancel( new Error("Exception thrown on event type " + event.type) );
+			}
+		}
+		
+		private function getEventInfo(match:Event):Array
+		{
+			for each(var info:Array in eventInfo) {
+				if(info[0] == match.target && info[1] == match.type) {
+					return info;
+				}
+			}
+			return null;
 		}
 	}
 }

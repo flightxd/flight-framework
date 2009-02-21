@@ -24,6 +24,7 @@
 <classEntry path="flight.domain.DomainController"/>
 <classEntry path="flight.domain.HistoryController"/>
 <classEntry path="flight.domain.MacroCommand"/>
+<classEntry path="flight.domain.ScriptCommand"/>
 <classEntry path="flight.errors.AbstractMethodCallError"/>
 <classEntry path="flight.errors.CommandError"/>
 <classEntry path="flight.errors.InstantiationError"/>

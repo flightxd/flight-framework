@@ -203,7 +203,7 @@ package flight.domain
 			}
 		}
 		
-		protected function executeScript(type:String, properties:Object = null):Boolean
+		protected function executeScript(type:String, params:Object = null):Boolean
 		{
 			if( !(type in this && this[type] is Function) ) {
 				return false;
@@ -211,8 +211,8 @@ package flight.domain
 			
 			var script:Function = this[type];
 			
-			if(properties != null) {
-				script.apply(null, [].concat(properties));
+			if(params != null) {
+				script.apply(null, [].concat(params));
 			} else {
 				script();
 			}
