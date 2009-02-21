@@ -41,7 +41,7 @@ package flight.net
 		 * @param Additional parameters to pass to this handler upon execution.
 		 * @return A reference to this instance for method chaining.
 		 */
-		function addResultHandler(handler:Function, ...aditionalParams):IResponse;
+		function addResultHandler(handler:Function, ... params):IResponse;
 		
 		/**
 		 * Adds a handler function to handle any errors or faults of  the
@@ -52,7 +52,7 @@ package flight.net
 		 * @param Additional parameters to pass to this handler upon execution.
 		 * @return A reference to this instance for method chaining.
 		 */
-		function addFaultHandler(handler:Function, ...aditionalParams):IResponse;
+		function addFaultHandler(handler:Function, ... params):IResponse;
 		
 	}
 }

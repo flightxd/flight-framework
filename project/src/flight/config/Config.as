@@ -69,11 +69,11 @@ package flight.config
 			
 var newValue:Object = {};
 
-for (var i:String in _configurations) {
+for(var i:String in _configurations) {
 	newValue[i] = _configurations[i];
 }
 
-for (i in value) {
+for(i in value) {
 	newValue[i] = value[i];
 	// subclass configs may not be dynamic, we will fail silently
 	try {
@@ -173,7 +173,7 @@ if (value is Array) {
 		{
 			var propList:XMLList = getProperties();
 			
-			for (var name:String in source) {
+			for(var name:String in source) {
 				var prop:XMLList = propList.(@name == name);
 				var value:Object = source[name];
 				if(value != null && prop.length()) {
@@ -195,7 +195,7 @@ if (value is Array) {
 			}
 			
 			var empty:Boolean = true;
-			for (var prop:String in data) {
+			for(var prop:String in data) {
 				empty = false;
 				break;
 			}
@@ -208,10 +208,10 @@ if (value is Array) {
 			var sources:Array = source as Array;
 			var newConfigurations:Object = {};
 			
-			for each (var config:Config in sources) {
+			for each(var config:Config in sources) {
 				// populate the dynamic properties
 				var configurations:Object = config.configurations;
-				for (var i:String in configurations) {
+				for(var i:String in configurations) {
 					newConfigurations[i] = configurations[i];
 				}
 			}

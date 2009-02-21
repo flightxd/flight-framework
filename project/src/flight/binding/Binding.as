@@ -240,7 +240,7 @@ package flight.binding
 				prop = _sourcePath[pathIndex];
 				
 				if(source != null && !(prop in source) ) {
-					trace("Binding access of undefined property " + prop + " in " + getClassName(source) + ".");
+					trace("Binding access of undefined property '" + prop + "' in " + getClassName(source) + ".");
 					source = null;
 				}
 				if(source == null) {
@@ -253,7 +253,7 @@ package flight.binding
 						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
 					}
 				} else {
-					trace("Property " + prop + " is not bindable in " + getClassName(source) + ".");
+					trace("Property '" + prop + "' is not bindable in " + getClassName(source) + ".");
 				}
 				indicesIndex[source] = pathIndex;
 				source = source[prop];

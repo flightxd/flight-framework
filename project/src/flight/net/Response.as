@@ -60,10 +60,10 @@ package flight.net
 		 * @param Additional parameters to pass to this handler upon execution.
 		 * @return A reference to this instance for method chaining.
 		 */
-		public function addResultHandler(handler:Function, ...aditionalParams):IResponse
+		public function addResultHandler(handler:Function, ... params):IResponse
 		{
-			aditionalParams.unshift(handler);
-			resultHandlers.push(aditionalParams);
+			params.unshift(handler);
+			resultHandlers.push(params);
 			return this;
 		}
 		
@@ -77,10 +77,10 @@ package flight.net
 		 * @param Additional parameters to pass to this handler upon execution.
 		 * @return A reference to this instance for method chaining.
 		 */
-		public function addFaultHandler(handler:Function, ...aditionalParams):IResponse
+		public function addFaultHandler(handler:Function, ... params):IResponse
 		{
-			aditionalParams.unshift(handler);
-			faultHandlers.push(aditionalParams);
+			params.unshift(handler);
+			faultHandlers.push(params);
 			return this;
 		}
 		
@@ -106,10 +106,9 @@ package flight.net
 		{
 			releaseEvents();
 			try {
-				for each (var params:Array in resultHandlers) {
+				for each(var params:Array in resultHandlers) {
 					var handler:Function = params[0];
-					params[0] = result;
-					var data:* = handler.apply(null, params);
+					var data:* = handler.apply(null, [result].concat(params.slice(1)) );
 					if (data !== undefined) { // i.e. return type was not void
 						result = data;
 					}
@@ -122,10 +121,9 @@ package flight.net
 		public function cancel(error:Error):void
 		{
 			releaseEvents();
-			for each (var params:Array in faultHandlers) {
+			for each(var params:Array in faultHandlers) {
 				var handler:Function = params[0];
-				params[0] = error;
-				var data:* = handler.apply(null, params) as Error;
+				var data:* = handler.apply(null, [error].concat(params.slice(1)) ) as Error;
 				if (data !== undefined) { // i.e. return type was not void
 					error = data;
 				}
