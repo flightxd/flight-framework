@@ -229,42 +229,48 @@ package flight.binding
 		
 		private function bindPath(source:Object, pathIndex:int):Object
 		{
-			unbindPath(pathIndex+1);
+			unbindPath(pathIndex);
 			if(_sourcePath.length == 0) {
 				return null;
 			}
 			
 			var prop:String;
-			var newValue:Object = source;
-			for(var i:int = pathIndex; i < _sourcePath.length; i++) {
+			for(pathIndex; pathIndex < _sourcePath.length; pathIndex++) {
 				
-				source = newValue;
-				prop = _sourcePath[i];
+				prop = _sourcePath[pathIndex];
 				
 				if(source != null && !(prop in source) ) {
 					trace("Binding access of undefined property " + prop + " in " + getClassName(source) + ".");
-					source = newValue = null;
+					source = null;
 				}
 				if(source == null) {
 					break;
 				}
 				
 				if(source is IEventDispatcher) {
-					var changeEvent:String = getBindingEvent(source, prop);
-					IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
+					var changeEvents:Array = getBindingEvents(source, prop);
+					for each(var changeEvent:String in changeEvents) {
+						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
+					}
+				} else {
+					trace("Property " + prop + " is not bindable in " + getClassName(source) + ".");
 				}
-				indicesIndex[source] = i;
-				newValue = source[prop];
+				indicesIndex[source] = pathIndex;
+				source = source[prop];
 			}
 			
-			if(explicitValue != null && i == _sourcePath.length) {
-				source[prop] = newValue = explicitValue;
+			if(explicitValue != null && pathIndex == _sourcePath.length) {
+				if(prop == null) {
+					prop = _sourcePath[pathIndex-1]
+				}
+				source = getSource(pathIndex-1);
+				source = source[prop] = explicitValue;
 				if(!applyOnly) {
 					explicitValue = null;
 				}
 			}
 			
-			return newValue;
+			return source;
 		}
 		
 		private function unbindPath(pathIndex:int):void
@@ -276,8 +282,10 @@ package flight.binding
 				}
 				
 				if(source is IEventDispatcher) {
-					var changeEvent:String = getBindingEvent(source, _sourcePath[index]);
-					IEventDispatcher(source).removeEventListener(changeEvent, onPropertyChange);
+					var changeEvents:Array = getBindingEvents(source, _sourcePath[index]);
+					for each(var changeEvent:String in changeEvents) {
+						IEventDispatcher(source).removeEventListener(changeEvent, onPropertyChange);
+					}
 				}
 				delete indicesIndex[source];
 			}
@@ -292,7 +300,7 @@ package flight.binding
 				return;
 			}
 			
-			update(source, pathIndex);
+			update(source[prop], pathIndex+1);
 		}
 		
 		
@@ -352,11 +360,11 @@ package flight.binding
 			return true;
 		}
 		
-		private static function getBindingEvent(target:Object, property:String):String
+		private static function getBindingEvents(target:Object, property:String):Array
 		{
 			var bindings:Array = describeBindings(target);
 			if(bindings[property] == null) {
-				bindings[property] = property + PropertyEvent._CHANGE;
+				bindings[property] = [property + PropertyEvent._CHANGE];
 			}
 			return bindings[property];
 		}
@@ -373,22 +381,25 @@ package flight.binding
 				
 				for each(var prop:XML in desc) {
 					var property:String = prop.@name;
-					var changeEvent:String;
+					var changeEvents:Array = [];
 					var bindable:XMLList = prop.metadata.(@name == "Bindable");
 					
-					if(bindable.arg.(@key == "event").length() != 0)
-						changeEvent = bindable.arg.(@key == "event").@value;
-					else
-						changeEvent = bindable.arg.@value;
+					for each(var bind:XML in bindable) {
+						var changeEvent:String = (bind.arg.(@key == "event").length() != 0) ?
+												  bind.arg.(@key == "event").@value :
+												  changeEvent = bind.arg.@value;
+						
+						if(changeEvent == PropertyEvent.PROPERTY_CHANGE && bind.arg.(@key == "flight").@value == "true") {
+							changeEvent = property + PropertyEvent._CHANGE;
+						}
+						changeEvents.push(changeEvent);
+					}
 					
-					if(changeEvent == PropertyEvent.PROPERTY_CHANGE && bindable.arg.(@key == "flight").@value == "true")
-						changeEvent = property + PropertyEvent._CHANGE;
-					
-					bindings[property] = changeEvent;
+					bindings[property] = changeEvents;
 				}
 			}
 			
-			return descCache[value];	
+			return descCache[value];
 		}
 		
 	}
