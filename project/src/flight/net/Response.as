@@ -32,8 +32,7 @@ package flight.net
 	
 	public class Response implements IResponse
 	{
-		protected var completeEvents:Array = [];
-		protected var cancelEvents:Array = [];
+		protected var events:Array = [];
 		protected var resultHandlers:Array = [];
 		protected var faultHandlers:Array = [];
 		
@@ -81,16 +80,25 @@ package flight.net
 			return this;
 		}
 		
-		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String):void
+		public function addResultEvent(eventDispatcher:IEventDispatcher, eventType:String):IResponse
 		{
-			completeEvents.push(arguments);
-			eventDispatcher.addEventListener(eventType, onComplete);
+			events.push(arguments);
+			eventDispatcher.addEventListener(eventType, onResult);
+			return this;
 		}
 		
-		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String):void
+		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String):IResponse
 		{
-			cancelEvents.push(arguments);
+			events.push(arguments);
+			eventDispatcher.addEventListener(eventType, onComplete);
+			return this;
+		}
+		
+		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String):IResponse
+		{
+			events.push(arguments);
 			eventDispatcher.addEventListener(eventType, onCancel);
+			return this;
 		}
 		
 		public function complete(result:Object):void
@@ -132,16 +140,16 @@ package flight.net
 			var eventType:String;
 			var i:int;
 			
-			for(i = 0; i < completeEvents.length; i++) {
-				eventDispatcher = completeEvents[i][0];
-				eventType = completeEvents[i][1];
+			for(i = 0; i < events.length; i++) {
+				eventDispatcher = events[i][0];
+				eventType = events[i][1];
 				eventDispatcher.removeEventListener(eventType, onComplete);
 			}
-			for(i = 0; i < cancelEvents.length; i++) {
-				eventDispatcher = cancelEvents[i][0];
-				eventType = cancelEvents[i][1];
-				eventDispatcher.removeEventListener(eventType, onCancel);
-			}
+		}
+		
+		protected function onResult(event:Event):void
+		{
+			complete(event);
 		}
 		
 		protected function onComplete(event:Event):void
