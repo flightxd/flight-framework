@@ -80,25 +80,22 @@ package flight.net
 			return this;
 		}
 		
-		public function addResultEvent(eventDispatcher:IEventDispatcher, eventType:String):IResponse
+		public function addResultEvent(eventDispatcher:IEventDispatcher, eventType:String):void
 		{
 			events.push(arguments);
 			eventDispatcher.addEventListener(eventType, onResult);
-			return this;
 		}
 		
-		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String):IResponse
+		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String):void
 		{
 			events.push(arguments);
 			eventDispatcher.addEventListener(eventType, onComplete);
-			return this;
 		}
 		
-		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String):IResponse
+		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String):void
 		{
 			events.push(arguments);
 			eventDispatcher.addEventListener(eventType, onCancel);
-			return this;
 		}
 		
 		public function complete(result:Object):void
