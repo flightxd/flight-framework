@@ -26,7 +26,7 @@ package flight.domain
 {
 	import flight.commands.ICommand;
 
-	public class ScriptCommand implements ICommand
+	public class ScriptCommand extends Command
 	{
 		public var script:Function;
 		public var params:Array;
@@ -37,7 +37,7 @@ package flight.domain
 			this.params = params;
 		}
 		
-		public function execute():void
+		override public function execute():void
 		{
 			executeScript(script, params);
 		}

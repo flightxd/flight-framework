@@ -157,20 +157,24 @@ package flight.domain
 		/**
 		 * Primary method for invoking commands in the Domain class.
 		 */
-		public function execute(type:String, properties:Object = null):void
+		public function execute(type:String, properties:Object = null):Object
 		{
 			if(!d.executing[type]) {
 				d.executing[type] = true;
 				
 				var command:ICommand = createCommand(type, properties);
+				var result:Object = command;
+				
 				if(command != null) {
 					executeCommand(command);
 				} else {
-					executeScript(type, properties);
+					result = executeScript(type, properties);
 				}
 				
 				d.executing[type] = false;
+				return result;
 			}
+			return null;
 		}
 		
 		/**
@@ -203,22 +207,19 @@ package flight.domain
 			}
 		}
 		
-		protected function executeScript(type:String, params:Object = null):Boolean
+		protected function executeScript(type:String, params:Object = null):Object
 		{
 			if( !(type in this && this[type] is Function) ) {
 				return false;
 			}
 			
 			var script:Function = this[type];
-			
-			if(params != null) {
-				script.apply(null, [].concat(params));
-			} else {
-				script();
-			}
+			var result:Object = (params != null && params.length > 0) ?
+								script.apply(null, [].concat(params)) :
+								script();
 			
 			dispatchCommand(type, null);
-			return true;
+			return result;
 		}
 		
 		protected function registerAsyncCommand(command:IAsyncCommand):void
