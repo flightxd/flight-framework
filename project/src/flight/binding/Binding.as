@@ -247,14 +247,18 @@ package flight.binding
 					break;
 				}
 				
-				if(source is IEventDispatcher) {
-					var changeEvents:Array = getBindingEvents(source, prop);
-					for each(var changeEvent:String in changeEvents) {
-						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
+				// don't let the last portion, the property, to cause an update in applyOnly
+				if (!applyOnly || pathIndex < _sourcePath.length - 1) {
+					if(source is IEventDispatcher) {
+						var changeEvents:Array = getBindingEvents(source, prop);
+						for each(var changeEvent:String in changeEvents) {
+							IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
+						}
+					} else {
+						trace("Property '" + prop + "' is not bindable in " + getClassName(source) + ".");
 					}
-				} else {
-					trace("Property '" + prop + "' is not bindable in " + getClassName(source) + ".");
 				}
+				
 				indicesIndex[source] = pathIndex;
 				source = source[prop];
 			}
