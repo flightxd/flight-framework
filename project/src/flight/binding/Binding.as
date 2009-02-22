@@ -48,9 +48,10 @@ package flight.binding
 		
 		private var explicitValue:Object;
 		private var updating:Boolean;
-		private var _value:Object;
+		private var _value:*;
 		private var _property:String;
 		private var _sourcePath:Array;
+		private var _resolved:Boolean;
 		
 		/**
 		 * 
@@ -79,14 +80,22 @@ package flight.binding
 		/**
 		 * 
 		 */
+		public function get resolved():Boolean
+		{
+			return _resolved;
+		}
+		
+		/**
+		 * 
+		 */
 		[Bindable(event="propertyChange", flight="false")]
-		public function get value():Object
+		public function get value():*
 		{
 			return _value;
 		}
-		public function set value(value:Object):void
+		public function set value(value:*):void
 		{
-			if(_value == value) {
+			if(_value == value || value === undefined) {
 				return;
 			}
 			
@@ -227,51 +236,60 @@ package flight.binding
 			}
 		}
 		
-		private function bindPath(source:Object, pathIndex:int):Object
+		private function bindPath(source:Object, pathIndex:int):*
 		{
-			unbindPath(pathIndex);
 			if(_sourcePath.length == 0) {
-				return null;
+				return source;
 			}
 			
+			unbindPath(pathIndex);
+			
 			var prop:String;
-			for(pathIndex; pathIndex < _sourcePath.length; pathIndex++) {
+			var len:int = applyOnly ? _sourcePath.length - 1 : _sourcePath.length;
+			for(pathIndex; pathIndex < len; pathIndex++) {
 				
-				prop = _sourcePath[pathIndex];
-				
-				if(source != null && !(prop in source) ) {
-					trace("Binding access of undefined property '" + prop + "' in " + getClassName(source) + ".");
-					source = null;
-				}
 				if(source == null) {
 					break;
 				}
 				
-				// don't let the last portion, the property, to cause an update in applyOnly
-				if (!applyOnly || pathIndex < _sourcePath.length - 1) {
-					if(source is IEventDispatcher) {
-						var changeEvents:Array = getBindingEvents(source, prop);
-						for each(var changeEvent:String in changeEvents) {
-							IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
-						}
-					} else {
-						trace("Property '" + prop + "' is not bindable in " + getClassName(source) + ".");
-					}
+				prop = _sourcePath[pathIndex];
+				if( !(prop in source) ) {
+					trace("Warning: Binding access of undefined property '" + prop + "' in " + getClassName(source) + ".");
+					break;
 				}
 				
 				indicesIndex[source] = pathIndex;
+				
+				if(source is IEventDispatcher) {
+					var changeEvents:Array = getBindingEvents(source, prop);
+					for each(var changeEvent:String in changeEvents) {
+						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
+					}
+				} else {
+					trace("Warning: Property '" + prop + "' is not bindable in " + getClassName(source) + ".");
+				}
+				
 				source = source[prop];
 			}
 			
-			if(explicitValue != null && pathIndex == _sourcePath.length) {
-				if(prop == null) {
-					prop = _sourcePath[pathIndex-1]
-				}
-				source = getSource(pathIndex-1);
-				source = source[prop] = explicitValue;
+			_resolved = Boolean(pathIndex == len && !(applyOnly && source == null) );
+			
+			if(!_resolved) {
+				return;
+			}
+			
+			if(explicitValue != null) {
+				var newValue:Object = explicitValue;
+				
 				if(!applyOnly) {
+					source = getSource(_sourcePath.length-1);
 					explicitValue = null;
+				} else {
+					indicesIndex[source] = pathIndex;
 				}
+				
+				prop = _sourcePath[_sourcePath.length-1];
+				source = source[prop] = newValue;
 			}
 			
 			return source;
