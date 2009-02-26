@@ -161,6 +161,7 @@ package flight.commands
 					_currentPosition = _undoLimit;
 					_commands.splice(0, _commands.length - _undoLimit);
 				}
+				_commands = [].concat(_commands);
 				updateProperties();
 				
 				PropertyEvent.dispatchChangeList(this, ["commands", "currentPosition", "undoLimit"], oldValues);
@@ -214,6 +215,7 @@ package flight.commands
 				_currentCommand = _commands[_currentPosition-1];
 				_historyPosition++;
 				_historyLength = _historyPosition;
+				_commands = [].concat(_commands);
 				updateProperties();
 				
 				PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
@@ -273,6 +275,7 @@ package flight.commands
 				_currentPosition = 0;
 				_historyPosition = 0;
 				_historyLength = 0;
+				updateProperties();
 				
 				PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
 				return true;
@@ -309,6 +312,8 @@ package flight.commands
 				_currentCommand = _commands[_currentPosition-1];
 			}
 			_historyLength += shift;
+			_commands = [].concat(_commands);
+			updateProperties();
 			
 			PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
 		}
