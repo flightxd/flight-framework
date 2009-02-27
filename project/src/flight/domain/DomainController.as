@@ -52,7 +52,7 @@ package flight.domain
 		{
 			if(!d.initialized) {
 				d.initialized = true;
-				init();
+				initController();
 			}
 		}
 		
@@ -70,7 +70,7 @@ package flight.domain
 			d.invoker = value;
 		}
 		
-		protected function init():void
+		protected function initController():void
 		{
 		}
 		

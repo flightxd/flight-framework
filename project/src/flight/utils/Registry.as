@@ -94,6 +94,16 @@ package flight.utils
 			return instance;
 		}
 		
+		public static function resetInstance(classObject:Class, scope:Object = null):Object
+		{
+			var instance:Object = lookup(classObject, scope);
+			if(instance != null) {
+				instance = new classObject();
+				register(classObject, instance, scope);
+			}
+			return instance;
+		}
+		
 		public static function sync(site:Object, prop:String, index:Object, scope:Object = null):void
 		{
 			desync(site, prop);

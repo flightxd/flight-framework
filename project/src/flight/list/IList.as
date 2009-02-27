@@ -46,5 +46,16 @@ package flight.list
 //		function set filterFunction(value:Function):void;
 //		function get sort():Function;
 //		function set sort(value:Function):void;
+		
+//		function get selectedIndex():int;
+//		function set selectedIndex(value:int):void;
+//		function get selectedItem():Object;
+//		function set selectedItem(value:Object):void;
+		
+//		function get selectedIndices():Array;
+//		function set selectedIndices(value:Array):void;
+//		function get selectedItems():Array;
+//		function set selectedItems(value:Array):void;
+		
 	}
 }
