@@ -155,7 +155,7 @@ package flight.commands
 			if(_undoLimit != value) {
 				var oldValues:Array = [_commands, _currentPosition, _undoLimit];
 				
-				_undoLimit = value;
+				_undoLimit = value > 0 ? value : int.MAX_VALUE;
 				_commands.splice(_currentPosition, _commands.length - _currentPosition);
 				if(_commands.length > _undoLimit) {
 					_currentPosition = _undoLimit;
@@ -201,7 +201,11 @@ package flight.commands
 					IAsyncCommand(command).addEventListener(Event.CANCEL, onAsyncError, false, 0, true);
 				}
 				
-				command.execute() && !asyncError;
+				command.execute();
+				
+				if(asyncError) {
+					return;
+				}
 				
 				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
