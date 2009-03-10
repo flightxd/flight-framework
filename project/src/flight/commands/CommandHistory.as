@@ -24,8 +24,6 @@
 
 package flight.commands
 {
-	import flash.events.Event;
-	
 	import flight.events.PropertyEvent;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
@@ -196,16 +194,13 @@ package flight.commands
 					combiningCommand = null;
 				}
 				
-				asyncError = false;
-				if(command is IAsyncCommand) {
-					IAsyncCommand(command).addEventListener(Event.CANCEL, onAsyncError, false, 0, true);
-				}
-				
 				command.execute();
 				
-				if(asyncError) {
-					return;
+				if(command is IAsyncCommand) {
+					IAsyncCommand(command).response.addFaultHandler(onAsyncError, command);
+					// TODO: exit execution now if there was a fault...
 				}
+				
 				
 				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
@@ -325,13 +320,9 @@ package flight.commands
 		/**
 		 * Catches asynchronous commands upon cancelation to remove from the history.
 		 */
-		private function onAsyncError(event:Event):void
+		private function onAsyncError(error:Error, command:IAsyncCommand):void
 		{
-			var command:IAsyncCommand = event.target as IAsyncCommand;
-			command.removeEventListener(Event.CANCEL, onAsyncError);
-			asyncError = true;
-			
-			var index:int = _commands.indexOf(command)
+			var index:int = _commands.indexOf(command);
 			if(index != -1) {
 				splice(index, 1);
 			}

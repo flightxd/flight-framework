@@ -154,6 +154,13 @@ package flight.domain
 			return command;
 		}
 		
+		public function dispatchCommand(type:String, command:ICommand = null, success:Boolean = true):void
+		{
+			if(willTrigger(type)) {
+				dispatchEvent( new CommandEvent(type, command, success) );
+			}
+		}
+		
 		/**
 		 * Primary method for invoking commands in the Domain class.
 		 */
@@ -225,33 +232,22 @@ package flight.domain
 		protected function registerAsyncCommand(command:IAsyncCommand):void
 		{
 			d.asyncExecutions[command] = true;
-			command.addEventListener(Event.COMPLETE, onAsyncEvent);
-			command.addEventListener(Event.CANCEL, onAsyncEvent);
+			command.response.addResultHandler(onAsyncEvent, command)
+							.addResultHandler(onAsyncEvent, command);
 		}
 		
 		protected function releaseAsyncCommand(command:IAsyncCommand):void
 		{
-			command.removeEventListener(Event.COMPLETE, onAsyncEvent);
-			command.removeEventListener(Event.CANCEL, onAsyncEvent);
 			delete d.asyncExecutions[command];
-		}
-		
-		protected function dispatchCommand(type:String, command:ICommand = null, success:Boolean = true):void
-		{
-			if(willTrigger(type)) {
-				dispatchEvent( new CommandEvent(type, command, success) );
-			}
 		}
 		
 		/**
 		 * Catches asynchronous commands upon completion and dispatches an event.
 		 */
-		private function onAsyncEvent(event:Event):void
+		private function onAsyncEvent(response:Object, command:IAsyncCommand):void
 		{
-			var command:IAsyncCommand = event.target as IAsyncCommand;
 			releaseAsyncCommand(command);
-			
-			dispatchCommand(getCommandType(command), command, Boolean(event.type == Event.COMPLETE));
+			dispatchCommand(getCommandType(command), command, !(response is Error));
 		}
 		
 		private static function getArgumentList(command:ICommand):Array

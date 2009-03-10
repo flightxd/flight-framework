@@ -26,6 +26,7 @@ package flight.net
 {
 	public interface IResponse
 	{
+		function get progress():Number;
 		
 		/**
 		 * Adds a handler function to handle the successful results of the

@@ -323,10 +323,10 @@ package flight.binding
 		 * 								A weak reference (the default) allows your listener to be garbage-
 		 * 								collected. A strong reference does not.
 		 */
-		public static function addListener(listener:Function, source:Object, sourcePath:String, useWeakReference:Boolean = true):void
+		public static function addListener(listener:Function, source:Object, sourcePath:String, useWeakReference:Boolean = true):Boolean
 		{
 			var binding:Binding = Binding.getBinding(source, sourcePath);
-			binding.bindListener(listener, useWeakReference);
+			return binding.bindListener(listener, useWeakReference);
 		}
 		
 		/**
@@ -339,13 +339,14 @@ package flight.binding
 		 * @param	sourcePath			A property or dot-separated property chain to be resolved in the
 		 * 								source end point.
 		 */
-		public static function removeListener(listener:Function, source:Object, sourcePath:String):void
+		public static function removeListener(listener:Function, source:Object, sourcePath:String):Boolean
 		{
 			var binding:Binding = Binding.getBinding(source, sourcePath);
-			binding.unbindListener(listener);
+			var success:Boolean = binding.unbindListener(listener);
 			if( !binding.hasBinds() ) {
 				Binding.releaseBinding(binding);
 			}
+			return success;
 		}
 		
 	}

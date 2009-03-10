@@ -32,6 +32,14 @@ package flight.net
 	
 	public class Response implements IResponse
 	{
+		public static const PROGRESS:String = "progress";
+		public static const RESULT:String = "result";
+		public static const FAULT:String = "fault";
+		
+		public var status:String = PROGRESS;
+		public var result:Object;
+		public var error:Error;
+		
 		protected var eventInfo:Array = [];
 		protected var resultHandlers:Array = [];
 		protected var faultHandlers:Array = [];
@@ -45,6 +53,13 @@ package flight.net
 			}
 		}
 		
+		public function get progress():Number
+		{
+			return 0;
+		}
+		public function set progress(value:Number):void
+		{
+		}
 		
 		/**
 		 * Adds a handler function to handle the successful results of the
@@ -64,6 +79,9 @@ package flight.net
 		{
 			params.unshift(handler);
 			resultHandlers.push(params);
+			if(status == RESULT) {
+				complete(result);
+			}
 			return this;
 		}
 		
@@ -81,6 +99,9 @@ package flight.net
 		{
 			params.unshift(handler);
 			faultHandlers.push(params);
+			if(status == FAULT) {
+				cancel(error);
+			}
 			return this;
 		}
 		
@@ -98,33 +119,43 @@ package flight.net
 		
 		public function complete(result:Object):void
 		{
+			this.result = result;
+			
 			try {
 				for each(var params:Array in resultHandlers) {
 					var handler:Function = params[0];
-					params[0] = result;
+					params[0] = this.result;
 					var data:* = handler.apply(null, params);
 					if (data !== undefined) { // i.e. return type was not void
-						result = data;
+						this.result = data;
 					}
 				}
 			} catch(e:ResponseError) {
 				cancel(e);
 			}
 			
+			resultHandlers = [];
+			status = RESULT;
+			progress = 1;
 			release();
 		}
 		
 		public function cancel(error:Error):void
 		{
+			this.error = error;
+			
 			for each(var params:Array in faultHandlers) {
 				var handler:Function = params[0];
-				params[0] = error;
+				params[0] = this.error;
 				var data:* = handler.apply(null, params) as Error;
 				if (data !== undefined) { // i.e. return type was not void
-					error = data;
+					this.error = data;
 				}
 			}
 			
+			faultHandlers = [];
+			status = FAULT;
+			progress = 1;
 			release();
 		}
 		
@@ -145,6 +176,7 @@ package flight.net
 				eventDispatcher = eventInfo[i][0];
 				eventType = eventInfo[i][1];
 				eventDispatcher.removeEventListener(eventType, onComplete);
+				eventDispatcher.removeEventListener(eventType, onCancel);
 			}
 		}
 		

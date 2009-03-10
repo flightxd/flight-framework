@@ -24,13 +24,9 @@
 
 package flight.domain
 {
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	
 	import flight.commands.IAsyncCommand;
-	
-	[Event(name="complete", type="flash.events.Event")]
-	[Event(name="cancel", type="flash.events.Event")]
+	import flight.net.IResponse;
+	import flight.net.Response;
 	
 	/**
 	 * An abstract command class that supports Asynchronous commands through dispatching
@@ -38,21 +34,19 @@ package flight.domain
 	 */
 	public class AsyncCommand extends Command implements IAsyncCommand
 	{
+		private var _response:IResponse;
 		
-		/**
-		 * To be called when the Asynchronous action has been completed.
-		 */
-		protected function complete(...args):void
+		public function get response():IResponse
 		{
-			dispatchEvent(new Event(Event.COMPLETE));
+			if(_response == null) {
+				_response = new Response();
+			}
+			return _response;
 		}
-		
-		/**
-		 * To be called if the Asynchronous action has been canceled.
-		 */
-		protected function cancel(...args):void
+		public function set response(value:IResponse):void
 		{
-			dispatchEvent(new Event(Event.CANCEL));
+			// TODO: merge old and new responses
+			_response = value;
 		}
 		
 	}

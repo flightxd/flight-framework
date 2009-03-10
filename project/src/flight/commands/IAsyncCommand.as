@@ -24,11 +24,10 @@
 
 package flight.commands
 {
-	import flash.events.IEventDispatcher;
+	import flight.net.IResponse;
 	
-	// dispatches the "complete" or "cancel" event
-	public interface IAsyncCommand extends ICommand, IEventDispatcher
+	public interface IAsyncCommand extends ICommand
 	{
-		
+		function get response():IResponse;
 	}
 }

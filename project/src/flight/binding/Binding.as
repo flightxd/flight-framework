@@ -150,18 +150,20 @@ package flight.binding
 		/**
 		 * 
 		 */
-		public function bindListener(listener:Function, useWeakReference:Boolean = true):void
+		public function bindListener(listener:Function, useWeakReference:Boolean = true):Boolean
 		{
 			addEventListener(PropertyEvent.PROPERTY_CHANGE, listener, false, 0, useWeakReference);
 			listener( new PropertyEvent(PropertyEvent.PROPERTY_CHANGE, _property, _value, _value) );
+			return true;
 		}
 		
 		/**
 		 * 
 		 */
-		public function unbindListener(listener:Function):void
+		public function unbindListener(listener:Function):Boolean
 		{
 			removeEventListener(PropertyEvent.PROPERTY_CHANGE, listener);
+			return true;
 		}
 		
 		/**

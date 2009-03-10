@@ -28,7 +28,6 @@ package flight.domain
 	
 	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
-	import flight.commands.ICommandFactory;
 	import flight.commands.IUndoableCommand;
 	import flight.events.PropertyEvent;
 	import flight.utils.Type;
@@ -42,7 +41,7 @@ package flight.domain
 	public class MacroCommand extends AsyncCommand implements IUndoableCommand
 	{
 		public var queue:Boolean = true;
-		public var client:ICommandFactory;
+		public var client:DomainController;
 		public var atomic:Boolean = true;
 		
 		private var currentCommand:ICommand;
@@ -143,19 +142,17 @@ package flight.domain
 				if(currentCommand is IAsyncCommand && queue) {
 					
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
-					if(!asyncCommand.hasEventListener(Event.COMPLETE) ) {
-						asyncCommand.addEventListener(Event.COMPLETE, onCommandComplete);
-						asyncCommand.addEventListener(Event.CANCEL, onCommandCancel);
-					}
-					
-					asyncCommand.execute();
+						asyncCommand.response.addResultHandler(onCommandComplete)
+											 .addFaultHandler(onCommandCancel);
+						
+						asyncCommand.execute();
 				} else {
 					currentCommand.execute();
 					executeNext();
 				}
+			} else {
+//				response.complete();		// TODO: complete the command by triggering response completion
 			}
-			
-			complete();
 		}
 		
 		private function onCommandComplete(event:Event):void
@@ -166,7 +163,7 @@ package flight.domain
 		private function onCommandCancel(event:Event):void
 		{
 			if(atomic) {
-				cancel();
+//				response.cancel();		// TODO: cancel the command by triggering response cancelation
 			} else {
 				executeNext();
 			}
