@@ -34,7 +34,6 @@ package flight.utils
 	public class Type
 	{
 		private static var typeCache:Dictionary = new Dictionary();
-		private static var registeredTypes:Dictionary = new Dictionary();
 		private static var inheritanceCache:Dictionary = new Dictionary();
 		private static var propertyCache:Dictionary = new Dictionary();
 		private static var methodCache:Dictionary = new Dictionary(); 
@@ -112,12 +111,9 @@ package flight.utils
 		
 		public static function registerType(value:Object):Boolean
 		{
-			if( !(value is Class) ) {
-				value = getType(value);
-			}
-			
-			if(!registeredTypes[value]) {		// no need to register a class more than once
-				registeredTypes[value] = registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
+			var alias:String = describeType(value).@alias;
+			if(!alias.length) {		// if not already registered
+				registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
 			}
 			
 			return true;
