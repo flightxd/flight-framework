@@ -22,36 +22,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.events
+package flight.commands
 {
-	import flash.events.Event;
+	import flight.utils.IMerging;
 	
-	import flight.commands.ICommand;
-	
-	public class CommandEvent extends Event
+	/**
+	 * An interface for commands that support undo and redo and can be merged into
+	 * one undoable action.
+	 */
+	public interface IMergingCommand extends IUndoableCommand, IMerging
 	{
-		private var _command:ICommand;
-		private var _success:Boolean;
-		
-		public function CommandEvent(type:String, command:ICommand, success:Boolean = true)
-		{
-			super(type);
-			_command = command;
-			_success = success;
-		}
-		
 		/**
-		 * The ICommand class associated with the ControllerEvent as a read-only.
+		 * Flags the CommandHistory to treat this as a merging command.
 		 */
-		public function get command():ICommand
-		{
-			return _command;
-		}
-		
-		public function get success():Boolean
-		{
-			return _success;
-		}
-		
+		function get merging():Boolean;
 	}
 }

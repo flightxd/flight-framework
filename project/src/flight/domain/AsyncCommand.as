@@ -24,9 +24,14 @@
 
 package flight.domain
 {
+	import flash.events.Event;
+	
 	import flight.commands.IAsyncCommand;
 	import flight.net.IResponse;
 	import flight.net.Response;
+	
+	[Event(name="complete", type="flash.events.Event")]
+	[Event(name="cancel", type="flash.events.Event")]
 	
 	/**
 	 * An abstract command class that supports Asynchronous commands through dispatching
@@ -39,15 +44,32 @@ package flight.domain
 		public function get response():IResponse
 		{
 			if(_response == null) {
-				_response = new Response();
+				response = new Response();
 			}
 			return _response;
 		}
 		public function set response(value:IResponse):void
 		{
-			// TODO: merge old and new responses
+			if(_response != null) {
+				_response.removeEventListener(Event.COMPLETE, onComplete);
+				_response.removeEventListener(Event.CANCEL, onCancel);
+				value.merge(_response);
+			}
 			_response = value;
+			if(_response != null) {
+				_response.addEventListener(Event.COMPLETE, onComplete);
+				_response.addEventListener(Event.CANCEL, onCancel);
+			}
 		}
 		
+		private function onComplete(event:Event):void
+		{
+			dispatchEvent(new Event(Event.COMPLETE));
+		}
+		
+		private function onCancel(event:Event):void
+		{
+			dispatchEvent(new Event(Event.CANCEL));
+		}
 	}
 }

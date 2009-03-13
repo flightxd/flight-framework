@@ -22,25 +22,30 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.commands
+package flight.events
 {
-	/**
-	 * An interface for commands that support undo and redo and can be combined into
-	 * one undoable action.
-	 */
-	public interface ICombinableCommand extends IUndoableCommand
+	import flash.events.Event;
+	
+	import flight.commands.ICommand;
+	import flight.net.IResponse;
+	
+	public class DomainEvent extends Event
 	{
-		/**
-		 * Flags the CommandHistory to treat this as a combining command.
-		 */
-		function get combining():Boolean;
+		private var _response:IResponse;
+		
+		public function DomainEvent(type:String, response:IResponse)
+		{
+			super(type);
+			_response = response;
+		}
 		
 		/**
-		 * Gives the first executed command the opportunity to combine itself with
-		 * another combinable command which was called later and returns the success
-		 * of the combination. If the combination fails, will execute the combining
-		 * command as a new command.
+		 * The IResponse class associated with the DomainEvent as a read-only.
 		 */
-		 function combine(command:ICombinableCommand):Boolean;
+		public function get response():IResponse
+		{
+			return _response;
+		}
+		
 	}
 }

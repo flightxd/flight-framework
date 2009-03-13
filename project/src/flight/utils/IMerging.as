@@ -22,14 +22,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.commands
+package flight.utils
 {
-	import flash.events.IEventDispatcher;
-	
-	import flight.net.IResponse;
-	
-	public interface IAsyncCommand extends IEventDispatcher, ICommand
+	public interface IMerging
 	{
-		function get response():IResponse;
+		function merge(source:Object):Boolean;
 	}
 }

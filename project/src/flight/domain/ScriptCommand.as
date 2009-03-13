@@ -24,9 +24,10 @@
 
 package flight.domain
 {
-	import flight.commands.ICommand;
+	import flight.errors.CommandError;
+	import flight.net.Response;
 
-	public class ScriptCommand extends Command
+	public class ScriptCommand extends AsyncCommand
 	{
 		public var script:Function;
 		public var params:Array;
@@ -39,7 +40,22 @@ package flight.domain
 		
 		override public function execute():void
 		{
-			executeScript(script, params);
+			try {
+				var result:Object = executeScript(script, params);
+			
+				if(result is Response) {
+					response = result as Response;
+				} else if(result is Error) {
+					response.cancel(result as Error);
+				} else {
+					response.complete(result);
+				}
+			} catch(error:CommandError) {
+				response.cancel(error);
+				throw error;
+			} catch(error:Error) {
+				response.cancel(error);
+			}
 		}
 		
 		protected function executeScript(script:Function, params:Array = null):*

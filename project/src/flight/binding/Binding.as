@@ -265,7 +265,7 @@ package flight.binding
 				if(source is IEventDispatcher) {
 					var changeEvents:Array = getBindingEvents(source, prop);
 					for each(var changeEvent:String in changeEvents) {
-						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange);
+						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange, false, 100, true);
 					}
 				} else {
 					trace("Warning: Property '" + prop + "' is not bindable in " + getClassName(source) + ".");

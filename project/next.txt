@@ -1,3 +1,5 @@
+* Consider implementing IMerging in ValueObjects - BE sure to make clone, merge and equals available globally
+
 * refactor bind to move applyOnly out and property-updates in.
 
 * review to see if a Config can be made into an implicit singleton (for instantiation and auto-complete)

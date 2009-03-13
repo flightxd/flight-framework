@@ -25,6 +25,7 @@
 package flight.commands
 {
 	import flight.events.PropertyEvent;
+	import flight.net.Response;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
 	
@@ -34,8 +35,7 @@ package flight.commands
 	 */
 	public class CommandHistory extends ValueObject implements ICommandHistory
 	{
-		protected var combiningCommand:ICombinableCommand;
-		protected var asyncError:Boolean = false;
+		protected var mergingCommand:IMergingCommand;
 		
 		private var _canUndo:Boolean = false;
 		private var _canRedo:Boolean = false;
@@ -176,29 +176,33 @@ package flight.commands
 				command.execute();
 			} else {
 				
-				if(command is ICombinableCommand && ICombinableCommand(command).combining) {
+				if(command is IMergingCommand && IMergingCommand(command).merging) {
 					
-					if(combiningCommand == null || getType(combiningCommand) != getType(command)) {
-						combiningCommand = command as ICombinableCommand;
+					if(mergingCommand == null || getType(mergingCommand) != getType(command)) {
+						mergingCommand = command as IMergingCommand;
 					} else {
 						
-						var combined:Boolean = combiningCommand.combine(command as ICombinableCommand);
-						if(combined) {
+						var merged:Boolean = mergingCommand.merge(command as IMergingCommand);
+						if(merged) {
 							return;
 						}
 						
-						combiningCommand = command as ICombinableCommand;
+						mergingCommand = command as IMergingCommand;
 					}
 					
 				} else {
-					combiningCommand = null;
+					mergingCommand = null;
 				}
 				
 				command.execute();
 				
 				if(command is IAsyncCommand) {
-					IAsyncCommand(command).response.addFaultHandler(onAsyncError, command);
-					// TODO: exit execution now if there was a fault...
+					var asyncCommand:IAsyncCommand = command as IAsyncCommand;
+					if(asyncCommand.response.status == Response.FAULT) {
+						return;
+					}
+					
+					asyncCommand.response.addFaultHandler(onAsyncFault, command);
 				}
 				
 				
@@ -249,15 +253,15 @@ package flight.commands
 		}
 		
 		/**
-		 * Resets the combining command behavior.
+		 * Resets the merging command behavior.
 		 */
-		public function resetCombining():Boolean
+		public function resetMerging():Boolean
 		{
-			if(combiningCommand == null) {
+			if(mergingCommand == null) {
 				return false;
 			}
 			
-			combiningCommand = null;
+			mergingCommand = null;
 			return true;
 		}
 		
@@ -320,7 +324,7 @@ package flight.commands
 		/**
 		 * Catches asynchronous commands upon cancelation to remove from the history.
 		 */
-		private function onAsyncError(error:Error, command:IAsyncCommand):void
+		private function onAsyncFault(error:Error, command:IAsyncCommand):void
 		{
 			var index:int = _commands.indexOf(command);
 			if(index != -1) {

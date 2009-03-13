@@ -28,8 +28,9 @@ package flight.domain
 	import flight.commands.CommandHistory;
 	import flight.commands.ICommand;
 	import flight.commands.ICommandHistory;
-	import flight.events.CommandEvent;
+	import flight.errors.CommandError;
 	import flight.events.PropertyEvent;
+	import flight.net.Response;
 	import flight.utils.Registry;
 	
 	/**
@@ -109,7 +110,8 @@ package flight.domain
 			var command:ICommand = commandHistory.currentCommand;
 			var success:Boolean = commandHistory.undo();
 			if(success) {
-				dispatchEvent(new CommandEvent(getCommandType(command), command, false));
+				dispatchResponse(getCommandType(command), new Response().cancel
+								 						( new CommandError(command, "Undo action.") ));
 			}
 			return success;
 		}
@@ -122,17 +124,17 @@ package flight.domain
 			var success:Boolean = commandHistory.redo();
 			var command:ICommand = commandHistory.currentCommand;
 			if(success) {
-				dispatchEvent(new CommandEvent(getCommandType(command), command, true));
+				dispatchResponse(getCommandType(command), new Response().complete(command));
 			}
 			return success;
 		}
 		
 		/**
-		 * Resets the combining command behavior.
+		 * Resets the merging command behavior.
 		 */
-		public function resetCombining():Boolean
+		public function resetMerging():Boolean
 		{
-			return commandHistory.resetCombining();
+			return commandHistory.resetMerging();
 		}
 		
 		/**

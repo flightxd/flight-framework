@@ -34,7 +34,9 @@ package flight.domain
 	import flight.commands.ICommandFactory;
 	import flight.commands.ICommandInvoker;
 	import flight.errors.CommandError;
-	import flight.events.CommandEvent;
+	import flight.events.DomainEvent;
+	import flight.net.IResponse;
+	import flight.net.Response;
 	import flight.utils.Registry;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
@@ -154,32 +156,32 @@ package flight.domain
 			return command;
 		}
 		
-		public function dispatchCommand(type:String, command:ICommand = null, success:Boolean = true):void
+		public function dispatchResponse(type:String, response:IResponse):void
 		{
 			if(willTrigger(type)) {
-				dispatchEvent( new CommandEvent(type, command, success) );
+				dispatchEvent( new DomainEvent(type, response) );
 			}
 		}
 		
 		/**
 		 * Primary method for invoking commands in the Domain class.
 		 */
-		public function execute(type:String, properties:Object = null):Object
+		public function execute(type:String, properties:Object = null):IResponse
 		{
 			if(!d.executing[type]) {
 				d.executing[type] = true;
+				d.response = null;
 				
 				var command:ICommand = createCommand(type, properties);
-				var result:Object = command;
 				
 				if(command != null) {
 					executeCommand(command);
 				} else {
-					result = executeScript(type, properties);
+					executeScript(type, properties);
 				}
 				
 				d.executing[type] = false;
-				return result;
+				return d.response;
 			}
 			return null;
 		}
@@ -203,21 +205,26 @@ package flight.domain
 				} else {
 					command.execute();
 				}
-			} catch(e:CommandError) {
+				
+				if(command is IAsyncCommand) {
+					d.response = IAsyncCommand(command).response;
+				} else {
+					d.response = new Response().complete(command);		// stored here for return from DomainController.execute()
+					dispatchResponse(getCommandType(command), d.response);
+				}
+			} catch(error:CommandError) {
 				if(command is IAsyncCommand) {
 					releaseAsyncCommand(command as IAsyncCommand);
 				}
-			}
-			
-			if( !(command is IAsyncCommand) ) {
-				dispatchCommand(getCommandType(command), command);
+				d.response = new Response().cancel(error)
+				dispatchResponse(getCommandType(command), d.response);
 			}
 		}
 		
-		protected function executeScript(type:String, params:Object = null):Object
+		protected function executeScript(type:String, params:Object = null):void
 		{
 			if( !(type in this && this[type] is Function) ) {
-				return false;
+				return;
 			}
 			
 			var script:Function = this[type];
@@ -225,29 +232,32 @@ package flight.domain
 								script.apply(null, [].concat(params)) :
 								script();
 			
-			dispatchCommand(type, null);
-			return result;
+			d.response = (result is IResponse) ? result as IResponse : new Response().complete(result);
+			dispatchResponse(type, d.response);
 		}
 		
 		protected function registerAsyncCommand(command:IAsyncCommand):void
 		{
 			d.asyncExecutions[command] = true;
-			command.response.addResultHandler(onAsyncEvent, command)
-							.addResultHandler(onAsyncEvent, command);
+			command.addEventListener(Event.COMPLETE, onAsyncEvent);
+			command.addEventListener(Event.CANCEL, onAsyncEvent);
 		}
 		
 		protected function releaseAsyncCommand(command:IAsyncCommand):void
 		{
+			command.removeEventListener(Event.COMPLETE, onAsyncEvent);
+			command.removeEventListener(Event.CANCEL, onAsyncEvent);
 			delete d.asyncExecutions[command];
 		}
 		
 		/**
 		 * Catches asynchronous commands upon completion and dispatches an event.
 		 */
-		private function onAsyncEvent(response:Object, command:IAsyncCommand):void
+		private function onAsyncEvent(event:Event):void
 		{
-			releaseAsyncCommand(command);
-			dispatchCommand(getCommandType(command), command, !(response is Error));
+			var asyncCommand:IAsyncCommand = event.target as IAsyncCommand;
+			releaseAsyncCommand(asyncCommand);
+			dispatchResponse(getCommandType(asyncCommand), asyncCommand.response);
 		}
 		
 		private static function getArgumentList(command:ICommand):Array
@@ -309,7 +319,8 @@ package flight.domain
 
 import flight.commands.ICommandInvoker;
 import flash.utils.Dictionary;
-import flash.events.EventDispatcher;	
+import flash.events.EventDispatcher;
+import flight.net.IResponse;	
 
 class Data
 {
@@ -331,6 +342,7 @@ class Data
 	
 	public var asyncExecutions:Dictionary = new Dictionary();		// keeps a strong reference to each IAsyncCommand until completed or canceled
 	public var executing:Dictionary = new Dictionary();				// the type of the currently executing script, used to avoid unwanted recursion
+	public var response:IResponse;
 	
 }
 

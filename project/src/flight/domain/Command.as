@@ -38,17 +38,14 @@ package flight.domain
 		{
 		}
 		
-		
 		public function initialized(document:Object, id:String):void
 		{
-			// TODO: fix this up to what it needs to be (shouldn't only happen in an MXML document
-//			if (document is DomainController) {
-//				if ("client" in this) {
-//					var clientClass:Class = Type.getPropertyType(this, "client");
-//					this["client"] = (document is clientClass ? document : new clientClass());
-//				}
-//				DomainController(document).addCommand(id, getType(this));
-//			}
+			if(document is DomainController) {
+				if("client" in this) {
+					this["client"] = document;
+				}
+				DomainController(document).addCommand(id, getType(this));
+			}
 		}
 		
 	}

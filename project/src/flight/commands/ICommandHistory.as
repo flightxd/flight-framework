@@ -57,9 +57,9 @@ package flight.commands
 		function redo():Boolean;
 		
 		/**
-		 * Resets the combining command behavior.
+		 * Resets the merging command behavior.
 		 */
-		function resetCombining():Boolean;
+		function resetMerging():Boolean;
 		
 		/**
 		 * Releases all commands from the history.

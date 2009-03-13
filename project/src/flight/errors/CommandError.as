@@ -24,12 +24,21 @@
 
 package flight.errors
 {
+	import flight.commands.ICommand;
+	
 	public class CommandError extends Error
 	{
-		public function CommandError(message:String="", id:int=0)
+		private var _command:ICommand;
+		
+		public function CommandError(command:ICommand, message:String="", id:int=0)
 		{
+			_command = command;
 			super(message, id);
 		}
 		
+		public function get command():ICommand
+		{
+			return _command;
+		}
 	}
 }

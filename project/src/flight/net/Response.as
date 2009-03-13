@@ -25,25 +25,37 @@
 package flight.net
 {
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
 	
 	import flight.errors.ResponseError;
+	import flight.events.PropertyEvent;
 	
-	public class Response implements IResponse
+	[Event(name="complete", type="flash.events.Event")]
+	[Event(name="cancel", type="flash.events.Event")]
+	
+	public class Response implements IEventDispatcher, IResponse
 	{
 		public static const PROGRESS:String = "progress";
 		public static const RESULT:String = "result";
 		public static const FAULT:String = "fault";
 		
-		public var status:String = PROGRESS;
-		public var result:Object;
-		public var error:Error;
+		protected var result:Object;
+		protected var fault:Error;
 		
-		protected var eventInfo:Array = [];
 		protected var resultHandlers:Array = [];
 		protected var faultHandlers:Array = [];
 		
+		private var completeEvents:Array;
+		private var progressEvents:Array;
+		private var cancelEvents:Array;
+		
+		private var _response:IEventDispatcher;
+		private var _status:String = PROGRESS;
+		private var _progress:Number = 0;
+		
+		/* 
 		public function Response(dispatcher:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
 																	 cancelEvent:String = Event.CANCEL)
 		{
@@ -52,13 +64,17 @@ package flight.net
 				addCancelEvent(dispatcher, cancelEvent);
 			}
 		}
+		 */
+		[Bindable(event="propertyChange", flight="true")]
+		public function get status():String
+		{
+			return _status;
+		}
 		
+		[Bindable(event="propertyChange", flight="true")]
 		public function get progress():Number
 		{
-			return 0;
-		}
-		public function set progress(value:Number):void
-		{
+			return _progress;
 		}
 		
 		/**
@@ -75,10 +91,10 @@ package flight.net
 		 * @param Additional parameters to pass to this handler upon execution.
 		 * @return A reference to this instance for method chaining.
 		 */
-		public function addResultHandler(handler:Function, ... params):IResponse
+		public function addResultHandler(handler:Function, ... resultParams):IResponse
 		{
-			params.unshift(handler);
-			resultHandlers.push(params);
+			resultParams.unshift(handler);
+			resultHandlers.push(resultParams);
 			if(status == RESULT) {
 				complete(result);
 			}
@@ -95,70 +111,112 @@ package flight.net
 		 * @param Additional parameters to pass to this handler upon execution.
 		 * @return A reference to this instance for method chaining.
 		 */
-		public function addFaultHandler(handler:Function, ... params):IResponse
+		public function addFaultHandler(handler:Function, ... faultParams):IResponse
 		{
-			params.unshift(handler);
-			faultHandlers.push(params);
+			faultParams.unshift(handler);
+			faultHandlers.push(faultParams);
 			if(status == FAULT) {
-				cancel(error);
+				cancel(fault);
 			}
 			return this;
 		}
 		
 		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String, resultProperty:String = "target"):void
 		{
-			eventInfo.push( [eventDispatcher, eventType, resultProperty] );
+			if(completeEvents == null) {
+				completeEvents = [];
+			}
+			completeEvents.push( [eventDispatcher, eventType, resultProperty] );
 			eventDispatcher.addEventListener(eventType, onComplete);
+		}
+		
+		public function addProgressEvent(eventDispatcher:IEventDispatcher, eventType:String,
+										 progressProperty:String = "bytesLoaded", totalProperty:String = "bytesTotal"):void
+		{
+			if(progressEvents == null) {
+				progressEvents = [];
+			}
+			progressEvents.push( [eventDispatcher, eventType, progressProperty, totalProperty] );
+			eventDispatcher.addEventListener(eventType, onProgress);
 		}
 		
 		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
 		{
-			eventInfo.push( [eventDispatcher, eventType, faultProperty] );
+			if(cancelEvents == null) {
+				cancelEvents = [];
+			}
+			cancelEvents.push( [eventDispatcher, eventType, faultProperty] );
 			eventDispatcher.addEventListener(eventType, onCancel);
 		}
 		
-		public function complete(result:Object):void
+		public function complete(data:Object):IResponse
 		{
-			this.result = result;
+			result = data;
+			
+			var oldValues:Array = [_status, _progress];
+			_status = RESULT;
+			_progress = 1;
+			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
 			try {
 				for each(var params:Array in resultHandlers) {
 					var handler:Function = params[0];
-					params[0] = this.result;
-					var data:* = handler.apply(null, params);
-					if (data !== undefined) { // i.e. return type was not void
-						this.result = data;
+					params[0] = result;
+					var formatted:* = handler.apply(null, params);
+					if (formatted !== undefined) { // i.e. return type was not void
+						result = formatted;
 					}
 				}
+				
+				dispatchEvent(new Event(Event.COMPLETE));
+				release();
 			} catch(e:ResponseError) {
 				cancel(e);
 			}
 			
-			resultHandlers = [];
-			status = RESULT;
-			progress = 1;
-			release();
+			return this;
 		}
 		
-		public function cancel(error:Error):void
+		public function cancel(error:Error):IResponse
 		{
-			this.error = error;
+			fault = error;
+			
+			var oldValues:Array = [_status, _progress];
+			_status = FAULT;
+			_progress = 1;
+			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
 			for each(var params:Array in faultHandlers) {
 				var handler:Function = params[0];
-				params[0] = this.error;
-				var data:* = handler.apply(null, params) as Error;
-				if (data !== undefined) { // i.e. return type was not void
-					this.error = data;
+				params[0] = fault;
+				var formatted:* = handler.apply(null, params);
+				if (formatted !== undefined) { // i.e. return type was not void
+					fault = formatted;
 				}
 			}
 			
-			faultHandlers = [];
-			status = FAULT;
-			progress = 1;
+			dispatchEvent(new Event(Event.CANCEL));
 			release();
+			return this;
 		}
 		
+		public function merge(source:Object):Boolean
+		{
+			if(source is Response) {
+				
+				resultHandlers = resultHandlers.concat(source.resultHandlers);
+				faultHandlers = faultHandlers.concat(source.resultHandlers);
+				
+				if(status == RESULT) {
+					complete(result);
+				} else if(status == FAULT) {
+					cancel(fault);
+				}
+				return true;
+			}
+			
+			return false;
+		}
 		
 		public function createResponder():Responder
 		{
@@ -170,34 +228,69 @@ package flight.net
 		{
 			var eventDispatcher:IEventDispatcher;
 			var eventType:String;
-			var i:int;
+			var args:Array;
 			
-			for(i = 0; i < eventInfo.length; i++) {
-				eventDispatcher = eventInfo[i][0];
-				eventType = eventInfo[i][1];
+			resultHandlers = [];
+			faultHandlers = [];
+			
+			for each(args in completeEvents) {
+				eventDispatcher = args[0];
+				eventType = args[1];
 				eventDispatcher.removeEventListener(eventType, onComplete);
+			}
+			
+			for each(args in progressEvents) {
+				eventDispatcher = args[0];
+				eventType = args[1];
+				eventDispatcher.removeEventListener(eventType, onProgress);
+			}
+			
+			for each(args in cancelEvents) {
+				eventDispatcher = args[0];
+				eventType = args[1];
 				eventDispatcher.removeEventListener(eventType, onCancel);
 			}
+			
+			_response = null;
 		}
 		
 		private function onComplete(event:Event):void
 		{
-			var info:Array = getEventInfo(event);
-			if(info != null) {
-				complete(event[info[2]]);
+			var info:Array = getEventInfo(event, completeEvents);
+			var prop:String = info[2];
+			if(prop in event) {
+				complete(event[prop]);
 			} else {
 				complete(event.target);
 			}
 		}
 		
+		private function onProgress(event:Event):void
+		{
+			var oldValue:Object = _progress;
+			var info:Array = getEventInfo(event, progressEvents);
+			var prop:String = info[2];
+			if(prop in event) {
+				_progress = parseFloat(event[prop]);
+				prop = info[3];
+				if(prop in event) {
+					_progress /= parseFloat(event[prop]);
+				}
+			} else {
+				_progress += .1 * (1 - _progress);
+			}
+			PropertyEvent.dispatchChange(this, "progress", oldValue, _progress);
+		}
+		
 		private function onCancel(event:Event):void
 		{
-			var info:Array = getEventInfo(event);
+			var info:Array = getEventInfo(event, cancelEvents);
+			var prop:String = info[2];
 			var error:Object;
-			if(info != null) {
-				error = event[info[2]];
+			if(prop in event) {
+				error = event[prop];
 				if( !(error is Error) ) {
-					error = new Error(event[info[2]]);
+					error = new Error(event[prop]);
 				}
 				cancel(error as Error);
 			} else {
@@ -205,14 +298,56 @@ package flight.net
 			}
 		}
 		
-		private function getEventInfo(match:Event):Array
+		private function getEventInfo(match:Event, eventsList:Array):Array
 		{
-			for each(var info:Array in eventInfo) {
-				if(info[0] == match.target && info[1] == match.type) {
-					return info;
+			for each(var args:Array in eventsList) {
+				if(args[0] == match.target && args[1] == match.type) {
+					return args;
 				}
 			}
 			return null;
+		}
+		
+		
+		
+		
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
+		{
+			if(_response == null) {
+				_response = new EventDispatcher(this);
+			}
+			_response.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
+		{
+			if(_response != null) {
+				_response.removeEventListener(type, listener, useCapture);
+			}
+		}
+		
+		public function dispatchEvent(event:Event):Boolean
+		{
+			if(_response != null && _response.hasEventListener(event.type)) {
+				return _response.dispatchEvent(event);
+			}
+			return false;
+		}
+		
+		public function hasEventListener(type:String):Boolean
+		{
+			if(_response != null) {
+				return _response.hasEventListener(type);
+			}
+			return false;
+		}
+		
+		public function willTrigger(type:String):Boolean
+		{
+			if(_response != null) {
+				return _response.willTrigger(type);
+			}
+			return false;
 		}
 	}
 }

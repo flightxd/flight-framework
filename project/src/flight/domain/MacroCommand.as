@@ -38,6 +38,7 @@ package flight.domain
 	 * a list of many commands.
 	 */
 	[DefaultProperty("commands")]
+	// TODO: implement IMergingCommand, then get rid of implementations and allow them to be 'implements' on sublcasses
 	public class MacroCommand extends AsyncCommand implements IUndoableCommand
 	{
 		public var queue:Boolean = true;
@@ -140,30 +141,32 @@ package flight.domain
 				}
 				
 				if(currentCommand is IAsyncCommand && queue) {
-					
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
-						asyncCommand.response.addResultHandler(onCommandComplete)
-											 .addFaultHandler(onCommandCancel);
-						
-						asyncCommand.execute();
+					// TODO: determine if this is the right method to intercept automatic command execution for custom direction
+					// or if a MacroCommand.pause() would be a better implementation
+					if(!asyncCommand.hasEventListener(Event.COMPLETE)) {
+						asyncCommand.addEventListener(Event.COMPLETE, onAsyncComplete)
+						asyncCommand.response.addFaultHandler(onCommandFault);
+					}
+					asyncCommand.execute();
 				} else {
 					currentCommand.execute();
 					executeNext();
 				}
 			} else {
-//				response.complete();		// TODO: complete the command by triggering response completion
+				response.complete(this);
 			}
 		}
 		
-		private function onCommandComplete(event:Event):void
+		private function onAsyncComplete(event:Event):void
 		{
 			executeNext();
 		}
 		
-		private function onCommandCancel(event:Event):void
+		private function onCommandFault(error:Error):void
 		{
 			if(atomic) {
-//				response.cancel();		// TODO: cancel the command by triggering response cancelation
+				response.cancel(error);
 			} else {
 				executeNext();
 			}

@@ -7,11 +7,11 @@
 <classEntry path="flight.binding.utils.DispatcherProxy"/>
 <classEntry path="flight.commands.CommandHistory"/>
 <classEntry path="flight.commands.IAsyncCommand"/>
-<classEntry path="flight.commands.ICombinableCommand"/>
 <classEntry path="flight.commands.ICommand"/>
 <classEntry path="flight.commands.ICommandFactory"/>
 <classEntry path="flight.commands.ICommandHistory"/>
 <classEntry path="flight.commands.ICommandInvoker"/>
+<classEntry path="flight.commands.IMergingCommand"/>
 <classEntry path="flight.commands.IUndoableCommand"/>
 <classEntry path="flight.config.Config"/>
 <classEntry path="flight.config.FlashVarsConfig"/>
@@ -29,7 +29,7 @@
 <classEntry path="flight.errors.InstantiationError"/>
 <classEntry path="flight.errors.InvalidConstructorError"/>
 <classEntry path="flight.errors.ResponseError"/>
-<classEntry path="flight.events.CommandEvent"/>
+<classEntry path="flight.events.DomainEvent"/>
 <classEntry path="flight.events.MessageLogEvent"/>
 <classEntry path="flight.events.PropertyEvent"/>
 <classEntry path="flight.events.ValueObjectEditorEvent"/>
@@ -48,6 +48,7 @@
 <classEntry path="flight.services.remoting.FaultEvent"/>
 <classEntry path="flight.services.remoting.PendingCall"/>
 <classEntry path="flight.services.remoting.ResultEvent"/>
+<classEntry path="flight.utils.IMerging"/>
 <classEntry path="flight.utils.Registry"/>
 <classEntry path="flight.utils.Type"/>
 <classEntry path="flight.utils.config"/>
