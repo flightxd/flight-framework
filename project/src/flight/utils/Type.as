@@ -111,6 +111,10 @@ package flight.utils
 		
 		public static function registerType(value:Object):Boolean
 		{
+			if( !(value is Class) ) {
+				value = getType(value);
+			}
+			
 			var alias:String = describeType(value).@alias;
 			if(!alias.length) {		// if not already registered
 				registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
