@@ -155,7 +155,11 @@ package flight.domain
 						currentCommand.execute();
 						executeNext();
 					} catch(error:CommandError) {
-						response.cancel(error);
+						if (atomic) {
+							response.cancel(error);
+						} else {
+							executeNext();
+						}
 					}
 				}
 			} else {
