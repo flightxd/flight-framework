@@ -37,6 +37,7 @@ package flight.domain
 	import flight.events.DomainEvent;
 	import flight.net.IResponse;
 	import flight.net.Response;
+	import flight.utils.Singleton;
 	import flight.utils.Registry;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
@@ -48,9 +49,9 @@ package flight.domain
 	 * Domain acts as an interface to a CommandHistory.
 	 * It exposes methods such as undo/redo and routes IUndoableCommands to the current history.  
 	 */
-	public class DomainController implements IEventDispatcher, ICommandInvoker, ICommandFactory, IMXMLObject
+	public class DomainController extends Singleton implements IEventDispatcher, ICommandInvoker, ICommandFactory
 	{
-		protected var _invoker:ICommandInvoker;
+		protected var invoker:ICommandInvoker;
 		
 		/**
 		 * Associative array of command classes organized by their designated type.
@@ -62,50 +63,17 @@ package flight.domain
 		 */
 		protected var typesByCommand:Dictionary = new Dictionary(true);
 		
-		protected var eventDispatcher:EventDispatcher;
-		
 		protected var asyncExecutions:Dictionary = new Dictionary();		// keeps a strong reference to each IAsyncCommand until completed or canceled
 		protected var executing:Dictionary = new Dictionary();				// the type of the currently executing script, used to avoid unwanted recursion
 		protected var response:IResponse;
 		
+		public function DomainController()
+		{
+		}
 		
 		public function get type():Class
 		{
 			return getType(this);
-		}
-		
-		protected function get invoker():ICommandInvoker
-		{
-			return _invoker;
-		}
-		protected function set invoker(value:ICommandInvoker):void
-		{
-			_invoker = value;
-		}
-		
-		/**
-		 * Set up this object.
-		 */
-		protected function initController():void
-		{
-		}
-		
-		/**
-		 * Allows DomainController to be created in MXML in several places but
-		 * refer to the same instance.
-		 */
-		public function initialized(document:Object, id:String):void
-		{
-			var type:Class = getType(this);
-			var instance:Object = Registry.lookup(type);
-			if (instance) {
-				document[id] = instance
-			} else {
-				Registry.register(type, this);
-				// set up commands or do whatever you might want to do in the
-				// constructor but shouldn't since the object might be throw-away
-				initController(); 
-			}
 		}
 		
 		/**
@@ -303,47 +271,6 @@ package flight.domain
 				}
 			}
 			return list;
-		}
-		
-		
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
-		{
-			if(eventDispatcher == null) {
-				eventDispatcher = new EventDispatcher(this);
-			}
-			
-			eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
-		{
-			if(eventDispatcher != null) {
-				eventDispatcher.removeEventListener(type, listener, useCapture);
-			}
-		}
-		
-		public function dispatchEvent(event:Event):Boolean
-		{
-			if(eventDispatcher != null && eventDispatcher.hasEventListener(event.type)) {
-				return eventDispatcher.dispatchEvent(event);
-			}
-			return false;
-		}
-		
-		public function hasEventListener(type:String):Boolean
-		{
-			if(eventDispatcher != null) {
-				return eventDispatcher.hasEventListener(type);
-			}
-			return false;
-		}
-		
-		public function willTrigger(type:String):Boolean
-		{
-			if(eventDispatcher != null) {
-				return eventDispatcher.willTrigger(type);
-			}
-			return false;
 		}
 		
 	}

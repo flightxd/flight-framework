@@ -31,7 +31,7 @@ package flight.domain
 	import flight.errors.CommandError;
 	import flight.events.PropertyEvent;
 	import flight.net.Response;
-	import flight.utils.Registry;
+	import flight.utils.Singleton;
 	
 	/**
 	 * HistoryDomain acts as an interface to a CommandHistory.
@@ -39,16 +39,13 @@ package flight.domain
 	 */
 	public class HistoryController extends DomainController implements ICommandHistory
 	{
-		private var d:Data = Registry.getInstance(Data, type) as Data;
+		private var _commandHistory:CommandHistory = new CommandHistory();
 		
 		public function HistoryController()
 		{
-			if(!d.initialized) {
-				d.initialized = true;
-				Bind.addListener(onHistoryChange, this, "commandHistory.canUndo");
-				Bind.addListener(onHistoryChange, this, "commandHistory.canRedo");
-				Bind.addListener(onHistoryChange, this, "commandHistory.undoLimit");
-			}
+			Bind.addListener(onHistoryChange, this, "commandHistory.canUndo");
+			Bind.addListener(onHistoryChange, this, "commandHistory.canRedo");
+			Bind.addListener(onHistoryChange, this, "commandHistory.undoLimit");
 		}
 		
 		/**
@@ -57,7 +54,7 @@ package flight.domain
 		[Bindable(event="propertyChange", flight="true")]
 		public function get canUndo():Boolean
 		{
-			return commandHistory.canUndo;
+			return _commandHistory.canUndo;
 		}
 		
 		/**
@@ -66,7 +63,7 @@ package flight.domain
 		[Bindable(event="propertyChange", flight="true")]
 		public function get canRedo():Boolean
 		{
-			return commandHistory.canRedo;
+			return _commandHistory.canRedo;
 		}
 		
 		/**
@@ -75,11 +72,11 @@ package flight.domain
 		[Bindable(event="propertyChange", flight="true")]
 		public function get undoLimit():int
 		{
-			return commandHistory.undoLimit;
+			return _commandHistory.undoLimit;
 		}
 		public function set undoLimit(value:int):void
 		{
-			commandHistory.undoLimit = value;
+			_commandHistory.undoLimit = value;
 		}
 		
 		/**
@@ -88,17 +85,17 @@ package flight.domain
 		[Bindable(event="propertyChange", flight="true")]
 		public function get commandHistory():CommandHistory
 		{
-			return d.commandHistory;
+			return _commandHistory;
 		}
 		public function set commandHistory(value:CommandHistory):void
 		{
-			if(d.commandHistory == value) {
-				var oldValue:Object = d.commandHistory;
+			if(_commandHistory == value) {
+				var oldValue:Object = _commandHistory;
 				
-				d.commandHistory = value;
+				_commandHistory = value;
 				invoker = value;
 				
-				PropertyEvent.dispatchChange(this, "commandHistory", oldValue, d.commandHistory);
+				PropertyEvent.dispatchChange(this, "commandHistory", oldValue, _commandHistory);
 			}
 		}
 		
@@ -107,8 +104,8 @@ package flight.domain
 		 */
 		public function undo():Boolean
 		{
-			var command:ICommand = commandHistory.currentCommand;
-			var success:Boolean = commandHistory.undo();
+			var command:ICommand = _commandHistory.currentCommand;
+			var success:Boolean = _commandHistory.undo();
 			if(success) {
 				dispatchResponse(getCommandType(command), new Response().cancel
 								 						( new CommandError(command, "Undo action.") ));
@@ -121,8 +118,8 @@ package flight.domain
 		 */
 		public function redo():Boolean
 		{
-			var success:Boolean = commandHistory.redo();
-			var command:ICommand = commandHistory.currentCommand;
+			var success:Boolean = _commandHistory.redo();
+			var command:ICommand = _commandHistory.currentCommand;
 			if(success) {
 				dispatchResponse(getCommandType(command), new Response().complete(command));
 			}
@@ -134,7 +131,7 @@ package flight.domain
 		 */
 		public function resetMerging():Boolean
 		{
-			return commandHistory.resetMerging();
+			return _commandHistory.resetMerging();
 		}
 		
 		/**
@@ -142,7 +139,7 @@ package flight.domain
 		 */
 		public function clearHistory():Boolean
 		{
-			return commandHistory.clearHistory();
+			return _commandHistory.clearHistory();
 		}
 		
 		private function onHistoryChange(event:PropertyEvent):void
@@ -152,14 +149,3 @@ package flight.domain
 		
 	}
 }
-
-import flight.commands.CommandHistory;
-
-class Data
-{
-	public var initialized:Boolean = false;
-	
-	public var commandHistory:CommandHistory = new CommandHistory();
-	
-}
-

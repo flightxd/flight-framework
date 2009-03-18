@@ -43,6 +43,7 @@
 <classEntry path="flight.net.Response"/>
 <classEntry path="flight.utils.IMerging"/>
 <classEntry path="flight.utils.Registry"/>
+<classEntry path="flight.utils.Singleton"/>
 <classEntry path="flight.utils.Type"/>
 <classEntry path="flight.utils.config"/>
 <classEntry path="flight.utils.getClassName"/>
