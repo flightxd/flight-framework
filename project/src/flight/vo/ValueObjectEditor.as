@@ -72,6 +72,11 @@ package flight.vo
 			return _source;
 		}
 		
+		public function get getCopy():IValueObject
+		{
+			return _copy;
+		}
+		
 		public function revert():void
 		{
 			
