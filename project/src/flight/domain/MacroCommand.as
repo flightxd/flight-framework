@@ -29,6 +29,7 @@ package flight.domain
 	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
 	import flight.commands.IUndoableCommand;
+	import flight.errors.CommandError;
 	import flight.events.PropertyEvent;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
@@ -150,8 +151,12 @@ package flight.domain
 					}
 					asyncCommand.execute();
 				} else {
-					currentCommand.execute();
-					executeNext();
+					try {
+						currentCommand.execute();
+						executeNext();
+					} catch(error:CommandError) {
+						response.cancel(error);
+					}
 				}
 			} else {
 				response.complete(this);
