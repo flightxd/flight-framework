@@ -21,6 +21,7 @@
 <classEntry path="flight.domain.AsyncCommand"/>
 <classEntry path="flight.domain.Command"/>
 <classEntry path="flight.domain.DomainController"/>
+<classEntry path="flight.domain.DomainModel"/>
 <classEntry path="flight.domain.HistoryController"/>
 <classEntry path="flight.domain.MacroCommand"/>
 <classEntry path="flight.domain.ScriptCommand"/>

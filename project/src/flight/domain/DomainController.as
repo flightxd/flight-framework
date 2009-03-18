@@ -42,11 +42,13 @@ package flight.domain
 	import flight.utils.getClassName;
 	import flight.utils.getType;
 	
+	import mx.core.IMXMLObject;
+	
 	/**
 	 * Domain acts as an interface to a CommandHistory.
 	 * It exposes methods such as undo/redo and routes IUndoableCommands to the current history.  
 	 */
-	public class DomainController implements IEventDispatcher, ICommandInvoker, ICommandFactory
+	public class DomainController implements IEventDispatcher, ICommandInvoker, ICommandFactory, IMXMLObject
 	{
 		protected var _invoker:ICommandInvoker;
 		
