@@ -180,7 +180,7 @@ package flight.vo
 	
 		override flash_proxy function nextValue(index:int):* 
 		{ 
-			return _props[index - 1];
+			return _copy[_props[index - 1]];
 		}
 		
 		/**
