@@ -50,15 +50,20 @@ package flight.domain
 		}
 		public function set response(value:IResponse):void
 		{
-			if(_response != null) {
-				_response.removeEventListener(Event.COMPLETE, onComplete);
-				_response.removeEventListener(Event.CANCEL, onCancel);
-				value.merge(_response);
+			var r:Response = _response as Response;
+			var v:Response = value as Response;
+			
+			if(r != null) {
+				r.removeEventListener(Event.COMPLETE, onComplete);
+				r.removeEventListener(Event.CANCEL, onCancel);
+				if (v != null) {
+					v.merge(r);
+				}
 			}
 			_response = value;
-			if(_response != null) {
-				_response.addEventListener(Event.COMPLETE, onComplete);
-				_response.addEventListener(Event.CANCEL, onCancel);
+			if(v != null) {
+				v.addEventListener(Event.COMPLETE, onComplete);
+				v.addEventListener(Event.CANCEL, onCancel);
 			}
 		}
 		

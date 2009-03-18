@@ -31,11 +31,12 @@ package flight.net
 	
 	import flight.errors.ResponseError;
 	import flight.events.PropertyEvent;
+	import flight.utils.IMerging;
 	
 	[Event(name="complete", type="flash.events.Event")]
 	[Event(name="cancel", type="flash.events.Event")]
 	
-	public class Response implements IEventDispatcher, IResponse
+	public class Response implements IEventDispatcher, IResponse, IMerging
 	{
 		public static const PROGRESS:String = "progress";
 		public static const RESULT:String = "result";
@@ -55,7 +56,7 @@ package flight.net
 		private var _status:String = PROGRESS;
 		private var _progress:Number = 0;
 		
-		/* 
+		
 		public function Response(dispatcher:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
 																	 cancelEvent:String = Event.CANCEL)
 		{
@@ -64,7 +65,7 @@ package flight.net
 				addCancelEvent(dispatcher, cancelEvent);
 			}
 		}
-		 */
+		
 		[Bindable(event="propertyChange", flight="true")]
 		public function get status():String
 		{
@@ -101,6 +102,23 @@ package flight.net
 			return this;
 		}
 		
+		/**
+		 * Removes a handler function which has been previously added.
+		 * 
+		 * @param The handler function
+		 * @return A reference to this instance for method chaining.
+		 */
+		public function removeResultHandler(handler:Function):IResponse
+		{
+			var length:uint = resultHandlers.length;
+			for (var i:uint = 0; i < length; i++) {
+				if (resultHandlers[i][0] == handler) {
+					resultHandlers.splice(i--, 1);
+				}
+			}
+			return this;
+		}
+		
 		
 		/**
 		 * Adds a handler function to handle any errors or faults of  the
@@ -117,6 +135,23 @@ package flight.net
 			faultHandlers.push(faultParams);
 			if(status == FAULT) {
 				cancel(fault);
+			}
+			return this;
+		}
+		
+		/**
+		 * Removes a handler function which has been previously added.
+		 * 
+		 * @param The handler function
+		 * @return A reference to this instance for method chaining.
+		 */
+		public function removeFaultHandler(handler:Function):IResponse
+		{
+			var length:uint = faultHandlers.length;
+			for (var i:uint = 0; i < length; i++) {
+				if (faultHandlers[i][0] == handler) {
+					faultHandlers.splice(i--, 1);
+				}
 			}
 			return this;
 		}
