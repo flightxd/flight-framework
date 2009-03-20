@@ -3,8 +3,6 @@
 <includeClasses>
 <classEntry path="flight.binding.Bind"/>
 <classEntry path="flight.binding.Binding"/>
-<classEntry path="flight.binding.utils.BindingUtils"/>
-<classEntry path="flight.binding.utils.DispatcherProxy"/>
 <classEntry path="flight.commands.CommandHistory"/>
 <classEntry path="flight.commands.IAsyncCommand"/>
 <classEntry path="flight.commands.ICommand"/>
@@ -31,6 +29,7 @@
 <classEntry path="flight.errors.InvalidConstructorError"/>
 <classEntry path="flight.errors.ResponseError"/>
 <classEntry path="flight.events.DomainEvent"/>
+<classEntry path="flight.events.FlightDispatcher"/>
 <classEntry path="flight.events.MessageLogEvent"/>
 <classEntry path="flight.events.PropertyEvent"/>
 <classEntry path="flight.events.ValueObjectEditorEvent"/>
@@ -48,7 +47,6 @@
 <classEntry path="flight.utils.config"/>
 <classEntry path="flight.utils.getClassName"/>
 <classEntry path="flight.utils.getType"/>
-<classEntry path="flight.vo.DynamicObject"/>
 <classEntry path="flight.vo.IValueObject"/>
 <classEntry path="flight.vo.ValueObject"/>
 <classEntry path="flight.vo.ValueObjectEditor"/>

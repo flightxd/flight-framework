@@ -22,72 +22,67 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.vo
+package flight.events
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.utils.Proxy;
 	
-	import flight.utils.Type;
-	
-	dynamic public class DynamicObject extends Proxy implements IEventDispatcher, IValueObject
+	public class FlightDispatcher implements IEventDispatcher
 	{
-		private var eventDispatcher:EventDispatcher;
+		protected var dispatcher:EventDispatcher;
 		
-		public function DynamicObject()
+		public function propertyChange(property:String, oldValue:Object, newValue:Object):void
 		{
-		}
-		
-		public function equals(value:Object):Boolean
-		{
-			return Type.equals(this, value);
-		}
-		
-		public function clone():Object
-		{
-			return Type.clone(this);
+			PropertyEvent.dispatchChange(this, property, oldValue, newValue);
 		}
 		
 		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
 		{
-			if(eventDispatcher == null) {
-				eventDispatcher = new EventDispatcher(this);
+			if(dispatcher == null) {
+				dispatcher = new EventDispatcher(this);
 			}
 			
-			eventDispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+			dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
 		}
 		
 		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
 		{
-			if(eventDispatcher != null) {
-				eventDispatcher.removeEventListener(type, listener, useCapture);
+			if(dispatcher != null) {
+				dispatcher.removeEventListener(type, listener, useCapture);
 			}
+		}
+		
+		public function dispatch(type:String):Boolean
+		{
+			if(dispatcher != null && dispatcher.hasEventListener(type)) {
+				return dispatcher.dispatchEvent( new Event(type) );
+			}
+			return false;
 		}
 		
 		public function dispatchEvent(event:Event):Boolean
 		{
-			if(eventDispatcher != null) {
-				return eventDispatcher.dispatchEvent(event);
+			if(dispatcher != null && dispatcher.hasEventListener(event.type)) {
+				return dispatcher.dispatchEvent(event);
 			}
 			return false;
 		}
 		
 		public function hasEventListener(type:String):Boolean
 		{
-			if(eventDispatcher != null) {
-				return eventDispatcher.hasEventListener(type);
+			if(dispatcher != null) {
+				return dispatcher.hasEventListener(type);
 			}
 			return false;
 		}
 		
 		public function willTrigger(type:String):Boolean
 		{
-			if(eventDispatcher != null) {
-				return eventDispatcher.willTrigger(type);
+			if(dispatcher != null) {
+				return dispatcher.willTrigger(type);
 			}
 			return false;
 		}
-		
 	}
 }

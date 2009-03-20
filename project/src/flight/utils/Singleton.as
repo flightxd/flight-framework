@@ -1,10 +1,10 @@
 package flight.utils
 {
-	import flash.events.EventDispatcher;
+	import flight.events.FlightDispatcher;
 	
 	import mx.core.IMXMLObject;
 	
-	public class Singleton extends EventDispatcher implements IMXMLObject
+	public class Singleton extends FlightDispatcher implements IMXMLObject
 	{
 		public function Singleton()
 		{

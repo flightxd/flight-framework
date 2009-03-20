@@ -30,13 +30,14 @@ package flight.net
 	import flash.net.Responder;
 	
 	import flight.errors.ResponseError;
+	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
 	import flight.utils.IMerging;
 	
 	[Event(name="complete", type="flash.events.Event")]
 	[Event(name="cancel", type="flash.events.Event")]
 	
-	public class Response implements IEventDispatcher, IResponse, IMerging
+	public class Response extends FlightDispatcher implements IResponse, IMerging
 	{
 		public static const PROGRESS:String = "progress";
 		public static const RESULT:String = "result";
@@ -52,17 +53,16 @@ package flight.net
 		private var progressEvents:Array;
 		private var cancelEvents:Array;
 		
-		private var _response:IEventDispatcher;
 		private var _status:String = PROGRESS;
 		private var _progress:Number = 0;
 		
 		
-		public function Response(dispatcher:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
-																	 cancelEvent:String = Event.CANCEL)
+		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
+																 cancelEvent:String = Event.CANCEL)
 		{
-			if (dispatcher != null) {
-				addCompleteEvent(dispatcher, completeEvent);
-				addCancelEvent(dispatcher, cancelEvent);
+			if (target != null) {
+				addCompleteEvent(target, completeEvent);
+				addCancelEvent(target, cancelEvent);
 			}
 		}
 		
@@ -156,32 +156,32 @@ package flight.net
 			return this;
 		}
 		
-		public function addCompleteEvent(eventDispatcher:IEventDispatcher, eventType:String, resultProperty:String = "target"):void
+		public function addCompleteEvent(target:IEventDispatcher, eventType:String, resultProperty:String = "target"):void
 		{
 			if(completeEvents == null) {
 				completeEvents = [];
 			}
-			completeEvents.push( [eventDispatcher, eventType, resultProperty] );
-			eventDispatcher.addEventListener(eventType, onComplete);
+			completeEvents.push( [target, eventType, resultProperty] );
+			target.addEventListener(eventType, onComplete);
 		}
 		
-		public function addProgressEvent(eventDispatcher:IEventDispatcher, eventType:String,
+		public function addProgressEvent(target:IEventDispatcher, eventType:String,
 										 progressProperty:String = "bytesLoaded", totalProperty:String = "bytesTotal"):void
 		{
 			if(progressEvents == null) {
 				progressEvents = [];
 			}
-			progressEvents.push( [eventDispatcher, eventType, progressProperty, totalProperty] );
-			eventDispatcher.addEventListener(eventType, onProgress);
+			progressEvents.push( [target, eventType, progressProperty, totalProperty] );
+			target.addEventListener(eventType, onProgress);
 		}
 		
-		public function addCancelEvent(eventDispatcher:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
+		public function addCancelEvent(target:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
 		{
 			if(cancelEvents == null) {
 				cancelEvents = [];
 			}
-			cancelEvents.push( [eventDispatcher, eventType, faultProperty] );
-			eventDispatcher.addEventListener(eventType, onCancel);
+			cancelEvents.push( [target, eventType, faultProperty] );
+			target.addEventListener(eventType, onCancel);
 		}
 		
 		public function complete(data:Object):IResponse
@@ -261,7 +261,7 @@ package flight.net
 		
 		protected function release():void
 		{
-			var eventDispatcher:IEventDispatcher;
+			var target:IEventDispatcher;
 			var eventType:String;
 			var args:Array;
 			
@@ -269,24 +269,24 @@ package flight.net
 			faultHandlers = [];
 			
 			for each(args in completeEvents) {
-				eventDispatcher = args[0];
+				target = args[0];
 				eventType = args[1];
-				eventDispatcher.removeEventListener(eventType, onComplete);
+				target.removeEventListener(eventType, onComplete);
 			}
 			
 			for each(args in progressEvents) {
-				eventDispatcher = args[0];
+				target = args[0];
 				eventType = args[1];
-				eventDispatcher.removeEventListener(eventType, onProgress);
+				target.removeEventListener(eventType, onProgress);
 			}
 			
 			for each(args in cancelEvents) {
-				eventDispatcher = args[0];
+				target = args[0];
 				eventType = args[1];
-				eventDispatcher.removeEventListener(eventType, onCancel);
+				target.removeEventListener(eventType, onCancel);
 			}
 			
-			_response = null;
+			dispatcher = null;
 		}
 		
 		private function onComplete(event:Event):void
@@ -343,46 +343,5 @@ package flight.net
 			return null;
 		}
 		
-		
-		
-		
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
-		{
-			if(_response == null) {
-				_response = new EventDispatcher(this);
-			}
-			_response.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
-		{
-			if(_response != null) {
-				_response.removeEventListener(type, listener, useCapture);
-			}
-		}
-		
-		public function dispatchEvent(event:Event):Boolean
-		{
-			if(_response != null && _response.hasEventListener(event.type)) {
-				return _response.dispatchEvent(event);
-			}
-			return false;
-		}
-		
-		public function hasEventListener(type:String):Boolean
-		{
-			if(_response != null) {
-				return _response.hasEventListener(type);
-			}
-			return false;
-		}
-		
-		public function willTrigger(type:String):Boolean
-		{
-			if(_response != null) {
-				return _response.willTrigger(type);
-			}
-			return false;
-		}
 	}
 }

@@ -1,3 +1,5 @@
+* Revisit multi-dispatch of propertyChange events for binding (in PropertyEvent.dispatchChange)
+
 * Consider implementing IMerging in ValueObjects - BE sure to make clone, merge and equals available globally
 
 * refactor bind to move applyOnly out and property-updates in.
@@ -22,11 +24,10 @@ fix CommandItem (commands don't require constructor args anymore)
 
 *update DomainModel to take out it's innards - making it a static VO class edit tool (move VO and IVO into the same package)
 
-create base EventDispatcher (just in time, ondemand) outside of VO??
+√ create base EventDispatcher (just in time, ondemand) outside of VO (called FlightDispatcher for now)
 
 
-make dynamic object a proxy
+√ make dynamic object a proxy (removed DynamicObject until its use becomes more clear)
 
-add some semblance of hierarchy to Config ... merge=true merges it to its parent, and to the global.
-
-clean up Config, allow merge=false or something that allows nested properties.
+√ add some semblance of hierarchy to Config ... merge=true merges it to its parent, and to the global. (taken care of with Object MXML classes)
+clean up Config

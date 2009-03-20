@@ -25,17 +25,17 @@
 package flight.config
 {
 	import flash.display.DisplayObject;
-	import flash.events.EventDispatcher;
 	import flash.utils.getDefinitionByName;
 	
 	import flight.events.PropertyEvent;
+	import flight.utils.Singleton;
 	import flight.utils.Type;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.core.IMXMLObject;
 	
 	[DefaultProperty("source")]
-	dynamic public class Config extends EventDispatcher implements IMXMLObject
+	dynamic public class Config extends Singleton
 	{
 		private static const REGISTRY_SCOPE:String = "Config";
 		
@@ -140,8 +140,9 @@ if (value is Array) {
 		}
 		
 		private var inited:uint;
-		public function initialized(document:Object, id:String):void
+		override public function initialized(document:Object, id:String):void
 		{
+			super.initialized(document, id);
 			if(id != null) {
 				this._id = id;
 			}

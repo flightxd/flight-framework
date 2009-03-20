@@ -25,10 +25,10 @@
 package flight.binding
 {
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
+	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
@@ -39,7 +39,7 @@ package flight.binding
 	/**
 	 * 
 	 */
-	public class Binding extends EventDispatcher
+	public class Binding extends FlightDispatcher
 	{
 		public var applyOnly:Boolean = false;
 		
