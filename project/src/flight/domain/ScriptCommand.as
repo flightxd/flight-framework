@@ -40,21 +40,14 @@ package flight.domain
 		
 		override public function execute():void
 		{
-			try {
-				var result:Object = executeScript(script, params);
+			var result:Object = executeScript(script, params);
 			
-				if(result is Response) {
-					response = result as Response;
-				} else if(result is Error) {
-					response.cancel(result as Error);
-				} else {
-					response.complete(result);
-				}
-			} catch(error:CommandError) {
-				response.cancel(error);
-				throw error;
-			} catch(error:Error) {
-				response.cancel(error);
+			if(result is Response) {
+				response = result as Response;
+			} else if(result is Error) {
+				response.cancel(result as Error);
+			} else {
+				response.complete(result);
 			}
 		}
 		

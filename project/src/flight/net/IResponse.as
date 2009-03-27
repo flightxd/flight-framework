@@ -24,9 +24,6 @@
 
 package flight.net
 {
-	import flash.events.IEventDispatcher;
-	
-	import flight.utils.IMerging;
 	
 	public interface IResponse
 	{
@@ -61,14 +58,6 @@ package flight.net
 		function addResultHandler(handler:Function, ... resultParams):IResponse;
 		
 		/**
-		 * Removes a handler function which has been previously added.
-		 * 
-		 * @param The handler function
-		 * @return A reference to this instance for method chaining.
-		 */
-		function removeResultHandler(handler:Function):IResponse;
-		
-		/**
 		 * Adds a handler function to handle any errors or faults of  the
 		 * response. The function should accept an ErrorEvent as the first
 		 * parameter.
@@ -78,14 +67,6 @@ package flight.net
 		 * @return A reference to this instance for method chaining.
 		 */
 		function addFaultHandler(handler:Function, ... faultParams):IResponse;
-		
-		/**
-		 * Removes a handler function which has been previously added.
-		 * 
-		 * @param The handler function
-		 * @return A reference to this instance for method chaining.
-		 */
-		function removeFaultHandler(handler:Function):IResponse;
 		
 		/**
 		 * Triggers the result cycle.

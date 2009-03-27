@@ -25,7 +25,6 @@
 package flight.domain
 {
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
@@ -38,12 +37,9 @@ package flight.domain
 	import flight.net.IResponse;
 	import flight.net.Response;
 	import flight.utils.Singleton;
-	import flight.utils.Registry;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
-	
-	import mx.core.IMXMLObject;
 	
 	/**
 	 * Domain acts as an interface to a CommandHistory.
@@ -69,11 +65,6 @@ package flight.domain
 		
 		public function DomainController()
 		{
-		}
-		
-		public function get type():Class
-		{
-			return getType(this);
 		}
 		
 		/**

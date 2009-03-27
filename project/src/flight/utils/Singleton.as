@@ -21,7 +21,9 @@ package flight.utils
 		
 		public function initialized(document:Object, id:String):void
 		{
-			document[id] = getInstance(this);
+			if(id != null) {
+				document[id] = getInstance(this);
+			}
 		}
 		
 		
