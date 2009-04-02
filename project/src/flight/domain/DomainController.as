@@ -123,12 +123,6 @@ package flight.domain
 				throw new Error("Command " + getClassName(commandClass) + " is not of type ICommand.");
 			}
 			
-			if("client" in command) {
-				var clientClass:Class = Type.getPropertyType(command, "client");
-				command["client"] = (this is clientClass ? this : new clientClass());
-			}
-			
-			
 			for(var i:String in properties) {
 				if(i in command) {
 					command[i] = properties[i];

@@ -41,9 +41,6 @@ package flight.domain
 		public function initialized(document:Object, id:String):void
 		{
 			if(document is DomainController) {
-				if("client" in this) {
-					this["client"] = document;
-				}
 				DomainController(document).addCommand(id, getType(this));
 			}
 		}

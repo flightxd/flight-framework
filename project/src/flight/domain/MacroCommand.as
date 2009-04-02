@@ -43,7 +43,6 @@ package flight.domain
 	public class MacroCommand extends AsyncCommand implements IUndoableCommand
 	{
 		public var queue:Boolean = true;
-		public var client:DomainController;
 		public var atomic:Boolean = true;
 		
 		private var currentCommand:ICommand;
@@ -136,10 +135,6 @@ package flight.domain
 			if(i < commands.length) {
 				
 				currentCommand = commands[i];
-				if("client" in currentCommand) {
-					var clientClass:Class = Type.getPropertyType(currentCommand, "client");
-					currentCommand["client"] = (client is clientClass ? client : new clientClass());
-				}
 				
 				if(currentCommand is IAsyncCommand && queue) {
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
