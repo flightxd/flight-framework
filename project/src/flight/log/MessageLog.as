@@ -40,7 +40,7 @@ package flight.log
 		
 		public static function getMessageLog(id:String = "default"):MessageLog
 		{
-			if(logs[id] == null) {
+			if (logs[id] == null) {
 				logs[id] = new MessageLog();
 			}
 			return logs[id];
@@ -112,7 +112,7 @@ package flight.log
 		
 		override flash_proxy function callProperty(methodName:*, ...args):*
 		{
-			if(userDefinedPriorities[methodName] == null) {
+			if (userDefinedPriorities[methodName] == null) {
 				return false;
 			}
 			
@@ -157,7 +157,7 @@ package flight.log
 		
 		public function dispatchEvent(event:Event):Boolean
 		{
-			if(filters[MessageLogEvent(event).priority]) {
+			if (filters[MessageLogEvent(event).priority]) {
 				return false;
 			}
 			

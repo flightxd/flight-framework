@@ -21,7 +21,7 @@ package flight.utils
 		
 		public function initialized(document:Object, id:String):void
 		{
-			if(id != null) {
+			if (id != null) {
 				document[id] = getInstance(this);
 			}
 		}
@@ -30,12 +30,12 @@ package flight.utils
 		
 		public static function getInstance(classObject:Object, scope:Object = null):Object
 		{
-			if( !(classObject is Class) ) {
+			if ( !(classObject is Class) ) {
 				classObject = getType(classObject);
 			}
 			
 			var instance:Object = Registry.lookup(classObject, scope);
-			if(instance == null) {
+			if (instance == null) {
 				instance = new classObject();
 				Registry.register(classObject, instance, scope);
 			}
@@ -46,7 +46,7 @@ package flight.utils
 		{
 			var classObject:Class = getType(instance);
 			
-			if(Registry.lookup(classObject, scope) == null) {
+			if (Registry.lookup(classObject, scope) == null) {
 				Registry.register(classObject, instance, scope);
 			} else {
 				throw new Error(getClassName(classObject) + " class cannot be instantiated more than once.");

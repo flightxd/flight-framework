@@ -63,17 +63,17 @@ package flight.config
 		}
 		public function set configurations(value:Object):void
 		{
-			if(_configurations == value) {
+			if (_configurations == value) {
 				return;
 			}
 			
 var newValue:Object = {};
 
-for(var i:String in _configurations) {
+for (var i:String in _configurations) {
 	newValue[i] = _configurations[i];
 }
 
-for(i in value) {
+for (i in value) {
 	newValue[i] = value[i];
 	// subclass configs may not be dynamic, we will fail silently
 	try {
@@ -93,7 +93,7 @@ for(i in value) {
 		}
 		public function set source(value:Array):void
 		{
-			if(_source == value) {
+			if (_source == value) {
 				return;
 			}
 			
@@ -103,7 +103,7 @@ if (value is Array) {
 		var mainSource:Array = main.source.concat();
 	}
 	
-	for each(var source:Config in value) {
+	for each (var source:Config in value) {
 		// let's not duplicate sources in main, they'll all filter up
 		var index:int;
 		if (mainSource && (index = mainSource.indexOf(source)) != -1) {
@@ -130,7 +130,7 @@ if (value is Array) {
 		}
 		public function set viewReference(value:DisplayObject):void
 		{
-			if(_viewReference == value) {
+			if (_viewReference == value) {
 				return;
 			}
 			
@@ -143,24 +143,24 @@ if (value is Array) {
 		override public function initialized(document:Object, id:String):void
 		{
 			super.initialized(document, id);
-			if(id != null) {
+			if (id != null) {
 				this._id = id;
 			}
 //			trace("Initialized", ++inited, "times");
-			if(viewReference != null) {
+			if (viewReference != null) {
 				return;
 			}
-			if(document is DisplayObject) {
+			if (document is DisplayObject) {
 				viewReference = document as DisplayObject;
 			}
-			else if(document is Config) {
+			else if (document is Config) {
 				BindingUtils.bindProperty(this, "viewReference", document, "viewReference");
 			}
 			
 			// initialize the configurations object
 			var configurations:Object = {};
 			var propList:XMLList = getProperties();
-			for each(var prop:XML in propList) {
+			for each (var prop:XML in propList) {
 				var name:String = prop.@name;
 				configurations[name] = this[name];
 			}
@@ -174,10 +174,10 @@ if (value is Array) {
 		{
 			var propList:XMLList = getProperties();
 			
-			for(var name:String in source) {
+			for (var name:String in source) {
 				var prop:XMLList = propList.(@name == name);
 				var value:Object = source[name];
-				if(value != null && prop.length()) {
+				if (value != null && prop.length()) {
 					var type:Class = getDefinitionByName(prop.@type.toString()) as Class;
 					source[name] = (type == Boolean && value == "false") ? false : type(value);
 				}
@@ -196,7 +196,7 @@ if (value is Array) {
 			}
 			
 			var empty:Boolean = true;
-			for(var prop:String in data) {
+			for (var prop:String in data) {
 				empty = false;
 				break;
 			}
@@ -209,10 +209,10 @@ if (value is Array) {
 			var sources:Array = source as Array;
 			var newConfigurations:Object = {};
 			
-			for each(var config:Config in sources) {
+			for each (var config:Config in sources) {
 				// populate the dynamic properties
 				var configurations:Object = config.configurations;
-				for(var i:String in configurations) {
+				for (var i:String in configurations) {
 					newConfigurations[i] = configurations[i];
 				}
 			}

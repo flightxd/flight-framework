@@ -30,7 +30,7 @@ package flight.errors
 	{
 		public static function abstractMethodCall(thisReference:Object, callee:Function, methodName:String):void
 		{
-			if(thisReference[methodName] == callee) {
+			if (thisReference[methodName] == callee) {
 				throw(new AbstractMethodCallError(thisReference, methodName));
 			}
 		}

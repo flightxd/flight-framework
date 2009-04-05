@@ -37,7 +37,7 @@ package flight.list
 		
 		public function ArrayContainer(source:Object = null)
 		{
-			if(source != null) {
+			if (source != null) {
 				this.source = source;
 			}
 		}
@@ -45,14 +45,14 @@ package flight.list
 		[Bindable(event="propertyChange", flight="true")]
 		public function get source():Object
 		{
-			if(_source == null) {
+			if (_source == null) {
 				_source = [];
 			}
 			return _source;
 		}
 		public function set source(value:Object):void
 		{
-			if(_source == value) {
+			if (_source == value) {
 				return;
 			}
 			
@@ -127,7 +127,7 @@ package flight.list
 			var item1:Object = source[index1];
 			var item2:Object = source[index2];
 			
-			if(index1 < index2) {
+			if (index1 < index2) {
 				source.splice(index2, 1);
 				source.splice(index1, 1, item2);
 				source.splice(index2, 0, item1);
@@ -142,8 +142,8 @@ package flight.list
 		override public function equals(value:Object):Boolean
 		{
 			var compare:Object = value is ArrayContainer ? ArrayContainer(value).source : value;
-			for(var i:String in compare) {
-				if(compare[i] != source[i]) {
+			for (var i:String in compare) {
+				if (compare[i] != source[i]) {
 					return false;
 				}
 			}

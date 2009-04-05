@@ -39,21 +39,21 @@ package flight.utils
 		
 		public static function register(index:Object, value:Object, scope:Object = null):void
 		{
-			if(scopeIndex[scope] == null) {
+			if (scopeIndex[scope] == null) {
 				scopeIndex[scope] = new Dictionary();
 			}
 			
 			scopeIndex[scope][index] = value;
 			
 			// update any "watching" for this particular 'index', on any scope
-			for each(var syncDetail:Array in watcherByIndex[index]) {
+			for each (var syncDetail:Array in watcherByIndex[index]) {
 				syncDetail[0][ syncDetail[1] ] = lookup(index, syncDetail[3]);
 			}
 		}
 		
 		public static function unregister(index:Object, scope:Object = null):void
 		{
-			if(scopeIndex[scope] == null) {
+			if (scopeIndex[scope] == null) {
 				scopeIndex[scope] = new Dictionary();
 			}
 			
@@ -62,23 +62,23 @@ package flight.utils
 		
 		public static function lookup(index:Object, scope:Object = null):*
 		{
-			if(scope != null) {
+			if (scope != null) {
 				var values:Dictionary = scopeIndex[scope];			// get values by scope (null is treated as the global scope)
 				
-				if(values != null && index in values) {
+				if (values != null && index in values) {
 					return values[index];
 				}
 				
-				if("owner" in scope && scope["owner"] != null) {
+				if ("owner" in scope && scope["owner"] != null) {
 					return lookup(index, scope["owner"]);
 				}
-				if("parent" in scope && scope["parent"] != null) {
+				if ("parent" in scope && scope["parent"] != null) {
 					return lookup(index, scope["parent"]);
 				}
 			}
 			
 			// check the global scope last (indexed by null)
-			if(scopeIndex[null] == null) {
+			if (scopeIndex[null] == null) {
 				scopeIndex[null] = new Dictionary();
 			}
 			return scopeIndex[null][index];
@@ -89,12 +89,12 @@ package flight.utils
 			desync(site, prop);
 			var syncDetail:Array = arguments;
 			
-			if(watcherByIndex[index] == null) {
+			if (watcherByIndex[index] == null) {
 				watcherByIndex[index] = [];
 			}
 			watcherByIndex[index].push(syncDetail);
 			
-			if(watcherBySite[site] == null) {
+			if (watcherBySite[site] == null) {
 				watcherBySite[site] = {};
 			}
 			watcherBySite[site][prop] = syncDetail;
@@ -105,12 +105,12 @@ package flight.utils
 		public static function desync(site:Object, prop:String):void
 		{
 			var bySite:Object = watcherBySite[site];
-			if(bySite == null) {
+			if (bySite == null) {
 				return;
 			}
 			
 			var syncDetail:Array = bySite[prop];
-			if(syncDetail == null) {
+			if (syncDetail == null) {
 				return;
 			}
 			

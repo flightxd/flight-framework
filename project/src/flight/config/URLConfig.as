@@ -31,11 +31,11 @@ package flight.config
 	{
 		public function URLConfig()
 		{
-			if(!ExternalInterface.available) {
+			if (!ExternalInterface.available) {
 				return;
 			}
 			var queryString:String = ExternalInterface.call("eval", "location.search");
-			if(queryString.length > 0) {
+			if (queryString.length > 0) {
 				configurations = formatSource(new URLVariables(queryString.substr(1)));	// remove the '?' from the search string
 			}
 		}

@@ -42,9 +42,9 @@ package flight.domain
 		{
 			var result:Object = executeScript(script, params);
 			
-			if(result is Response) {
+			if (result is Response) {
 				response = result as Response;
-			} else if(result is Error) {
+			} else if (result is Error) {
 				response.cancel(result as Error);
 			} else {
 				response.complete(result);
@@ -53,11 +53,11 @@ package flight.domain
 		
 		protected function executeScript(script:Function, params:Array = null):*
 		{
-			if(script == null) {
+			if (script == null) {
 				return;
 			}
 			
-			if(params != null) {
+			if (params != null) {
 				return script.apply(null, [].concat(params));
 			} else {
 				return script();

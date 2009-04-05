@@ -80,7 +80,7 @@ package flight.binding
 		}
 		public function set disabled(value:Boolean):void
 		{
-			if(_disabled != value) {
+			if (_disabled != value) {
 				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
 				var oldValue:Object = _disabled;
 				_disabled = value;
@@ -100,7 +100,7 @@ package flight.binding
 		}
 		public function set twoWay(value:Boolean):void
 		{
-			if(_twoWay != value) {
+			if (_twoWay != value) {
 				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
 				var oldValue:Object = _twoWay;
 				_twoWay = value;
@@ -120,7 +120,7 @@ package flight.binding
 		}
 		public function set target(value:Object):void
 		{
-			if(_target != value) {
+			if (_target != value) {
 				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
 				var oldValue:Object = _target;
 				_target = value;
@@ -142,7 +142,7 @@ package flight.binding
 		}
 		public function set targetPath(value:String):void
 		{
-			if(_targetPath != value) {
+			if (_targetPath != value) {
 				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
 				var oldValue:Object = _targetPath;
 				_targetPath = value;
@@ -162,7 +162,7 @@ package flight.binding
 		}
 		public function set source(value:Object):void
 		{
-			if(_source != value) {
+			if (_source != value) {
 				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
 				var oldValue:Object = _source;
 				_source = value;
@@ -184,7 +184,7 @@ package flight.binding
 		}
 		public function set sourcePath(value:String):void
 		{
-			if(_sourcePath != value) {
+			if (_sourcePath != value) {
 				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
 				var oldValue:Object = _sourcePath;
 				_sourcePath = value;
@@ -202,10 +202,10 @@ package flight.binding
 		 */
 		public function initialized(document:Object, id:String):void
 		{
-			if(target == null) {
+			if (target == null) {
 				target = document;
 			}
-			if(source == null) {
+			if (source == null) {
 				source = document;
 			}
 		}
@@ -220,17 +220,17 @@ package flight.binding
 		private function updateBind(oldValues:Array):void
 		{
 			var oldValue:Object = _isBound;
-			if(_isBound) {
+			if (_isBound) {
 				removeBinding(oldValues[0], oldValues[1], oldValues[2], oldValues[3]);
 				_isBound = false;
 			}
 			
-			if(!_disabled && _target != null && _targetPath != null &&
+			if (!_disabled && _target != null && _targetPath != null &&
 							 _source != null && _sourcePath != null) {
 				_isBound = addBinding(_target, _targetPath, _source, _sourcePath, _twoWay);
 			}
 			
-			if(oldValue != _isBound) {
+			if (oldValue != _isBound) {
 				PropertyEvent.dispatchChange(this, "isBound", oldValue, _isBound);
 			}
 		}
@@ -258,11 +258,11 @@ package flight.binding
 			var binding:Binding = Binding.getBinding(source, sourcePath);
 			
 			var success:Boolean;
-			if(twoWay || targetPath.split(".").length > 1) {
+			if (twoWay || targetPath.split(".").length > 1) {
 				var binding2:Binding = Binding.getBinding(target, targetPath);
 				
 				success = binding.bind(binding2, "value");
-				if(twoWay) {
+				if (twoWay) {
 					binding2.bind(binding, "value");
 				} else {
 					binding2.applyOnly = true;
@@ -294,17 +294,17 @@ package flight.binding
 			var binding:Binding = Binding.getBinding(source, sourcePath);
 			var success:Boolean = binding.unbind(target, targetPath);
 			
-			if(!success) {
+			if (!success) {
 				var binding2:Binding = Binding.getBinding(target, targetPath);
 				
 				success = binding.unbind(binding2, "value");
 				binding2.unbind(binding, "value");
-				if( !binding2.hasBinds() ) {
+				if ( !binding2.hasBinds() ) {
 					Binding.releaseBinding(binding2);
 				}
 			}
 			
-			if( !binding.hasBinds() ) {
+			if ( !binding.hasBinds() ) {
 				Binding.releaseBinding(binding);
 			}
 			return success;
@@ -343,7 +343,7 @@ package flight.binding
 		{
 			var binding:Binding = Binding.getBinding(source, sourcePath);
 			var success:Boolean = binding.unbindListener(listener);
-			if( !binding.hasBinds() ) {
+			if ( !binding.hasBinds() ) {
 				Binding.releaseBinding(binding);
 			}
 			return success;

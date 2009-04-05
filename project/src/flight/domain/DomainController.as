@@ -82,10 +82,10 @@ package flight.domain
 		 */
 		public function addCommands(commandIndex:Object):void
 		{
-			for(var i:String in commandIndex)
+			for (var i:String in commandIndex)
 			{
 				var command:ICommand = commandIndex[i] as ICommand;
-				if(command != null) {
+				if (command != null) {
 					addCommand(i, getType(command));
 				}
 			}
@@ -101,7 +101,7 @@ package flight.domain
 		
 		public function getCommandType(command:Object):String
 		{
-			if( !(command is Class) ) {
+			if ( !(command is Class) ) {
 				command = getType(command);
 			}
 			return typesByCommand[command];
@@ -114,25 +114,25 @@ package flight.domain
 		public function createCommand(type:String, properties:Object = null):ICommand
 		{
 			var commandClass:Class = getCommand(type);
-			if(commandClass == null) {
+			if (commandClass == null) {
 				return null;
 			}
 			
 			var command:ICommand = new commandClass() as ICommand;
-			if(command == null) {
+			if (command == null) {
 				throw new Error("Command " + getClassName(commandClass) + " is not of type ICommand.");
 			}
 			
-			for(var i:String in properties) {
-				if(i in command) {
+			for (var i:String in properties) {
+				if (i in command) {
 					command[i] = properties[i];
 				}
 			}
 			
-			if(properties is Array) {
+			if (properties is Array) {
 				var list:Array = getArgumentList(command);
-				for(i in list) {
-					if(i in properties) {
+				for (i in list) {
+					if (i in properties) {
 						command[ list[i] ] = properties[i];
 					}
 				}
@@ -143,7 +143,7 @@ package flight.domain
 		
 		public function dispatchResponse(type:String, response:IResponse):void
 		{
-			if(willTrigger(type)) {
+			if (willTrigger(type)) {
 				dispatchEvent( new DomainEvent(type, response) );
 			}
 		}
@@ -153,13 +153,13 @@ package flight.domain
 		 */
 		public function execute(type:String, properties:Object = null):IResponse
 		{
-			if(!executing[type]) {
+			if (!executing[type]) {
 				executing[type] = true;
 				response = null;
 				
 				var command:ICommand = createCommand(type, properties);
 				
-				if(command != null) {
+				if (command != null) {
 					executeCommand(command);
 				} else {
 					executeScript(type, properties);
@@ -176,29 +176,29 @@ package flight.domain
 		 */
 		public function executeCommand(command:ICommand):void
 		{
-			if(command == null) {
+			if (command == null) {
 				return;
 			}
 			
-			if(command is IAsyncCommand) {
+			if (command is IAsyncCommand) {
 				registerAsyncCommand(command as IAsyncCommand);
 			}
 			
 			try {
-				if(invoker != null) {
+				if (invoker != null) {
 					invoker.executeCommand(command);
 				} else {
 					command.execute();
 				}
 				
-				if(command is IAsyncCommand) {
+				if (command is IAsyncCommand) {
 					response = IAsyncCommand(command).response;
 				} else {
 					response = new Response().complete(command);		// stored here for return from DomainController.execute()
 					dispatchResponse(getCommandType(command), response);
 				}
 			} catch(error:CommandError) {
-				if(command is IAsyncCommand) {
+				if (command is IAsyncCommand) {
 					releaseAsyncCommand(command as IAsyncCommand);
 				}
 				response = new Response().cancel(error)
@@ -208,7 +208,7 @@ package flight.domain
 		
 		protected function executeScript(type:String, params:Object = null):void
 		{
-			if( !(type in this && this[type] is Function) ) {
+			if ( !(type in this && this[type] is Function) ) {
 				return;
 			}
 			
@@ -250,8 +250,8 @@ package flight.domain
 			var list:Array = [];
 			
 			var argumentList:XMLList = Type.describeProperties(command, "Argument");
-			for each(var argument:XML in argumentList) {
-				if(argument.metadata.(@name == "Argument").arg.@value.length() > 0) {
+			for each (var argument:XML in argumentList) {
+				if (argument.metadata.(@name == "Argument").arg.@value.length() > 0) {
 					list[argument.metadata.(@name == "Argument").arg.@value] = argument.@name;
 				}
 			}

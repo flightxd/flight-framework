@@ -89,7 +89,7 @@ package flight.domain
 		}
 		public function set commandHistory(value:CommandHistory):void
 		{
-			if(_commandHistory == value) {
+			if (_commandHistory == value) {
 				var oldValue:Object = _commandHistory;
 				
 				_commandHistory = value;
@@ -106,7 +106,7 @@ package flight.domain
 		{
 			var command:ICommand = _commandHistory.currentCommand;
 			var success:Boolean = _commandHistory.undo();
-			if(success) {
+			if (success) {
 				dispatchResponse(getCommandType(command), new Response().cancel
 								 						( new CommandError(command, "Undo action.") ));
 			}
@@ -120,7 +120,7 @@ package flight.domain
 		{
 			var success:Boolean = _commandHistory.redo();
 			var command:ICommand = _commandHistory.currentCommand;
-			if(success) {
+			if (success) {
 				dispatchResponse(getCommandType(command), new Response().complete(command));
 			}
 			return success;

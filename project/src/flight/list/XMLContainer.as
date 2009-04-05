@@ -37,7 +37,7 @@ package flight.list
 		
 		public function XMLContainer(source:XMLList = null)
 		{
-			if(source != null) {
+			if (source != null) {
 				this.source = source;
 			}
 		}
@@ -45,14 +45,14 @@ package flight.list
 		[Bindable(event="propertyChange", flight="true")]
 		public function get source():XMLList
 		{
-			if(_source == null) {
+			if (_source == null) {
 				_source = new XMLList();
 			}
 			return _source;
 		}
 		public function set source(value:XMLList):void
 		{
-			if(_source == value) {
+			if (_source == value) {
 				return;
 			}
 			
@@ -76,7 +76,7 @@ package flight.list
 		
 		public function addItemAt(item:Object, index:int):Object
 		{
-			if(index == 0) {
+			if (index == 0) {
 				source[0] = source.length() == 0 ? item : item + source[0];
 			} else {
 				source[index-1] += item;
@@ -92,8 +92,8 @@ package flight.list
 		
 		public function getItemIndex(item:Object):int
 		{
-			for(var i:String in source) {
-				if(source[i] == item) {
+			for (var i:String in source) {
+				if (source[i] == item) {
 					return Number(i);
 				}
 			}
@@ -115,7 +115,7 @@ package flight.list
 		
 		public function removeItems():void
 		{
-			for(var i:String in source) {
+			for (var i:String in source) {
 				delete source[i];
 			}
 			dispatchEvent(new Event(Event.CHANGE));
@@ -139,7 +139,7 @@ package flight.list
 			var item1:XML = source[index1];
 			var item2:XML = source[index2];
 			
-			if(index1 < index2) {
+			if (index1 < index2) {
 				delete source[index2];
 				delete source[index1];
 				source[index2-1] += item1;

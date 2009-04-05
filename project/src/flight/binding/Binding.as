@@ -95,13 +95,13 @@ package flight.binding
 		}
 		public function set value(value:*):void
 		{
-			if(_value == value || value === undefined) {
+			if (_value == value || value === undefined) {
 				return;
 			}
 			
 			explicitValue = value;
 			var source:Object = getSource(_sourcePath.length - 1);
-			if(source != null) {
+			if (source != null) {
 				source[property] = value;
 			}
 		}
@@ -112,11 +112,11 @@ package flight.binding
 		public function bind(target:Object, property:String):Boolean
 		{
 			var bindList:Array = bindIndex[target];
-			if(bindList == null) {
+			if (bindList == null) {
 				bindList = bindIndex[target] = [];
 			}
 			
-			if(bindList.indexOf(property) != -1) {
+			if (bindList.indexOf(property) != -1) {
 				return false;
 			}
 			
@@ -131,17 +131,17 @@ package flight.binding
 		public function unbind(target:Object, property:String):Boolean
 		{
 			var bindList:Array = bindIndex[target];
-			if(bindList == null) {
+			if (bindList == null) {
 				return false;
 			}
 			
 			var i:int = bindList.indexOf(property);
-			if(i == -1) {
+			if (i == -1) {
 				return false;
 			}
 			
 			bindList.splice(i, 1);
-			if(bindList.length == 0) {
+			if (bindList.length == 0) {
 				delete bindIndex[target];
 			}
 			return true;
@@ -171,7 +171,7 @@ package flight.binding
 		 */
 		public function hasBinds():Boolean
 		{
-			for(var target:* in bindIndex) {
+			for (var target:* in bindIndex) {
 				return true;
 			}
 			
@@ -190,7 +190,7 @@ package flight.binding
 		{
 			release();
 			
-			if(sourcePath != null) {
+			if (sourcePath != null) {
 				_sourcePath = sourcePath.split(".");
 				_property = _sourcePath[ _sourcePath.length-1 ];
 			}
@@ -200,8 +200,8 @@ package flight.binding
 		
 		private function getSource(pathIndex:int = 0):Object
 		{
-			for(var source:* in indicesIndex) {
-				if(indicesIndex[source] != pathIndex) {
+			for (var source:* in indicesIndex) {
+				if (indicesIndex[source] != pathIndex) {
 					continue;
 				}
 				return source;
@@ -212,19 +212,19 @@ package flight.binding
 		
 		private function update(source:Object, pathIndex:int = 0):void
 		{
-			if(!updating) {
+			if (!updating) {
 				updating = true;
 				
 				var oldValue:Object = _value;
 				_value = bindPath(source, pathIndex);		// udpate full path
 				
-				if(oldValue != _value) {
+				if (oldValue != _value) {
 					
 					// update bound targets
-					for(var target:* in bindIndex) {
+					for (var target:* in bindIndex) {
 						
 						var bindList:Array = bindIndex[target];
-						for(var i:int = 0; i < bindList.length; i++) {
+						for (var i:int = 0; i < bindList.length; i++) {
 							
 							var prop:String = bindList[i];
 							target[prop] = _value;
@@ -240,7 +240,7 @@ package flight.binding
 		
 		private function bindPath(source:Object, pathIndex:int):*
 		{
-			if(_sourcePath.length == 0) {
+			if (_sourcePath.length == 0) {
 				return source;
 			}
 			
@@ -248,23 +248,23 @@ package flight.binding
 			
 			var prop:String;
 			var len:int = applyOnly ? _sourcePath.length - 1 : _sourcePath.length;
-			for(pathIndex; pathIndex < len; pathIndex++) {
+			for (pathIndex; pathIndex < len; pathIndex++) {
 				
-				if(source == null) {
+				if (source == null) {
 					break;
 				}
 				
 				prop = _sourcePath[pathIndex];
-				if( !(prop in source) ) {
+				if ( !(prop in source) ) {
 					trace("Warning: Binding access of undefined property '" + prop + "' in " + getClassName(source) + ".");
 					break;
 				}
 				
 				indicesIndex[source] = pathIndex;
 				
-				if(source is IEventDispatcher) {
+				if (source is IEventDispatcher) {
 					var changeEvents:Array = getBindingEvents(source, prop);
-					for each(var changeEvent:String in changeEvents) {
+					for each (var changeEvent:String in changeEvents) {
 						IEventDispatcher(source).addEventListener(changeEvent, onPropertyChange, false, 100, true);
 					}
 				} else {
@@ -276,14 +276,14 @@ package flight.binding
 			
 			_resolved = Boolean(pathIndex == len && !(applyOnly && source == null) );
 			
-			if(!_resolved) {
+			if (!_resolved) {
 				return;
 			}
 			
-			if(explicitValue != null) {
+			if (explicitValue != null) {
 				var newValue:Object = explicitValue;
 				
-				if(!applyOnly) {
+				if (!applyOnly) {
 					source = getSource(_sourcePath.length-1);
 					explicitValue = null;
 				} else {
@@ -299,15 +299,15 @@ package flight.binding
 		
 		private function unbindPath(pathIndex:int):void
 		{
-			for(var source:* in indicesIndex) {
+			for (var source:* in indicesIndex) {
 				var index:int = indicesIndex[source];
-				if(index < pathIndex) {
+				if (index < pathIndex) {
 					continue;
 				}
 				
-				if(source is IEventDispatcher) {
+				if (source is IEventDispatcher) {
 					var changeEvents:Array = getBindingEvents(source, _sourcePath[index]);
-					for each(var changeEvent:String in changeEvents) {
+					for each (var changeEvent:String in changeEvents) {
 						IEventDispatcher(source).removeEventListener(changeEvent, onPropertyChange);
 					}
 				}
@@ -320,7 +320,7 @@ package flight.binding
 			var source:Object = event.target;
 			var pathIndex:int = indicesIndex[source];
 			var prop:String = _sourcePath[pathIndex];
-			if("property" in event && event["property"] != prop) {
+			if ("property" in event && event["property"] != prop) {
 				return;
 			}
 			
@@ -339,12 +339,12 @@ package flight.binding
 		public static function getBinding(source:Object, sourcePath:String):Binding
 		{
 			var bindingList:Array = bindingIndex[source];
-			if(bindingList == null) {
+			if (bindingList == null) {
 				bindingList = bindingIndex[source] = [];
 			}
 			
 			var binding:Binding = bindingList[sourcePath];
-			if(binding == null) {
+			if (binding == null) {
 				binding = new Binding(source, sourcePath);
 				bindingList[sourcePath] = binding;
 			}
@@ -369,12 +369,12 @@ package flight.binding
 		public static function release(source:Object, sourcePath:String):Boolean
 		{
 			var bindingList:Array = bindingIndex[source];
-			if(bindingList == null) {
+			if (bindingList == null) {
 				return false;
 			}
 			
 			var binding:Binding = bindingList[sourcePath];
-			if(binding == null) {
+			if (binding == null) {
 				return false;
 			}
 			
@@ -387,7 +387,7 @@ package flight.binding
 		private static function getBindingEvents(target:Object, property:String):Array
 		{
 			var bindings:Array = describeBindings(target);
-			if(bindings[property] == null) {
+			if (bindings[property] == null) {
 				bindings[property] = [property + PropertyEvent._CHANGE];
 			}
 			return bindings[property];
@@ -395,25 +395,25 @@ package flight.binding
 		
 		private static function describeBindings(value:Object):Array
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
-			if(descCache[value] == null) {
+			if (descCache[value] == null) {
 				var desc:XMLList = Type.describeProperties(value, "Bindable");
 				var bindings:Array = descCache[value] = [];
 				
-				for each(var prop:XML in desc) {
+				for each (var prop:XML in desc) {
 					var property:String = prop.@name;
 					var changeEvents:Array = [];
 					var bindable:XMLList = prop.metadata.(@name == "Bindable");
 					
-					for each(var bind:XML in bindable) {
+					for each (var bind:XML in bindable) {
 						var changeEvent:String = (bind.arg.(@key == "event").length() != 0) ?
 												  bind.arg.(@key == "event").@value :
 												  changeEvent = bind.arg.@value;
 						
-						if(changeEvent == PropertyEvent.PROPERTY_CHANGE && bind.arg.(@key == "flight").@value == "true") {
+						if (changeEvent == PropertyEvent.PROPERTY_CHANGE && bind.arg.(@key == "flight").@value == "true") {
 							changeEvent = property + PropertyEvent._CHANGE;
 						}
 						changeEvents.push(changeEvent);

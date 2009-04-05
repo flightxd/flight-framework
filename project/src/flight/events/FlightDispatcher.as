@@ -39,7 +39,7 @@ package flight.events
 		
 		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
 		{
-			if(dispatcher == null) {
+			if (dispatcher == null) {
 				dispatcher = new EventDispatcher(this);
 			}
 			
@@ -48,14 +48,14 @@ package flight.events
 		
 		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
 		{
-			if(dispatcher != null) {
+			if (dispatcher != null) {
 				dispatcher.removeEventListener(type, listener, useCapture);
 			}
 		}
 		
 		public function dispatch(type:String):Boolean
 		{
-			if(dispatcher != null && dispatcher.hasEventListener(type)) {
+			if (dispatcher != null && dispatcher.hasEventListener(type)) {
 				return dispatcher.dispatchEvent( new Event(type) );
 			}
 			return false;
@@ -63,7 +63,7 @@ package flight.events
 		
 		public function dispatchEvent(event:Event):Boolean
 		{
-			if(dispatcher != null && dispatcher.hasEventListener(event.type)) {
+			if (dispatcher != null && dispatcher.hasEventListener(event.type)) {
 				return dispatcher.dispatchEvent(event);
 			}
 			return false;
@@ -71,7 +71,7 @@ package flight.events
 		
 		public function hasEventListener(type:String):Boolean
 		{
-			if(dispatcher != null) {
+			if (dispatcher != null) {
 				return dispatcher.hasEventListener(type);
 			}
 			return false;
@@ -79,7 +79,7 @@ package flight.events
 		
 		public function willTrigger(type:String):Boolean
 		{
-			if(dispatcher != null) {
+			if (dispatcher != null) {
 				return dispatcher.willTrigger(type);
 			}
 			return false;

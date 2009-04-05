@@ -44,7 +44,7 @@ package flight.utils
 		
 		public static function equals(value1:Object, value2:Object):Boolean
 		{
-			if(value1 == value2) {
+			if (value1 == value2) {
 				return true;
 			}
 			
@@ -72,11 +72,11 @@ package flight.utils
 		
 		public static function isType(value:Object, type:Class):Boolean
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				return value is type;
 			}
 			
-			if(value == type) {
+			if (value == type) {
 				return true;
 			}
 			
@@ -86,13 +86,13 @@ package flight.utils
 		
 		public static function getPropertyType(value:Object, property:String):Class
 		{
-			if( !(property in value) ) {
+			if ( !(property in value) ) {
 				return null;
 			}
 			
 			// retrieve the correct property type from the property list
 			var typeName:String = describeProperties(value).(@name == property)[0].@type;
-			if(!typeName) {
+			if (!typeName) {
 				return null;
 			}
 			
@@ -111,12 +111,12 @@ package flight.utils
 		
 		public static function registerType(value:Object):Boolean
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
 			var alias:String = describeType(value).@alias;
-			if(!alias.length) {		// if not already registered
+			if (!alias.length) {		// if not already registered
 				registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
 			}
 			
@@ -125,11 +125,11 @@ package flight.utils
 		
 		public static function describeType(value:Object):XML
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
-			if(typeCache[value] == null) {
+			if (typeCache[value] == null) {
 				typeCache[value] = flash.utils.describeType(value);
 			}
 			
@@ -138,11 +138,11 @@ package flight.utils
 		
 		public static function describeInheritance(value:Object):XMLList
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
-			if(inheritanceCache[value] == null) {
+			if (inheritanceCache[value] == null) {
 				inheritanceCache[value] = describeType(value).factory.*.(localName() == "extendsClass" || localName() == "implementsInterface");
 			}
 			return inheritanceCache[value];
@@ -150,22 +150,22 @@ package flight.utils
 		
 		public static function describeProperties(value:Object, metadata:String = null):XMLList
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
-			if(propertyCache[value] == null) {
+			if (propertyCache[value] == null) {
 				propertyCache[value] = describeType(value).factory.*.(localName() == "accessor" || localName() == "variable");
 			}
 			
-			if(metadata == null) {
+			if (metadata == null) {
 				return propertyCache[value];
 			}
 			
-			if(propertyCache[metadata] == null) {
+			if (propertyCache[metadata] == null) {
 				propertyCache[metadata] = new Dictionary();
 			}
-			if(propertyCache[metadata][value] == null) {
+			if (propertyCache[metadata][value] == null) {
 				propertyCache[metadata][value] = propertyCache[value].(child("metadata").(@name == metadata).length() > 0);
 			}
 			return propertyCache[metadata][value];
@@ -173,22 +173,22 @@ package flight.utils
 		
 		public static function describeMethods(value:Object, metadata:String = null):XMLList
 		{
-			if( !(value is Class) ) {
+			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
-			if(methodCache[value] == null) {
+			if (methodCache[value] == null) {
 				methodCache[value] = describeType(value).factory.method;
 			}
 			
-			if(metadata == null) {
+			if (metadata == null) {
 				return methodCache[value];
 			}
 			
-			if(methodCache[metadata] == null) {
+			if (methodCache[metadata] == null) {
 				methodCache[metadata] = new Dictionary();
 			}
-			if(methodCache[metadata][value] == null) {
+			if (methodCache[metadata][value] == null) {
 				methodCache[metadata][value] = methodCache[value].(child("metadata").(@name == metadata).length() > 0);
 			}
 			return methodCache[metadata][value];

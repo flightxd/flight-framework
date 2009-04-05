@@ -56,7 +56,7 @@ package flight.vo
 			var propList:XMLList = Type.describeProperties( value );
 				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
 
-			for each(var prop:XML in propList) {			
+			for each (var prop:XML in propList) {			
 				var name:String = prop.@name;
 				_props.push(name);
 			}
@@ -102,17 +102,17 @@ package flight.vo
 				propList = propList.(child("metadata").(@name == "Transient").length() == 0)
 			
 			// copy over class variables
-			for each(var prop:XML in propList) {
+			for each (var prop:XML in propList) {
 				
 				var name:String = prop.@name;
-				if(name in target && source[name] !== undefined) {
+				if (name in target && source[name] !== undefined) {
 					target[name] = source[name];
 				}
 			}
 			
 			// copy over dynamic properties
-			for(name in source) {
-				if(name in target && source[name] !== undefined) {
+			for (name in source) {
+				if (name in target && source[name] !== undefined) {
 					target[name] = source[name];
 				}
 			}
@@ -127,7 +127,7 @@ package flight.vo
 		{
 			var kind:String = PropertyChangeEventKind.UPDATE;
 			var modify:Boolean = modified;
-			if(_lastModified !== modify) {
+			if (_lastModified !== modify) {
 				_lastModified = modify;
 				dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, kind, 'modified', !modify, modify, this));
 			}

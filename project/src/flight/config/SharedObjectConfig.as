@@ -39,7 +39,7 @@ package flight.config
 		// TODO: is this necessary? add binding, etc?
 		public function set id(value:Object):void
 		{
-			if(_id == value) {
+			if (_id == value) {
 				return;
 			}
 			
@@ -52,7 +52,7 @@ package flight.config
 		override public function initialized(document:Object, id:String):void
 		{
 			super.initialized(document, id);
-			if(id != null) {
+			if (id != null) {
 				this.id = id;
 			}
 		}

@@ -106,25 +106,25 @@ package flight.commands
 		}
 		public function set currentPosition(value:int):void
 		{
-			if(value > _commands.length) {
+			if (value > _commands.length) {
 				value = _commands.length;
-			} else if(value < 0) {
+			} else if (value < 0) {
 				value = 0;
 			}
 			
-			if(_currentPosition != value) {
+			if (_currentPosition != value) {
 				var oldValues:Array = [_currentCommand, _currentPosition, _historyPosition];
 				
 				var i:int, command:IUndoableCommand;
-				if(_currentPosition > value) {
+				if (_currentPosition > value) {
 					
-					for(i = _currentPosition; i > value; i--) {
+					for (i = _currentPosition; i > value; i--) {
 						command = _commands[i-1];
 						command.undo();
 					}
 				} else {
 					
-					for(i = _currentPosition; i < value; i++) {
+					for (i = _currentPosition; i < value; i++) {
 						command = _commands[i];
 						command.redo();
 					}
@@ -150,12 +150,12 @@ package flight.commands
 		}
 		public function set undoLimit(value:int):void
 		{
-			if(_undoLimit != value) {
+			if (_undoLimit != value) {
 				var oldValues:Array = [_commands, _currentPosition, _undoLimit];
 				
 				_undoLimit = value > 0 ? value : int.MAX_VALUE;
 				_commands.splice(_currentPosition, _commands.length - _currentPosition);
-				if(_commands.length > _undoLimit) {
+				if (_commands.length > _undoLimit) {
 					_currentPosition = _undoLimit;
 					_commands.splice(0, _commands.length - _undoLimit);
 				}
@@ -172,18 +172,18 @@ package flight.commands
 		 */
 		public function executeCommand(command:ICommand):void
 		{
-			if( !(command is IUndoableCommand) || _commands.indexOf(command) != -1) {
+			if ( !(command is IUndoableCommand) || _commands.indexOf(command) != -1) {
 				command.execute();
 			} else {
 				
-				if(command is IMergingCommand && IMergingCommand(command).merging) {
+				if (command is IMergingCommand && IMergingCommand(command).merging) {
 					
-					if(mergingCommand == null || getType(mergingCommand) != getType(command)) {
+					if (mergingCommand == null || getType(mergingCommand) != getType(command)) {
 						mergingCommand = command as IMergingCommand;
 					} else {
 						
 						var merged:Boolean = mergingCommand.merge(command as IMergingCommand);
-						if(merged) {
+						if (merged) {
 							return;
 						}
 						
@@ -196,9 +196,9 @@ package flight.commands
 				
 				command.execute();
 				
-				if(command is IAsyncCommand) {
+				if (command is IAsyncCommand) {
 					var asyncCommand:IAsyncCommand = command as IAsyncCommand;
-					if(asyncCommand.response.status == Response.FAULT) {
+					if (asyncCommand.response.status == Response.FAULT) {
 						return;
 					}
 					
@@ -209,7 +209,7 @@ package flight.commands
 				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
 				_commands.splice(_currentPosition, _commands.length - _currentPosition, command);
-				if(_commands.length > _undoLimit) {
+				if (_commands.length > _undoLimit) {
 					_currentPosition = _undoLimit;
 					_commands.splice(0, _commands.length - _undoLimit);
 				} else {
@@ -231,7 +231,7 @@ package flight.commands
 		 */
 		public function undo():Boolean
 		{
-			if(!canUndo) {
+			if (!canUndo) {
 				return false;
 			}
 			
@@ -244,7 +244,7 @@ package flight.commands
 		 */
 		public function redo():Boolean
 		{
-			if(!canRedo) {
+			if (!canRedo) {
 				return false;
 			}
 			
@@ -257,7 +257,7 @@ package flight.commands
 		 */
 		public function resetMerging():Boolean
 		{
-			if(mergingCommand == null) {
+			if (mergingCommand == null) {
 				return false;
 			}
 			
@@ -270,7 +270,7 @@ package flight.commands
 		 */
 		public function clearHistory():Boolean
 		{
-			if(_commands.length != 0) {
+			if (_commands.length != 0) {
 				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
 				_commands = [];
@@ -303,13 +303,13 @@ package flight.commands
 		{
 			var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
 			
-			if(values.length == 1 && values[0] is Array) {
+			if (values.length == 1 && values[0] is Array) {
 				values = values[0];
 			}
 			var shift:int = values.length - deleteCount;
 			
 			_commands.splice.apply(_commands, [startIndex, deleteCount].concat(values) );
-			if(_currentPosition > startIndex) {
+			if (_currentPosition > startIndex) {
 				_historyPosition += shift;
 				_currentPosition += shift;
 				_currentCommand = _commands[_currentPosition-1];
@@ -327,7 +327,7 @@ package flight.commands
 		private function onAsyncFault(error:Error, command:IAsyncCommand):void
 		{
 			var index:int = _commands.indexOf(command);
-			if(index != -1) {
+			if (index != -1) {
 				splice(index, 1);
 			}
 		}

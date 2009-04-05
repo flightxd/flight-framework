@@ -37,11 +37,11 @@ package flight.events
 		 */
 		public static function dispatchChange(target:IEventDispatcher, property:String, oldValue:Object, newValue:Object):void
 		{
-			if( target.hasEventListener(property + _CHANGE) ) {
+			if ( target.hasEventListener(property + _CHANGE) ) {
 				target.dispatchEvent( new PropertyEvent(property + _CHANGE, property, oldValue, newValue) );
 			}
 			
-			if( target.hasEventListener(PROPERTY_CHANGE) ) {
+			if ( target.hasEventListener(PROPERTY_CHANGE) ) {
 				target.dispatchEvent( new PropertyEvent(PROPERTY_CHANGE, property, oldValue, newValue) );
 			}
 		}
@@ -51,11 +51,11 @@ package flight.events
 		 */
 		public static function dispatchChangeList(target:IEventDispatcher, properties:Array, oldValues:Array):void
 		{
-			for(var i:int = 0; i < properties.length; i++) {
+			for (var i:int = 0; i < properties.length; i++) {
 				var property:String = properties[i];
 				var oldValue:Object = oldValues[i];
 				var newValue:Object = target[property];
-				if(oldValue != newValue || newValue is Array) {
+				if (oldValue != newValue || newValue is Array) {
 			 		dispatchChange(target, property, oldValue, newValue);
 			 	}
 	 		}

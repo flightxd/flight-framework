@@ -64,7 +64,7 @@ package flight.domain
 		}
 		public function set commands(value:Array):void
 		{
-			if(_commands != value) {
+			if (_commands != value) {
 				var oldValue:Object = _commands;
 				_commands = value;
 				PropertyEvent.dispatchChange(this, "commands", oldValue, _commands);
@@ -88,11 +88,11 @@ package flight.domain
 		{
 			var i:int = (currentCommand != null) ? commands.indexOf(currentCommand) :
 												commands.length - 1;
-			if(i == commands.length-1) {
+			if (i == commands.length-1) {
 				
-				for(i; i >= 0; i--) {
+				for (i; i >= 0; i--) {
 					var command:ICommand = commands[i];
-					if(command is IUndoableCommand) {
+					if (command is IUndoableCommand) {
 						IUndoableCommand(command).undo();
 					}
 				}
@@ -103,11 +103,11 @@ package flight.domain
 		
 		public function redo():void
 		{
-			if(undone) {
+			if (undone) {
 				
-				for(var i:int = 0; i < commands.length; i++) {
+				for (var i:int = 0; i < commands.length; i++) {
 					var command:ICommand = commands[i];
-					if(command is IUndoableCommand) {
+					if (command is IUndoableCommand) {
 						IUndoableCommand(command).redo();
 					}
 				}
@@ -120,27 +120,27 @@ package flight.domain
 		{
 			var i:int = 0;
 			
-			if(command != null) {
+			if (command != null) {
 				
 				i = commands.indexOf(command);
-				if(i == -1) {
+				if (i == -1) {
 					throw new Error("Comand " + getClassName(command) + " does not exist in macro " + getClassName(this));
 				}
 				
-			} else if(currentCommand != null) {
+			} else if (currentCommand != null) {
 				i = commands.indexOf(currentCommand) + 1;
 			}
 			
 			
-			if(i < commands.length) {
+			if (i < commands.length) {
 				
 				currentCommand = commands[i];
 				
-				if(currentCommand is IAsyncCommand && queue) {
+				if (currentCommand is IAsyncCommand && queue) {
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
 					// TODO: determine if this is the right method to intercept automatic command execution for custom direction
 					// or if a MacroCommand.pause() would be a better implementation
-					if(!asyncCommand.hasEventListener(Event.COMPLETE)) {
+					if (!asyncCommand.hasEventListener(Event.COMPLETE)) {
 						asyncCommand.addEventListener(Event.COMPLETE, onAsyncComplete)
 						asyncCommand.response.addFaultHandler(onCommandFault);
 					}
@@ -165,7 +165,7 @@ package flight.domain
 		
 		private function onCommandFault(error:Error):void
 		{
-			if(atomic) {
+			if (atomic) {
 				response.cancel(error);
 			} else {
 				executeNext();

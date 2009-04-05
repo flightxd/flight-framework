@@ -39,7 +39,7 @@ package flight.config
 		
 		public override function set source(value:Array):void
 		{
-			if(super.source == value) {
+			if (super.source == value) {
 				return;
 			}
 			

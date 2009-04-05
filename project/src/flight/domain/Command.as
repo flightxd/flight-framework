@@ -40,7 +40,7 @@ package flight.domain
 		
 		public function initialized(document:Object, id:String):void
 		{
-			if(document is DomainController) {
+			if (document is DomainController) {
 				DomainController(document).addCommand(id, getType(this));
 			}
 		}

@@ -43,7 +43,7 @@ package flight.domain
 		
 		public function get response():IResponse
 		{
-			if(_response == null) {
+			if (_response == null) {
 				response = new Response();
 			}
 			return _response;
@@ -53,7 +53,7 @@ package flight.domain
 			var r:Response = _response as Response;
 			var v:Response = value as Response;
 			
-			if(r != null) {
+			if (r != null) {
 				r.removeEventListener(Event.COMPLETE, onComplete);
 				r.removeEventListener(Event.CANCEL, onCancel);
 				if (v != null) {
@@ -61,7 +61,7 @@ package flight.domain
 				}
 			}
 			_response = value;
-			if(v != null) {
+			if (v != null) {
 				v.addEventListener(Event.COMPLETE, onComplete);
 				v.addEventListener(Event.CANCEL, onCancel);
 			}

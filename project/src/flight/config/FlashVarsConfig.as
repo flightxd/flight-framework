@@ -37,11 +37,11 @@ package flight.config
 		override public function set viewReference(value:DisplayObject):void
 		{
 			super.viewReference = value;
-			if(viewReference == null) {
+			if (viewReference == null) {
 				return;
 			}
 			
-			if(viewReference.root != null) {
+			if (viewReference.root != null) {
 				configurations = viewReference.root.loaderInfo.parameters;
 			} else {
 				viewReference.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);

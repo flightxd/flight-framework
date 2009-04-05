@@ -31,7 +31,7 @@ package flight.errors
 	{
 		public static function abstractInstantiation(thisReference:Object, classObject:Class):void
 		{
-			if(getType(thisReference) === classObject) {
+			if (getType(thisReference) === classObject) {
 				throw(new InstantiationError(classObject));
 			}	
 		}

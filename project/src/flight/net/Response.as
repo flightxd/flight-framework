@@ -96,7 +96,7 @@ package flight.net
 		{
 			resultParams.unshift(handler);
 			resultHandlers.push(resultParams);
-			if(status == RESULT) {
+			if (status == RESULT) {
 				complete(result);
 			}
 			return this;
@@ -133,7 +133,7 @@ package flight.net
 		{
 			faultParams.unshift(handler);
 			faultHandlers.push(faultParams);
-			if(status == FAULT) {
+			if (status == FAULT) {
 				cancel(fault);
 			}
 			return this;
@@ -158,7 +158,7 @@ package flight.net
 		
 		public function addCompleteEvent(target:IEventDispatcher, eventType:String, resultProperty:String = "target"):void
 		{
-			if(completeEvents == null) {
+			if (completeEvents == null) {
 				completeEvents = [];
 			}
 			completeEvents.push( [target, eventType, resultProperty] );
@@ -168,7 +168,7 @@ package flight.net
 		public function addProgressEvent(target:IEventDispatcher, eventType:String,
 										 progressProperty:String = "bytesLoaded", totalProperty:String = "bytesTotal"):void
 		{
-			if(progressEvents == null) {
+			if (progressEvents == null) {
 				progressEvents = [];
 			}
 			progressEvents.push( [target, eventType, progressProperty, totalProperty] );
@@ -177,7 +177,7 @@ package flight.net
 		
 		public function addCancelEvent(target:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
 		{
-			if(cancelEvents == null) {
+			if (cancelEvents == null) {
 				cancelEvents = [];
 			}
 			cancelEvents.push( [target, eventType, faultProperty] );
@@ -194,7 +194,7 @@ package flight.net
 			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
 			try {
-				for each(var params:Array in resultHandlers) {
+				for each (var params:Array in resultHandlers) {
 					var handler:Function = params[0];
 					params[0] = result;
 					var formatted:* = handler.apply(null, params);
@@ -221,7 +221,7 @@ package flight.net
 			_progress = 1;
 			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
-			for each(var params:Array in faultHandlers) {
+			for each (var params:Array in faultHandlers) {
 				var handler:Function = params[0];
 				params[0] = fault;
 				var formatted:* = handler.apply(null, params);
@@ -237,14 +237,14 @@ package flight.net
 		
 		public function merge(source:Object):Boolean
 		{
-			if(source is Response) {
+			if (source is Response) {
 				
 				resultHandlers = resultHandlers.concat(source.resultHandlers);
 				faultHandlers = faultHandlers.concat(source.resultHandlers);
 				
-				if(status == RESULT) {
+				if (status == RESULT) {
 					complete(result);
-				} else if(status == FAULT) {
+				} else if (status == FAULT) {
 					cancel(fault);
 				}
 				return true;
@@ -268,19 +268,19 @@ package flight.net
 			resultHandlers = [];
 			faultHandlers = [];
 			
-			for each(args in completeEvents) {
+			for each (args in completeEvents) {
 				target = args[0];
 				eventType = args[1];
 				target.removeEventListener(eventType, onComplete);
 			}
 			
-			for each(args in progressEvents) {
+			for each (args in progressEvents) {
 				target = args[0];
 				eventType = args[1];
 				target.removeEventListener(eventType, onProgress);
 			}
 			
-			for each(args in cancelEvents) {
+			for each (args in cancelEvents) {
 				target = args[0];
 				eventType = args[1];
 				target.removeEventListener(eventType, onCancel);
@@ -293,7 +293,7 @@ package flight.net
 		{
 			var info:Array = getEventInfo(event, completeEvents);
 			var prop:String = info[2];
-			if(prop in event) {
+			if (prop in event) {
 				complete(event[prop]);
 			} else {
 				complete(event.target);
@@ -305,10 +305,10 @@ package flight.net
 			var oldValue:Object = _progress;
 			var info:Array = getEventInfo(event, progressEvents);
 			var prop:String = info[2];
-			if(prop in event) {
+			if (prop in event) {
 				_progress = parseFloat(event[prop]);
 				prop = info[3];
-				if(prop in event) {
+				if (prop in event) {
 					_progress /= parseFloat(event[prop]);
 				}
 			} else {
@@ -322,9 +322,9 @@ package flight.net
 			var info:Array = getEventInfo(event, cancelEvents);
 			var prop:String = info[2];
 			var error:Object;
-			if(prop in event) {
+			if (prop in event) {
 				error = event[prop];
-				if( !(error is Error) ) {
+				if ( !(error is Error) ) {
 					error = new Error(event[prop]);
 				}
 				cancel(error as Error);
@@ -335,8 +335,8 @@ package flight.net
 		
 		private function getEventInfo(match:Event, eventsList:Array):Array
 		{
-			for each(var args:Array in eventsList) {
-				if(args[0] == match.target && args[1] == match.type) {
+			for each (var args:Array in eventsList) {
+				if (args[0] == match.target && args[1] == match.type) {
 					return args;
 				}
 			}
