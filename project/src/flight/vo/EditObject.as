@@ -67,9 +67,11 @@ package flight.vo
 		
 		
 		private static var editorTargets:Dictionary = new Dictionary();
-		public static function edit(target:IValueObject):Object
+		public static function edit(target:IValueObject, editor:IValueObject = null):Object
 		{
-			var editor:Object = target.clone();
+			if (editor == null) {
+				editor = target.clone() as IValueObject;
+			}
 			editorTargets[editor] = target;
 			return editor;
 		}
@@ -77,7 +79,7 @@ package flight.vo
 		public static function commit(editor:IValueObject):Boolean
 		{
 			var target:IValueObject = editorTargets[editor];
-			if (target != null) {
+			if (target == null) {
 				return false;
 			}
 			
@@ -88,7 +90,7 @@ package flight.vo
 		public static function revert(editor:IValueObject):Boolean
 		{
 			var target:IValueObject = editorTargets[editor];
-			if (target != null) {
+			if (target == null) {
 				return false;
 			}
 			
@@ -99,14 +101,14 @@ package flight.vo
 		public static function modified(editor:IValueObject):Boolean
 		{
 			var target:IValueObject = editorTargets[editor];
-			if (target != null) {
+			if (target == null) {
 				return false;
 			}
 			
-			return editor.equals(target);
+			return !editor.equals(target);
 		}
 		
-		public static function merge(target:Object, source:Object):void
+		public static function merge(target:IValueObject, source:IValueObject):void
 		{
 			var name:String;
 			var propList:XMLList = Type.describeProperties( source );
@@ -116,14 +118,22 @@ package flight.vo
 			for each (var prop:XML in propList) {
 				name = prop.@name;
 				if (name in target && source[name] !== undefined) {
-					target[name] = source[name];
+					if(target[name] is IValueObject && source[name] is IValueObject) {
+						merge(target[name], source[name]);
+					} else {
+						target[name] = source[name];
+					}
 				}
 			}
 			
 			// copy over dynamic properties
 			for (name in source) {
 				if (name in target && source[name] !== undefined) {
-					target[name] = source[name];
+					if(target[name] is IValueObject && source[name] is IValueObject) {
+						merge(target[name], source[name]);
+					} else {
+						target[name] = source[name];
+					}
 				}
 			}
 		}
