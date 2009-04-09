@@ -118,6 +118,11 @@ package flight.utils
 			source = null;
 		}
 		
+		public function refresh():void
+		{
+			PropertyEvent.dispatchChange(this, "modified", null, modified);
+		}
+		
 		public function initialized(document:Object, id:String):void
 		{
 			if (id != null && _source != null) {
@@ -127,7 +132,7 @@ package flight.utils
 		
 		private function onChange(event:PropertyChangeEvent):void
 		{
-			PropertyEvent.dispatchChange(this, "modified", null, modified);
+			refresh();
 		}
 		
 		
