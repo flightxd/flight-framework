@@ -24,6 +24,8 @@
 
 package flight.vo
 {
+	import flash.utils.ByteArray;
+	
 	import flight.events.FlightDispatcher;
 	import flight.utils.Type;
 	
@@ -32,12 +34,40 @@ package flight.vo
 		
 		public function equals(value:Object):Boolean
 		{
-			return Type.equals(this, value);
+			return ValueObject.equals(this, value);
 		}
 		
 		public function clone():Object
 		{
-			return Type.clone(this);
+			return ValueObject.clone(this);
+		}
+		
+		public static function equals(value1:Object, value2:Object):Boolean
+		{
+			if (value1 == value2) {
+				return true;
+			}
+			
+			Type.registerType(value1);
+			
+			var so1:ByteArray = new ByteArray();
+	       	so1.writeObject(value1);
+	        
+			var so2:ByteArray = new ByteArray();
+        	so2.writeObject(value2);
+			
+			return Boolean(so1.toString() == so2.toString());
+		}
+		
+		public static function clone(value:Object):Object
+		{
+			Type.registerType(value);
+			
+			var so:ByteArray = new ByteArray();
+	        so.writeObject(value);
+	        
+	        so.position = 0;
+	        return so.readObject();
 		}
 		
 	}
