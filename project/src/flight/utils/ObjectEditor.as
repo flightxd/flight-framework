@@ -97,7 +97,7 @@ package flight.utils
 			PropertyEvent.dispatchChangeList(this, ["modified", "value", "source"], oldValues);
 		}
 		
-		public function ObjectEditor(source:Object)
+		public function ObjectEditor(source:Object = null)
 		{
 			this.source = source;
 		}
@@ -120,7 +120,7 @@ package flight.utils
 		
 		public function initialized(document:Object, id:String):void
 		{
-			if (id != null) {
+			if (id != null && _source != null) {
 				document[id] = edit(_source);
 			}
 		}

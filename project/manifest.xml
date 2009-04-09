@@ -8,6 +8,7 @@
 	<component id="ScriptCommand"			class="flight.domain.ScriptCommand"/>
 	<component id="CommandHistory"			class="flight.commands.CommandHistory"/>
 	<component id="ValueObject"				class="flight.vo.ValueObject"/>
+	<component id="ObjectEditor"			class="flight.utils.ObjectEditor"/>
 	<component id="ArrayContainer"			class="flight.list.ArrayContainer"/>
 	<component id="XMLContainer"			class="flight.list.XMLContainer"/>
 	<component id="Bind"					class="flight.binding.Bind"/>
