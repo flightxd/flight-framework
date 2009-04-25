@@ -64,11 +64,13 @@ package flight.domain
 		}
 		public function set commands(value:Array):void
 		{
-			if (_commands != value) {
-				var oldValue:Object = _commands;
-				_commands = value;
-				PropertyEvent.dispatchChange(this, "commands", oldValue, _commands);
+			if (_commands == value) {
+				return;
 			}
+			
+			var oldValue:Object = _commands;
+			_commands = value;
+			PropertyEvent.dispatchChange(this, "commands", oldValue, _commands);
 		}
 		
 		/**

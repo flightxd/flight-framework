@@ -51,7 +51,7 @@ package flight.domain
 		/**
 		 * Shows that undo can be called successfully.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="canUndoChange")]
 		public function get canUndo():Boolean
 		{
 			return _commandHistory.canUndo;
@@ -60,7 +60,7 @@ package flight.domain
 		/**
 		 * Shows that redo can be called successfully.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="canRedoChange")]
 		public function get canRedo():Boolean
 		{
 			return _commandHistory.canRedo;
@@ -69,7 +69,7 @@ package flight.domain
 		/**
 		 * The limit to the length of the commandHistory; the number of commands that are stored.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="undoLimitChange")]
 		public function get undoLimit():int
 		{
 			return _commandHistory.undoLimit;
@@ -82,7 +82,7 @@ package flight.domain
 		/**
 		 * A reference to the current commandHistory.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="commandHistoryChange")]
 		public function get commandHistory():CommandHistory
 		{
 			return _commandHistory;

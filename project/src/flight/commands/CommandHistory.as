@@ -51,7 +51,7 @@ package flight.commands
 		 * The actual list of commands, in order of occurance. This list should
 		 * not be manipultated directly and should be treated as read only.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="commandsChange")]
 		public function get commands():Array
 		{
 			return _commands;
@@ -60,7 +60,7 @@ package flight.commands
 		/**
 		 * The current command in the _history, often the last command executed.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="currentCommandChange")]
 		public function get currentCommand():IUndoableCommand
 		{
 			return _currentCommand;
@@ -69,7 +69,7 @@ package flight.commands
 		/**
 		 * Indicates whether there are commands availble to undo
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="canUndoChange")]
 		public function get canUndo():Boolean
 		{
 			return _canUndo;
@@ -78,19 +78,19 @@ package flight.commands
 		/**
 		 * Indicates whether there are commands availble to redo
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="canRedoChange")]
 		public function get canRedo():Boolean
 		{
 			return _canRedo;
 		}
 		
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="historyLengthChange")]
 		public function get historyLength():int
 		{
 			return _historyLength;
 		}
 		
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="historyPositionChange")]
 		public function get historyPosition():int
 		{
 			return _historyPosition;
@@ -99,7 +99,7 @@ package flight.commands
 		/**
 		 * The internal position of the _history at the present time.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="currentPositionChange")]
 		public function get currentPosition():int
 		{
 			return _currentPosition;
@@ -112,58 +112,62 @@ package flight.commands
 				value = 0;
 			}
 			
-			if (_currentPosition != value) {
-				var oldValues:Array = [_currentCommand, _currentPosition, _historyPosition];
-				
-				var i:int, command:IUndoableCommand;
-				if (_currentPosition > value) {
-					
-					for (i = _currentPosition; i > value; i--) {
-						command = _commands[i-1];
-						command.undo();
-					}
-				} else {
-					
-					for (i = _currentPosition; i < value; i++) {
-						command = _commands[i];
-						command.redo();
-					}
-				}
-				
-				_currentPosition = value;
-				_historyPosition = _historyLength - (_commands.length - _currentPosition);
-				_currentCommand = _commands[_currentPosition-1];
-				updateProperties();
-				
-				PropertyEvent.dispatchChangeList(this, ["currentCommand", "currentPosition", "historyPosition"], oldValues);
+			if (_currentPosition == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_currentCommand, _currentPosition, _historyPosition];
+			
+			var i:int, command:IUndoableCommand;
+			if (_currentPosition > value) {
+				
+				for (i = _currentPosition; i > value; i--) {
+					command = _commands[i-1];
+					command.undo();
+				}
+			} else {
+				
+				for (i = _currentPosition; i < value; i++) {
+					command = _commands[i];
+					command.redo();
+				}
+			}
+			
+			_currentPosition = value;
+			_historyPosition = _historyLength - (_commands.length - _currentPosition);
+			_currentCommand = _commands[_currentPosition-1];
+			updateProperties();
+			
+			PropertyEvent.dispatchChangeList(this, ["currentCommand", "currentPosition", "historyPosition"], oldValues);
 		}
 		
 		/**
 		 * The undo level of commands that will be stored in _history. Older commands
 		 * will be removed from _history, freeing up memory as this limit is exceeded.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="undoLimitChange")]
 		public function get undoLimit():int
 		{
 			return _undoLimit;
 		}
 		public function set undoLimit(value:int):void
 		{
-			if (_undoLimit != value) {
-				var oldValues:Array = [_commands, _currentPosition, _undoLimit];
-				
-				_undoLimit = value > 0 ? value : int.MAX_VALUE;
-				_commands.splice(_currentPosition, _commands.length - _currentPosition);
-				if (_commands.length > _undoLimit) {
-					_currentPosition = _undoLimit;
-					_commands.splice(0, _commands.length - _undoLimit);
-				}
-				_commands = [].concat(_commands);
-				updateProperties();
-				
-				PropertyEvent.dispatchChangeList(this, ["commands", "currentPosition", "undoLimit"], oldValues);
+			if (_undoLimit == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_commands, _currentPosition, _undoLimit];
+			
+			_undoLimit = value > 0 ? value : int.MAX_VALUE;
+			_commands.splice(_currentPosition, _commands.length - _currentPosition);
+			if (_commands.length > _undoLimit) {
+				_currentPosition = _undoLimit;
+				_commands.splice(0, _commands.length - _undoLimit);
+			}
+			_commands = [].concat(_commands);
+			updateProperties();
+			
+			PropertyEvent.dispatchChangeList(this, ["commands", "currentPosition", "undoLimit"], oldValues);
 		}
 		
 		/**

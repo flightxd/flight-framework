@@ -33,9 +33,10 @@
 <classEntry path="flight.events.MessageLogEvent"/>
 <classEntry path="flight.events.PropertyEvent"/>
 <classEntry path="flight.events.ValueObjectEditorEvent"/>
-<classEntry path="flight.list.ArrayContainer"/>
+<classEntry path="flight.list.ArrayList"/>
 <classEntry path="flight.list.IList"/>
-<classEntry path="flight.list.XMLContainer"/>
+<classEntry path="flight.list.ISelection"/>
+<classEntry path="flight.list.Selection"/>
 <classEntry path="flight.log.MessageLog"/>
 <classEntry path="flight.log.MessageLogPriority"/>
 <classEntry path="flight.net.IResponse"/>

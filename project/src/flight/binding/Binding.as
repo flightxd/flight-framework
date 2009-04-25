@@ -88,7 +88,7 @@ package flight.binding
 		/**
 		 * 
 		 */
-		[Bindable(event="propertyChange", flight="false")]
+		[Bindable(event="propertyChange")]
 		public function get value():*
 		{
 			return _value;

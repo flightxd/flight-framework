@@ -32,11 +32,6 @@ package flight.events
 	{
 		protected var dispatcher:EventDispatcher;
 		
-		public function propertyChange(property:String, oldValue:Object, newValue:Object):void
-		{
-			PropertyEvent.dispatchChange(this, property, oldValue, newValue);
-		}
-		
 		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
 		{
 			if (dispatcher == null) {
@@ -51,14 +46,6 @@ package flight.events
 			if (dispatcher != null) {
 				dispatcher.removeEventListener(type, listener, useCapture);
 			}
-		}
-		
-		public function dispatch(type:String):Boolean
-		{
-			if (dispatcher != null && dispatcher.hasEventListener(type)) {
-				return dispatcher.dispatchEvent( new Event(type) );
-			}
-			return false;
 		}
 		
 		public function dispatchEvent(event:Event):Boolean
@@ -83,6 +70,19 @@ package flight.events
 				return dispatcher.willTrigger(type);
 			}
 			return false;
+		}
+		
+		protected function dispatch(type:String):Boolean
+		{
+			if (dispatcher != null && dispatcher.hasEventListener(type)) {
+				return dispatcher.dispatchEvent( new Event(type) );
+			}
+			return false;
+		}
+		
+		protected function propertyChange(property:String, oldValue:Object, newValue:Object):void
+		{
+			PropertyEvent.dispatchChange(this, property, oldValue, newValue);
 		}
 	}
 }

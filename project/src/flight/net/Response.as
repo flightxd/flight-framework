@@ -34,9 +34,6 @@ package flight.net
 	import flight.events.PropertyEvent;
 	import flight.utils.IMerging;
 	
-	[Event(name="complete", type="flash.events.Event")]
-	[Event(name="cancel", type="flash.events.Event")]
-	
 	public class Response extends FlightDispatcher implements IResponse, IMerging
 	{
 		public static const PROGRESS:String = "progress";
@@ -66,13 +63,11 @@ package flight.net
 			}
 		}
 		
-		[Bindable(event="propertyChange", flight="true")]
 		public function get status():String
 		{
 			return _status;
 		}
 		
-		[Bindable(event="propertyChange", flight="true")]
 		public function get progress():Number
 		{
 			return _progress;

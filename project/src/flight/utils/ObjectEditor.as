@@ -40,27 +40,27 @@ package flight.utils
 		private var _value:Object;
 		private var _source:Object;
 		
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="modifiedChange")]
 		public function get modified():Boolean
 		{
 			return (_source is IValueObject) ? !IValueObject(_source).equals(_value)
 											 : !ValueObject.equals(_source, _value);
 		}
 		
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="valueChange")]
 		public function get value():Object
 		{
 			return _value;
 		}
 		
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="sourceChange")]
 		public function get source():Object
 		{
 			return _source;
 		}
 		public function set source(value:Object):void
 		{
-			if(_source == value) {
+			if (_source == value) {
 				return;
 			}
 			var oldValues:Array = [modified, _value, _source];

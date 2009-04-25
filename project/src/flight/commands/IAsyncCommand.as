@@ -28,6 +28,9 @@ package flight.commands
 	
 	import flight.net.IResponse;
 	
+	[Event(name="complete", type="flash.events.Event")]
+	[Event(name="cancel", type="flash.events.Event")]
+	
 	public interface IAsyncCommand extends IEventDispatcher, ICommand
 	{
 		function get response():IResponse;

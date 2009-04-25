@@ -62,7 +62,7 @@ package flight.binding
 		 * current state of the binding's resolution, whether or not its paths can be resolved.
 		 */
 		[Transient]
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="isBoundChange")]
 		public function get isBound():Boolean
 		{
 			return _isBound;
@@ -73,60 +73,66 @@ package flight.binding
 		 * update the target or source end points, though their values at the time of disabling will
 		 * remain unchanged.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="disabledChange")]
 		public function get disabled():Boolean
 		{
 			return _disabled;
 		}
 		public function set disabled(value:Boolean):void
 		{
-			if (_disabled != value) {
-				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-				var oldValue:Object = _disabled;
-				_disabled = value;
-				updateBind(oldValues);
-				PropertyEvent.dispatchChange(this, "disabled", oldValue, _disabled);
+			if (_disabled == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
+			var oldValue:Object = _disabled;
+			_disabled = value;
+			updateBind(oldValues);
+			PropertyEvent.dispatchChange(this, "disabled", oldValue, _disabled);
 		}
 		
 		/**
 		 * Two-way bindings are useful for easily syncing data between two end points. When two-way
 		 * binding is enabled, changes to either the source <em>or</em> the target updates the other.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="twoWayChange")]
 		public function get twoWay():Boolean
 		{
 			return _twoWay;
 		}
 		public function set twoWay(value:Boolean):void
 		{
-			if (_twoWay != value) {
-				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-				var oldValue:Object = _twoWay;
-				_twoWay = value;
-				updateBind(oldValues);
-				PropertyEvent.dispatchChange(this, "twoWay", oldValue, _twoWay);
+			if (_twoWay == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
+			var oldValue:Object = _twoWay;
+			_twoWay = value;
+			updateBind(oldValues);
+			PropertyEvent.dispatchChange(this, "twoWay", oldValue, _twoWay);
 		}
 		
 		/**
 		 * The target end point receives value updates from the data source every time the source
 		 * changes. The target object is the first object in a resolution chain defined by targetPath.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="targetChange")]
 		public function get target():Object
 		{
 			return _target;
 		}
 		public function set target(value:Object):void
 		{
-			if (_target != value) {
-				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-				var oldValue:Object = _target;
-				_target = value;
-				updateBind(oldValues);
-				PropertyEvent.dispatchChange(this, "target", oldValue, _target);
+			if (_target == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
+			var oldValue:Object = _target;
+			_target = value;
+			updateBind(oldValues);
+			PropertyEvent.dispatchChange(this, "target", oldValue, _target);
 		}
 		
 		/**
@@ -135,40 +141,44 @@ package flight.binding
 		 * representing a property defined on the target. For example:
 		 * <code>targetPath = "button.label.text";</code>
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="targetPathChange")]
 		public function get targetPath():String
 		{
 			return _targetPath;
 		}
 		public function set targetPath(value:String):void
 		{
-			if (_targetPath != value) {
-				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-				var oldValue:Object = _targetPath;
-				_targetPath = value;
-				updateBind(oldValues);
-				PropertyEvent.dispatchChange(this, "targetPath", oldValue, _targetPath);
+			if (_targetPath == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
+			var oldValue:Object = _targetPath;
+			_targetPath = value;
+			updateBind(oldValues);
+			PropertyEvent.dispatchChange(this, "targetPath", oldValue, _targetPath);
 		}
 		
 		/**
 		 * The source end point updates values on the target every time the source changes.
 		 * The source object is the first object in a resolution chain defined by sourcePath.
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="sourceChange")]
 		public function get source():Object
 		{
 			return _source;
 		}
 		public function set source(value:Object):void
 		{
-			if (_source != value) {
-				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-				var oldValue:Object = _source;
-				_source = value;
-				updateBind(oldValues);
-				PropertyEvent.dispatchChange(this, "source", oldValue, _source);
+			if (_source == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
+			var oldValue:Object = _source;
+			_source = value;
+			updateBind(oldValues);
+			PropertyEvent.dispatchChange(this, "source", oldValue, _source);
 		}
 		
 		/**
@@ -177,20 +187,22 @@ package flight.binding
 		 * representing a property defined on the source. For example:
 		 * <code>sourcePath = "document.user.name";</code>
 		 */
-		[Bindable(event="propertyChange", flight="true")]
+		[Bindable(event="sourcePathChange")]
 		public function get sourcePath():String
 		{
 			return _sourcePath;
 		}
 		public function set sourcePath(value:String):void
 		{
-			if (_sourcePath != value) {
-				var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-				var oldValue:Object = _sourcePath;
-				_sourcePath = value;
-				updateBind(oldValues);
-				PropertyEvent.dispatchChange(this, "sourcePath", oldValue, _sourcePath);
+			if (_sourcePath == value) {
+				return;
 			}
+			
+			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
+			var oldValue:Object = _sourcePath;
+			_sourcePath = value;
+			updateBind(oldValues);
+			PropertyEvent.dispatchChange(this, "sourcePath", oldValue, _sourcePath);
 		}
 		
 		/**
