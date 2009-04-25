@@ -24,82 +24,22 @@
 
 package flight.list
 {
-	import flash.events.IEventDispatcher;
-	
-	[Event(name="change", type="flash.events.Event")]
-	
-	public interface IList extends IEventDispatcher
+	public interface ISelection
 	{
-		/**
-		 * 
-		 */
-		[Bindable(event="change")]
-		function get numItems():int;
+		function get index():int;
+		function set index(value:int):void;
 		
-		/**
-		 * 
-		 */
-		function addItem(item:Object):Object;
+		function get item():Object;
+		function set item(value:Object):void;
 		
-		/**
-		 * 
-		 */
-		function addItemAt(item:Object, index:int):Object;
+		function get multiSelect():Boolean;
+		function set multiSelect(value:Boolean):void;
 		
-		/**
-		 * 
-		 */
-		function addItems(items:*, index:int = 0x7FFFFFFF):*;
+		function get indices():Array;
+		function set indices(value:Array):void;
 		
-		/**
-		 * 
-		 */
-		function getItemAt(index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function getItemById(id:String):Object;
-		
-		/**
-		 * 
-		 */
-		function getItemIndex(item:Object):int;
-		
-		/**
-		 * 
-		 */
-		function getItems(index:int = 0, length:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function removeItem(item:Object):Object;
-		
-		/**
-		 * 
-		 */
-		function removeItemAt(index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function removeItems(index:int = 0, length:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function setItemIndex(item:Object, index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function swapItems(item1:Object, item2:Object):void
-		
-		/**
-		 * 
-		 */
-		function swapItemsAt(index1:int, index2:int):void
+		function get items():Array;
+		function set items(value:Array):void;
 		
 	}
 }
