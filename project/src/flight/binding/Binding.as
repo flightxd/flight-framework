@@ -25,6 +25,7 @@
 package flight.binding
 {
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
@@ -183,12 +184,13 @@ package flight.binding
 		 */
 		public function release():void
 		{
+			dispatcher = null;
 			unbindPath(0);
 		}
 		
 		public function reset(source:Object, sourcePath:String = null):void
 		{
-			release();
+			unbindPath(0);
 			
 			if (sourcePath != null) {
 				_sourcePath = sourcePath.split(".");
@@ -331,7 +333,7 @@ package flight.binding
 		// ====== STATIC MEMEBERS ====== //
 		
 		private static var descCache:Dictionary = new Dictionary();
-		private static var bindingIndex:Dictionary = new Dictionary(true);
+		private static var bindingIndex:Dictionary = new Dictionary();
 		
 		/**
 		 * 
