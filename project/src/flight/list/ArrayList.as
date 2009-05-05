@@ -34,9 +34,14 @@ package flight.list
 
 	public class ArrayList extends Proxy implements IList, IValueObject
 	{
-		use namespace flash_proxy;
+		use namespace list_internal;
+		
+		public var idField:String = "id";	// TODO: replace with dataMap
 		
 		protected var dispatcher:EventDispatcher;
+		
+		// internally available to XMLListAdapter
+		list_internal var _source:*;
 		private var adapter:*;
 		
 		public function ArrayList(source:* = null)
@@ -53,14 +58,22 @@ package flight.list
 		{
 			if (value == null) {
 				value = [];
-			}
-			if (_source == value) {
+			} else if (_source == value) {
 				return;
 			}
+			
 			var oldValue:Object = _source;
-			_source = value;
-			adapter = (_source is XMLList) ? new XMLListAdapter(_source) : _source;
+			
+			if (value is XMLList) {
+				_source = value;
+				adapter = new XMLListAdapter(this);
+			} else {
+				_source = ("splice" in value) ? value : [value];
+				adapter = _source;
+			}
+			
 			propertyChange("source", oldValue, _source);
+			dispatchEvent(new Event(Event.CHANGE));
 		}
 		
 		public function get numItems():int
@@ -70,21 +83,27 @@ package flight.list
 		
 		public function addItem(item:Object):Object
 		{
+			var oldValue:Object = adapter.length;
 			adapter.push(item);
+			propertyChange("numItems", oldValue, adapter.length);
 			dispatchEvent(new Event(Event.CHANGE));
 			return item;
 		}
 		
 		public function addItemAt(item:Object, index:int):Object
 		{
+			var oldValue:Object = adapter.length;
 			adapter.splice(index, 0, item);
+			propertyChange("numItems", oldValue, adapter.length);
 			dispatchEvent(new Event(Event.CHANGE));
 			return item;
 		}
 		
 		public function addItems(items:*, index:int=0x7FFFFFFF):*
 		{
+			var oldValue:Object = adapter.length;
 			adapter.splice.apply(adapter, [index, 0].concat(items));
+			propertyChange("numItems", oldValue, adapter.length);
 			dispatchEvent(new Event(Event.CHANGE));
 			return items;
 		}
@@ -96,7 +115,12 @@ package flight.list
 		
 		public function getItemById(id:String):Object
 		{
-			return null;	// TODO: implement.
+			for each (var item:Object in _source) {
+				if (idField in item && item[idField] == id) {
+					return item;
+				}
+			}
+			return null;
 		}
 		
 		public function getItemIndex(item:Object):int
@@ -120,14 +144,18 @@ package flight.list
 		
 		public function removeItemAt(index:int):Object
 		{
+			var oldValue:Object = adapter.length;
 			var item:Object = adapter.splice(index, 1)[0];
+			propertyChange("numItems", oldValue, adapter.length);
 			dispatchEvent(new Event(Event.CHANGE));
 			return item;
 		}
 		
 		public function removeItems(index:int=0, length:int=0x7FFFFFFF):*
 		{
+			var oldValue:Object = adapter.length;
 			var items:* = adapter.splice(index, length);
+			propertyChange("numItems", oldValue, adapter.length);
 			dispatchEvent(new Event(Event.CHANGE));
 			return items;
 		}
@@ -135,7 +163,9 @@ package flight.list
 		public function setItemIndex(item:Object, index:int):Object
 		{
 			adapter.splice(adapter.indexOf(item), 1);
-			return addItemAt(item, index);
+			adapter.splice(index, 0, item);
+			dispatchEvent(new Event(Event.CHANGE));
+			return item;
 		}
 		
 		public function swapItems(item1:Object, item2:Object):void
@@ -277,26 +307,32 @@ package flight.list
 		
 	}
 }
-//*
+
+import flash.utils.flash_proxy;
+
+import flight.events.FlightDispatcher;
+import flight.list.ArrayList;
 import flight.list.IList;
 import flight.list.ISelection;
-import flight.events.FlightDispatcher;
-import mx.collections.XMLListCollection;
 
-var _source:*;
+namespace list_internal;
 
 class XMLListAdapter
 {
+	use namespace list_internal;
+	
 	public var source:XMLList;
+	public var list:ArrayList;
 	
 	public function get length():uint
 	{
 		return source.length();
 	}
 	
-	public function XMLListAdapter(source:XMLList)
+	public function XMLListAdapter(list:ArrayList)
 	{
-		this.source = source;
+		this.list = list;
+		source = list.source;
 	}
 	
 	public function indexOf(searchElement:*, fromIndex:int = 0):int
@@ -323,7 +359,7 @@ class XMLListAdapter
 		for each (var node:XML in args) {
 			source += node;
 		}
-		_source = source;
+		list._source = source;
 		return source.length();
 	}
 	
@@ -374,10 +410,8 @@ class XMLListAdapter
 							 insertedItems + source[startIndex] :
 							 insertedItems;
 		
-		_source = source;
+		list._source = source;
 		return deletedItems;
 	}
 	
 }
-
-//*/
