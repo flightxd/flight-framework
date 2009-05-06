@@ -25,7 +25,6 @@
 package flight.domain
 {
 	import flash.events.Event;
-	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
 	import flight.commands.IAsyncCommand;
@@ -52,28 +51,30 @@ package flight.domain
 		/**
 		 * Associative array of command classes organized by their designated type.
 		 */
-		protected var commandClasses:Array = [];
+		private var commandClasses:Array = [];
+		private var propertyIndex:Array = [];
 		
 		/**
 		 * Stores each command's type for dispatching.
 		 */
-		protected var typesByCommand:Dictionary = new Dictionary(true);
+		private var typesByCommand:Dictionary = new Dictionary(true);
 		
-		protected var asyncExecutions:Dictionary = new Dictionary();		// keeps a strong reference to each IAsyncCommand until completed or canceled
-		protected var executing:Dictionary = new Dictionary();				// the type of the currently executing script, used to avoid unwanted recursion
-		protected var response:IResponse;
+		private var asyncExecutions:Dictionary = new Dictionary();			// keeps a strong reference to each IAsyncCommand until completed or canceled
+		private var executing:Dictionary = new Dictionary();				// the type of the currently executing script, used to avoid unwanted recursion
+		private var response:IResponse;
 		
-		public function DomainController()
+		public function addSubDomain(domain:DomainController):void
 		{
 		}
 		
 		/**
 		 * Registers a command class with a unique id for later access.
 		 */
-		public function addCommand(type:String, commandClass:Class):void
+		public function addCommand(type:String, commandClass:Class, propertyList:Array = null):void
 		{
 			delete typesByCommand[ commandClasses[type] ];
 			commandClasses[type] = commandClass;
+			propertyIndex[type] = propertyList;
 			typesByCommand[commandClass] = type;
 		}
 		
@@ -123,17 +124,27 @@ package flight.domain
 				throw new Error("Command " + getClassName(commandClass) + " is not of type ICommand.");
 			}
 			
-			for (var i:String in properties) {
-				if (i in command) {
-					command[i] = properties[i];
+			for (var property:String in properties) {
+				if (property in command) {
+					command[property] = properties[property];
 				}
 			}
 			
+			var propertyList:Array = propertyIndex[type];
+			if (properties is Array && propertyList != null) {
+				for (var i:int = 0; i < properties.length; i++) {
+					property = propertyList[i];
+					command[property] = properties[i];
+				}
+			}
+			
+			// TODO: deprecate the whole Argument metadata feature in favor of
+			// explicit property assignment and arguments order defined in addCommand
 			if (properties is Array) {
 				var list:Array = getArgumentList(command);
-				for (i in list) {
-					if (i in properties) {
-						command[ list[i] ] = properties[i];
+				for (property in list) {
+					if (property in properties) {
+						command[ list[property] ] = properties[property];
 					}
 				}
 			}
@@ -251,9 +262,7 @@ package flight.domain
 			
 			var argumentList:XMLList = Type.describeProperties(command, "Argument");
 			for each (var argument:XML in argumentList) {
-				if (argument.metadata.(@name == "Argument").arg.@value.length() > 0) {
-					list[argument.metadata.(@name == "Argument").arg.@value] = argument.@name;
-				}
+				list[argument.metadata.(@name == "Argument").arg.@value] = argument.@name;
 			}
 			return list;
 		}

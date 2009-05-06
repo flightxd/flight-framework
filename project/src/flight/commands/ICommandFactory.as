@@ -34,7 +34,7 @@ package flight.commands
 		/**
 		 * Registers a command class with a unique id for later access.
 		 */
-		function addCommand(type:String, commandClass:Class):void;
+		function addCommand(type:String, commandClass:Class, propertyList:Array = null):void;
 		
 		/**
 		 * Retrieves the command class registered with this type.
