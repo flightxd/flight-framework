@@ -28,10 +28,10 @@ package flight.domain
 	
 	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
+	import flight.commands.IMergingCommand;
 	import flight.commands.IUndoableCommand;
 	import flight.errors.CommandError;
 	import flight.events.PropertyEvent;
-	import flight.utils.Type;
 	import flight.utils.getClassName;
 	
 	/**
@@ -39,8 +39,7 @@ package flight.domain
 	 * a list of many commands.
 	 */
 	[DefaultProperty("commands")]
-	// TODO: implement IMergingCommand, then get rid of implementations and allow them to be 'implements' on sublcasses
-	public class MacroCommand extends AsyncCommand implements IUndoableCommand
+	public class MacroCommand extends AsyncCommand
 	{
 		public var queue:Boolean = true;
 		public var atomic:Boolean = true;
@@ -48,10 +47,20 @@ package flight.domain
 		private var currentCommand:ICommand;
 		private var undone:Boolean;
 		private var _commands:Array;
+		private var _merging:Boolean = false;
 		
 		public function MacroCommand(commands:Array = null)
 		{
 			this.commands = commands != null ? commands : [];
+		}
+		
+		public function get merging():Boolean
+		{
+			return _merging;
+		}
+		public function set merging(value:Boolean):void
+		{
+			_merging = value;
 		}
 		
 		[ArrayElementType("flight.commands.ICommand")]
@@ -116,6 +125,21 @@ package flight.domain
 				currentCommand = command;
 				undone = false;
 			}
+		}
+		
+		public function merge(source:Object):Boolean
+		{
+			if (source is MacroCommand) {
+				for each (var command:ICommand in MacroCommand(source).commands) {
+					commands.push(command);
+				}
+			} else if (source is ICommand) {
+				commands.push(source);
+			} else {
+				return false;
+			}
+			
+			return true;
 		}
 		
 		protected function executeNext(command:ICommand = null):void
