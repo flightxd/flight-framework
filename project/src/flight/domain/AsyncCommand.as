@@ -30,6 +30,9 @@ package flight.domain
 	import flight.net.IResponse;
 	import flight.net.Response;
 	
+	[Event(name="complete", type="flash.events.Event")]
+	[Event(name="cancel", type="flash.events.Event")]
+	
 	/**
 	 * An abstract command class that supports Asynchronous commands through dispatching
 	 * the ExecutionComplete event upon completion of the asynchronous action.

@@ -24,8 +24,11 @@
 
 package flight.domain
 {
-	import flight.errors.CommandError;
+	import flash.events.Event;
+	
 	import flight.net.Response;
+	
+	[Event(name="execute", type="flash.events.Event")]
 
 	public class ScriptCommand extends AsyncCommand
 	{
@@ -53,15 +56,15 @@ package flight.domain
 		
 		protected function executeScript(script:Function, params:Array = null):*
 		{
-			if (script == null) {
-				return;
+			if (script != null) {
+				if (params != null) {
+					return script.apply(null, [].concat(params));
+				} else {
+					return script();
+				}
 			}
 			
-			if (params != null) {
-				return script.apply(null, [].concat(params));
-			} else {
-				return script();
-			}
+			dispatchEvent(new Event("execute"));
 		}
 	}
 }

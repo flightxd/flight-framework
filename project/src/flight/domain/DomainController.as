@@ -63,10 +63,6 @@ package flight.domain
 		private var executing:Dictionary = new Dictionary();				// the type of the currently executing script, used to avoid unwanted recursion
 		private var response:IResponse;
 		
-		public function addSubDomain(domain:DomainController):void
-		{
-		}
-		
 		/**
 		 * Registers a command class with a unique id for later access.
 		 */
