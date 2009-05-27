@@ -26,8 +26,8 @@ package flight.events
 {
 	import flash.events.Event;
 	
-	import flight.commands.ICommand;
 	import flight.net.IResponse;
+	import flight.net.Response;
 	
 	public class DomainEvent extends Event
 	{
@@ -47,5 +47,9 @@ package flight.events
 			return _response;
 		}
 		
+		override public function clone():Event
+		{
+			return new DomainEvent(type, response);
+		}
 	}
 }

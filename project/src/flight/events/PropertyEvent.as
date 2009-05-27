@@ -38,11 +38,15 @@ package flight.events
 		public static function dispatchChange(target:IEventDispatcher, property:String, oldValue:Object, newValue:Object):void
 		{
 			if ( target.hasEventListener(property + _CHANGE) ) {
-				target.dispatchEvent( new PropertyEvent(property + _CHANGE, property, oldValue, newValue) );
+				var event:PropertyEvent = getPropertyEvent(target, property + _CHANGE, property, oldValue, newValue);
+				target.dispatchEvent(event);
+				releasePropertyEvent(event);
 			}
 			
 			if ( target.hasEventListener(PROPERTY_CHANGE) ) {
-				target.dispatchEvent( new PropertyEvent(PROPERTY_CHANGE, property, oldValue, newValue) );
+				event = getPropertyEvent(target, PROPERTY_CHANGE, property, oldValue, newValue);
+				target.dispatchEvent(event);
+				releasePropertyEvent(event);
 			}
 		}
 		
@@ -61,9 +65,34 @@ package flight.events
 	 		}
 		}
 		
+		// cache of property event objects
+		private static var queue:Array = [];
+		private static function getPropertyEvent(target:IEventDispatcher, type:String, property:String, oldValue:Object, newValue:Object):PropertyEvent
+		{
+			if (queue.length == 0) {
+				return new PropertyEvent(type, property, oldValue, newValue);
+			}
+			
+			var event:PropertyEvent = queue.pop();
+				event._property = property;
+				event._oldValue = oldValue;
+				event._newValue = newValue;
+				event._target = target;
+			return event;
+		}
+		
+		private static function releasePropertyEvent(event:PropertyEvent):void
+		{
+			event._newValue = null;
+			event._oldValue = null;
+			event._property = null;
+			queue.push(event);
+		}
+		
 		private var _property:String;
 		private var _oldValue:Object;
 		private var _newValue:Object;
+		private var _target:*;
 		
 		public function PropertyEvent(type:String, property:String, oldValue:Object, newValue:Object)
 		{
@@ -88,5 +117,27 @@ package flight.events
 			return _newValue;
 		}
 		
+		override public function get target():Object
+		{
+			return _target || super.target;
+		}
+		
+		override public function get currentTarget():Object
+		{
+			return _target || super.currentTarget;
+		}
+		
+		/**
+		 * Returns this instance of PropertyEvent rather than creating a new
+		 * copy. Because of the frequency of these type of events in the system
+		 * the Event objects are pooled and reused to increase performance and
+		 * reduce strain on the garabage collection. PropertyEvent's should
+		 * never be explicitly re-dispatched as this will throw off the current
+		 * event cycle.
+		 */
+		override public function clone():Event
+		{
+			return this;
+		}
 	}
 }
