@@ -24,6 +24,9 @@
 
 package flight.binding
 {
+	import flash.events.IEventDispatcher;
+	import flash.utils.Dictionary;
+	
 	import flight.events.PropertyEvent;
 	import flight.vo.ValueObject;
 	
@@ -359,6 +362,83 @@ package flight.binding
 				Binding.releaseBinding(binding);
 			}
 			return success;
+		}
+		
+		// NOTE: weakReference specifies how the listener is added to the endpoint dispatcher, but the listener is held in memory by the binding
+		// TODO: refactor to allow the listener to be weakReference
+		public static function bindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = true):Boolean
+		{
+			var binding:Binding = Binding.getBinding(source, sourcePath);
+			
+			var listenerList:Array = listenerIndex[binding];
+			if (listenerList == null) {
+				listenerList = listenerIndex[binding] = [];
+			}
+			
+			for each (var args:Array in listenerList) {
+				if (args[0] == type &&
+					args[1] == listener &&
+					args[4] == useCapture) {
+					return false;
+				}
+			}
+			
+			listenerList.push(args);
+			
+			return binding.bindListener(onDispatcherChange, false);
+		}
+		
+		public static function unbindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false):Boolean
+		{
+			var binding:Binding = Binding.getBinding(source, sourcePath);
+			
+			var listenerList:Array = listenerIndex[binding];
+			if (listenerList == null) {
+				return false;
+			}
+			
+			for (var i:int = 0; i < listenerList.length; i++) {
+				var args:Array = listenerList[i];
+				if (args[0] == type &&
+					args[1] == listener &&
+					args[4] == useCapture) {
+					
+					listenerList.splice(i, 1);
+					
+					if (listenerList.length == 0) {
+						binding.unbindListener(onDispatcherChange);
+						if ( !binding.hasBinds() ) {
+							Binding.releaseBinding(binding);
+						}
+					}
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		private static var listenerIndex:Dictionary = new Dictionary();
+		private static function onDispatcherChange(event:PropertyEvent):void
+		{
+			var binding:Binding = event.target as Binding;
+			var listenerList:Array = listenerIndex[binding];
+			var dispatcher:IEventDispatcher;
+			var args:Array;
+			
+			dispatcher = event.oldValue as IEventDispatcher;
+			if (dispatcher != null) {
+				for each (args in listenerList) {
+					dispatcher.removeEventListener(args[0], args[1], args[4]);
+				}
+			}
+			
+			dispatcher = event.newValue as IEventDispatcher;
+			if (dispatcher != null) {
+				for each (args in listenerList) {
+					dispatcher.addEventListener(args[0], args[1], args[4], args[5], args[6]);
+				}
+			}
 		}
 		
 	}
