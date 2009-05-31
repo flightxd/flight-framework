@@ -49,6 +49,11 @@ package flight.list
 			this.source = source;
 		}
 		
+		public function get numItems():int
+		{
+			return adapter.length;
+		}
+		
 		[Bindable(event="sourceChange")]
 		public function get source():*
 		{
@@ -74,11 +79,6 @@ package flight.list
 			
 			propertyChange("source", oldValue, _source);
 			dispatchEvent(new Event(Event.CHANGE));
-		}
-		
-		public function get numItems():int
-		{
-			return adapter.length;
 		}
 		
 		public function addItem(item:Object):Object
@@ -211,42 +211,42 @@ package flight.list
 			return new ArrayList( adapter.concat() );
 		}
 		
-		flash_proxy override function getProperty(name:*):*
+		override flash_proxy function getProperty(name:*):*
 		{
 			return _source[name];
 		}
 		
-		flash_proxy override function setProperty(name:*, value:*):void
+		override flash_proxy function setProperty(name:*, value:*):void
 		{
 			_source[name] = value;
 		}
 		
-		flash_proxy override function deleteProperty(name:*):Boolean
+		override flash_proxy function deleteProperty(name:*):Boolean
 		{
 			return delete _source[name];
 		}
 		
-		flash_proxy override function hasProperty(name:*):Boolean
+		override flash_proxy function hasProperty(name:*):Boolean
 		{
 			return (name in _source);
 		}
 		
-		flash_proxy override function callProperty(name:*, ... rest):*
+		override flash_proxy function callProperty(name:*, ... rest):*
 		{
 			return _source[name].apply(_source, rest);
 		}
 		
-		flash_proxy override function nextName(index:int):String
+		override flash_proxy function nextName(index:int):String
 		{
 			return String(index - 1);
 		}
 		
-		flash_proxy override function nextValue(index:int):*
+		override flash_proxy function nextValue(index:int):*
 		{
 			return _source[index - 1];
 		}
 		
-		flash_proxy override function nextNameIndex(index:int):int
+		override flash_proxy function nextNameIndex(index:int):int
 		{
 			return (index + 1) % (adapter.length + 1);
 		}

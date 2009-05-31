@@ -27,7 +27,10 @@ package flight.events
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	
-	public class PropertyEvent extends Event
+	import mx.events.PropertyChangeEvent;
+	import mx.events.PropertyChangeEventKind;
+	
+	public class PropertyEvent extends PropertyChangeEvent
 	{
 		public static const _CHANGE:String = "Change";
 		public static const PROPERTY_CHANGE:String = "property" + _CHANGE;
@@ -35,17 +38,17 @@ package flight.events
 		/**
 		 * 
 		 */
-		public static function dispatchChange(target:IEventDispatcher, property:String, oldValue:Object, newValue:Object):void
+		public static function dispatchChange(source:IEventDispatcher, property:Object, oldValue:Object, newValue:Object):void
 		{
-			if ( target.hasEventListener(property + _CHANGE) ) {
-				var event:PropertyEvent = getPropertyEvent(target, property + _CHANGE, property, oldValue, newValue);
-				target.dispatchEvent(event);
+			if ( source.hasEventListener(property + _CHANGE) ) {
+				var event:PropertyEvent = getPropertyEvent(source, property + _CHANGE, property, oldValue, newValue);
+				source.dispatchEvent(event);
 				releasePropertyEvent(event);
 			}
 			
-			if ( target.hasEventListener(PROPERTY_CHANGE) ) {
-				event = getPropertyEvent(target, PROPERTY_CHANGE, property, oldValue, newValue);
-				target.dispatchEvent(event);
+			if ( source.hasEventListener(PROPERTY_CHANGE) ) {
+				event = getPropertyEvent(source, PROPERTY_CHANGE, property, oldValue, newValue);
+				source.dispatchEvent(event);
 				releasePropertyEvent(event);
 			}
 		}
@@ -56,7 +59,7 @@ package flight.events
 		public static function dispatchChangeList(target:IEventDispatcher, properties:Array, oldValues:Array):void
 		{
 			for (var i:int = 0; i < properties.length; i++) {
-				var property:String = properties[i];
+				var property:Object = properties[i];
 				var oldValue:Object = oldValues[i];
 				var newValue:Object = target[property];
 				if (oldValue != newValue || newValue is Array) {
@@ -66,65 +69,51 @@ package flight.events
 		}
 		
 		// cache of property event objects
-		private static var queue:Array = [];
-		private static function getPropertyEvent(target:IEventDispatcher, type:String, property:String, oldValue:Object, newValue:Object):PropertyEvent
+		private static var cache:Array = [];
+		private static function getPropertyEvent(source:IEventDispatcher, type:String, property:Object, oldValue:Object, newValue:Object):PropertyEvent
 		{
-			if (queue.length == 0) {
+			if (cache.length == 0) {
 				return new PropertyEvent(type, property, oldValue, newValue);
 			}
 			
-			var event:PropertyEvent = queue.pop();
-				event._property = property;
-				event._oldValue = oldValue;
-				event._newValue = newValue;
-				event._target = target;
+			var event:PropertyEvent = cache.pop();
+				event.property = property;
+				event.oldValue = oldValue;
+				event.newValue = newValue;
+				event.source = source;
 			return event;
 		}
 		
 		private static function releasePropertyEvent(event:PropertyEvent):void
 		{
-			event._newValue = null;
-			event._oldValue = null;
-			event._property = null;
-			queue.push(event);
+			event.property = null;
+			event.oldValue = null;
+			event.newValue = null;
+			event.source = null;
+			cache.push(event);
 		}
 		
-		private var _property:String;
-		private var _oldValue:Object;
-		private var _newValue:Object;
-		private var _target:*;
+		private var _target:Object;
 		
-		public function PropertyEvent(type:String, property:String, oldValue:Object, newValue:Object)
+		public function PropertyEvent(type:String, property:Object, oldValue:Object, newValue:Object)
 		{
-			super(type);
-			_property = property;
-			_oldValue = oldValue;
-			_newValue = newValue;
-		}
-		
-		public function get property():String
-		{
-			return _property;
-		}
-		
-		public function get oldValue():Object
-		{
-			return _oldValue;
-		}
-		
-		public function get newValue():Object
-		{
-			return _newValue;
+			super(type, false, false, PropertyChangeEventKind.UPDATE, property, oldValue, newValue);
 		}
 		
 		override public function get target():Object
 		{
-			return _target || super.target;
+			if (source == null) {
+				source = super.target;
+			}
+			return source;
 		}
 		
 		override public function get currentTarget():Object
 		{
-			return _target || super.currentTarget;
+			if (source == null) {
+				source = super.currentTarget;
+			}
+			return source;
 		}
 		
 		/**
