@@ -26,7 +26,16 @@ package flight.vo
 {
 	public interface IValueObject
 	{
+		/**
+		 * Evaluates the equality of another object of the same type.
+		 */
 		function equals(value:Object):Boolean;
+		
+		/**
+		 * Returns a new object that is a clone of this object.
+		 * 
+		 * @return					An exact copy of this object.
+		 */
 		function clone():Object;
 	}
 }

@@ -300,7 +300,7 @@ package flight.commands
 			_canUndo = Boolean(_currentPosition > 0);
 			_canRedo = Boolean(_currentPosition < _commands.length);
 			
-			PropertyEvent.dispatchChangeList(this, ["undo", "redo"], oldValues);
+			PropertyEvent.dispatchChangeList(this, ["canUndo", "canRedo"], oldValues);
 		}
 		
 		protected function splice(startIndex:int, deleteCount:uint, ... values):void
