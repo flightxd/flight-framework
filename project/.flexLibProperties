@@ -29,7 +29,6 @@
 <classEntry path="flight.errors.ResponseError"/>
 <classEntry path="flight.events.DomainEvent"/>
 <classEntry path="flight.events.FlightDispatcher"/>
-<classEntry path="flight.events.ListEvent"/>
 <classEntry path="flight.events.MessageLogEvent"/>
 <classEntry path="flight.events.PropertyEvent"/>
 <classEntry path="flight.list.ArrayList"/>
@@ -41,7 +40,6 @@
 <classEntry path="flight.log.MessageLogPriority"/>
 <classEntry path="flight.net.IResponse"/>
 <classEntry path="flight.net.Response"/>
-<classEntry path="flight.utils.ChainProxy"/>
 <classEntry path="flight.utils.IMerging"/>
 <classEntry path="flight.utils.ObjectEditor"/>
 <classEntry path="flight.utils.Registry"/>
@@ -53,6 +51,7 @@
 <classEntry path="flight.vo.ValueObject"/>
 <classEntry path="mx.collections.IList"/>
 <classEntry path="mx.events.CollectionEvent"/>
+<classEntry path="mx.events.CollectionEventKind"/>
 <classEntry path="mx.events.PropertyChangeEvent"/>
 <classEntry path="mx.events.PropertyChangeEventKind"/>
 </includeClasses>
