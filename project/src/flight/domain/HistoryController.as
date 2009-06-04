@@ -91,13 +91,15 @@ package flight.domain
 		public function set commandHistory(value:CommandHistory):void
 		{
 			if (_commandHistory == value) {
-				var oldValue:Object = _commandHistory;
-				
-				_commandHistory = value;
-				invoker = value;
-				
-				PropertyEvent.dispatchChange(this, "commandHistory", oldValue, _commandHistory);
+				return;
 			}
+			
+			var oldValue:Object = _commandHistory;
+			
+			_commandHistory = value;
+			invoker = value;
+			
+			PropertyEvent.dispatchChange(this, "commandHistory", oldValue, _commandHistory);
 		}
 		
 		/**

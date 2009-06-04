@@ -180,7 +180,7 @@ package flight.net
 			try {
 				for each (var params:Array in resultHandlers) {
 					var handler:Function = params[0];
-					params[0] = result;
+					params = [result].concat( params.slice(1) );
 					var formatted:* = handler.apply(null, params);
 					if (formatted !== undefined) { // i.e. return type was not void
 						result = formatted;
@@ -207,7 +207,7 @@ package flight.net
 			
 			for each (var params:Array in faultHandlers) {
 				var handler:Function = params[0];
-				params[0] = fault;
+				params = [fault].concat( params.slice(1) );
 				var formatted:* = handler.apply(null, params);
 				if (formatted !== undefined) { // i.e. return type was not void
 					fault = formatted;
