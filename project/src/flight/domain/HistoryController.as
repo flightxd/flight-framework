@@ -39,10 +39,11 @@ package flight.domain
 	 */
 	public class HistoryController extends DomainController implements ICommandHistory
 	{
-		private var _commandHistory:CommandHistory = new CommandHistory();
+		private var _commandHistory:CommandHistory;
 		
 		public function HistoryController()
 		{
+			commandHistory = new CommandHistory();
 			Bind.addListener(onHistoryChange, this, "commandHistory.canUndo");
 			Bind.addListener(onHistoryChange, this, "commandHistory.canRedo");
 			Bind.addListener(onHistoryChange, this, "commandHistory.undoLimit");
