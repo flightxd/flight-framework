@@ -25,7 +25,6 @@
 package flight.net
 {
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
 	
@@ -52,16 +51,6 @@ package flight.net
 		
 		private var _status:String = PROGRESS;
 		private var _progress:Number = 0;
-		
-		
-		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
-																 cancelEvent:String = Event.CANCEL)
-		{
-			if (target != null) {
-				addCompleteEvent(target, completeEvent);
-				addCancelEvent(target, cancelEvent);
-			}
-		}
 		
 		public function get status():String
 		{
