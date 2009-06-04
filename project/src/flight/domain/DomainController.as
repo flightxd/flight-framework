@@ -148,13 +148,6 @@ package flight.domain
 			return command;
 		}
 		
-		public function dispatchResponse(type:String, response:IResponse):void
-		{
-			if (willTrigger(type)) {
-				dispatchEvent( new DomainEvent(type, response) );
-			}
-		}
-		
 		/**
 		 * Primary method for invoking commands in the Domain class.
 		 */
@@ -201,15 +194,13 @@ package flight.domain
 				if (command is IAsyncCommand) {
 					response = IAsyncCommand(command).response;
 				} else {
-					response = new Response().complete(command);		// stored here for return from DomainController.execute()
-					dispatchResponse(getCommandType(command), response);
+					dispatchResponse(getCommandType(command), new Response().complete(command));
 				}
 			} catch(error:CommandError) {
 				if (command is IAsyncCommand) {
 					releaseAsyncCommand(command as IAsyncCommand);
 				}
-				response = new Response().cancel(error)
-				dispatchResponse(getCommandType(command), response);
+				dispatchResponse(getCommandType(command), new Response().cancel(error));
 			}
 		}
 		
@@ -218,14 +209,17 @@ package flight.domain
 			if ( !(type in this && this[type] is Function) ) {
 				return;
 			}
+			response = null;
 			
 			var script:Function = this[type];
-			var result:Object = (params != null && params.length > 0) ?
+			var result:Object = params != null ?
 								script.apply(null, [].concat(params)) :
 								script();
 			
-			response = (result is IResponse) ? result as IResponse : new Response().complete(result);
-			dispatchResponse(type, response);
+			if (response == null) {
+				response = (result is IResponse) ? result as IResponse : new Response().complete(result);
+				dispatchResponse(type, response);
+			}
 		}
 		
 		protected function registerAsyncCommand(command:IAsyncCommand):void
@@ -240,6 +234,20 @@ package flight.domain
 			command.removeEventListener(Event.COMPLETE, onAsyncEvent);
 			command.removeEventListener(Event.CANCEL, onAsyncEvent);
 			delete asyncExecutions[command];
+		}
+		
+		protected function dispatchResponse(type:String, response:IResponse = null):IResponse
+		{
+			if (response == null) {
+				response = new Response().complete(null);
+			}
+			
+			this.response = response;
+			
+			if (hasEventListener(type)) {
+				dispatchEvent( new DomainEvent(type, response) );
+			}
+			return response;
 		}
 		
 		/**
