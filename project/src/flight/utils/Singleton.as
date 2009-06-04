@@ -53,5 +53,22 @@ package flight.utils
 			}
 		}
 		
+		public static function registerSubclass(classObject:Object, superclass:Class, scope:Object = null):Boolean
+		{
+			if ( !Type.isType(classObject, superclass) ) {
+				return false;
+			}
+			if ( !(classObject is Class) ) {
+				classObject = getType(classObject);
+			}
+			
+			var instance:Object = Registry.lookup(superclass, scope);
+			if ( !(instance is Class(classObject)) ) {
+				instance = new classObject();
+				Registry.register(superclass, instance, scope);
+			}
+			return true;
+		}
+		
 	}
 }
