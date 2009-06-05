@@ -3,23 +3,20 @@ package com.flightxd.flightdraw.domains.draw
 	import com.flightxd.flightdraw.domains.draw.commands.Draw;
 	import com.flightxd.flightdraw.domains.draw.commands.Erase;
 	import com.flightxd.flightdraw.domains.draw.commands.UpdateDocument;
+	import com.flightxd.flightdraw.domains.draw.view.Document;
 	
 	import flash.display.BitmapData;
 	
 	import flight.domain.HistoryController;
-	import flight.utils.Registry;
-
-	public class Controller extends HistoryController
+	
+	[Bindable]
+	public class DrawDomain extends HistoryController
 	{
 		public static const DRAW:String = "draw";
 		public static const ERASE:String = "erase";
 		public static const UPDATE_DOCUMENT:String = "updateDocument";
 		
-		// all of the rest of the DomainController/HistoryController data is already
-		// a global single instance, so the model is the last element that needs to
-		// populated via a single global access
-		[Bindable]
-		public var model:Model = Registry.getInstance(Model) as Model;
+		public var document:Document;
 		
 		override protected function init():void
 		{
@@ -31,7 +28,7 @@ package com.flightxd.flightdraw.domains.draw
 		/**
 		 * Adds pixels do the document drawing.
 		 */
-		public function draw(bitmapData:BitmapData):Boolean
+		public function draw(bitmapData:BitmapData):Object
 		{
 			return execute(DRAW, arguments);
 		}
@@ -39,7 +36,7 @@ package com.flightxd.flightdraw.domains.draw
 		/**
 		 * Erases pixels from the document drawing.
 		 */
-		public function erase(bitmapData:BitmapData):Boolean
+		public function erase(bitmapData:BitmapData):Object
 		{
 			return execute(ERASE, arguments);
 		}
@@ -47,7 +44,7 @@ package com.flightxd.flightdraw.domains.draw
 		/**
 		 * Updates the current document or creates a new one if there is no document.
 		 */
-		public function updateDocument(title:String, width:Number, height:Number):Boolean
+		public function updateDocument(title:String, width:Number, height:Number):Object
 		{
 			return execute(UPDATE_DOCUMENT, arguments);
 		}

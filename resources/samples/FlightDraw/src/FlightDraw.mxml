@@ -1,19 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" xmlns:view="com.flightxd.flightdraw.view.*" backgroundGradientAlphas="[1.0, 1.0]" backgroundGradientColors="[#334455, #FFFFFF]" xmlns:config="com.flightxd.flightdraw.config.*" xmlns:state="com.flightxd.flightdraw.domains.state.*">
+<mx:Application layout="absolute"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:view="com.flightxd.flightdraw.view.*" 
+	xmlns:config="com.flightxd.flightdraw.config.*"
+	xmlns:state="com.flightxd.flightdraw.domains.state.*"
+	xmlns:draw="com.flightxd.flightdraw.domains.draw.*" xmlns:view1="com.flightxd.flightdraw.domains.draw.view.*">
+	
+	<mx:Style source="style/style.css"/>
 	
 	<!-- by simply creating your main config its properties become available
 		 through global getter flight.utils.config -->
-	<config:Main/>
+	<config:AppConfig/>
 	
-	<!-- Application flow is driven by the state domain -->
-	<state:Controller id="state"/>
+	<!-- domain controllers -->
+	<draw:DrawDomain id="draw"/>
+	
+	<mx:Script>
+		<![CDATA[
+			
+			private function beginDrawing():void
+			{
+				draw.updateDocument(titleInput.text, parseFloat(widthInput.text), parseFloat(heightInput.text));
+			   	drawingWizard.selectedIndex = 1;
+			}
+			
+		]]>
+	</mx:Script>
 	
 	<!-- and here is my main view -->
-	<mx:ViewStack id="drawingWizard" width="100%" height="100%" selectedIndex="{state.model.phaseIndex}">
+	<mx:ViewStack id="drawingWizard" width="100%" height="100%">
 		
-		<view:Settings label="Settings" width="100%" height="100%"/>
-		<view:Drawing label="Drawing" width="100%" height="100%"/>
-		<view:Preview label="Preview" width="100%" height="100%"/>
+		<mx:Canvas label="Settings" width="100%" height="100%">
+			<mx:Panel title="Document Settings" width="300" horizontalCenter="0" verticalCenter="0">
+				<mx:Form width="100%" defaultButton="{beginButton}">
+					<mx:FormItem label="Title:" width="100%">
+						<mx:TextInput id="titleInput" width="100%" text="Default Document"/>
+					</mx:FormItem>
+					<mx:FormItem label="Width:" width="100%">
+						<mx:TextInput id="widthInput" text="400" width="50%"/>
+					</mx:FormItem>
+					<mx:FormItem label="Height:" width="100%">
+						<mx:TextInput id="heightInput" width="50%" text="300"/>
+					</mx:FormItem>
+					<mx:FormItem label="Background:" width="100%">
+						<mx:ComboBox id="backgroundCombo" dataProvider="[White, Transparent]" width="100%"></mx:ComboBox>
+					</mx:FormItem>
+					<mx:Spacer height="4"/>
+					<mx:FormItem width="100%">
+						<mx:Button id="beginButton" label="Begin Drawing" click="beginDrawing()"/>
+					</mx:FormItem>
+				</mx:Form>
+			</mx:Panel>
+		</mx:Canvas>		
+		<mx:Canvas label="Drawing" width="100%" height="100%">
+			<mx:Panel title="drawing" width="600" height="400" horizontalCenter="0" verticalCenter="0">
+				<mx:HBox width="100%" height="100%">
+					<mx:VBox height="100%">
+						<mx:ToggleButtonBar dataProvider="{['', '']}" direction="vertical" width="50" buttonHeight="50"/>
+						<mx:ColorPicker width="50" height="50"/>
+						<mx:ColorPicker/>
+					</mx:VBox>
+					<mx:Canvas width="100%" height="100%">
+						<view1:Document id="document" width="{parseFloat(widthInput.text)}" height="{parseFloat(heightInput.text)}" horizontalCenter="0" verticalCenter="0"/>
+					</mx:Canvas>
+				</mx:HBox>
+			</mx:Panel>
+		</mx:Canvas>
+		
+		<mx:Canvas label="Preview" width="100%" height="100%">
+			<mx:Canvas width="600" height="400" horizontalCenter="0" verticalCenter="0">
+				<mx:Canvas width="548" height="346" horizontalCenter="0" y="10">
+				</mx:Canvas>
+				<mx:Button x="471" y="364" label="Print drawing"/>
+			</mx:Canvas>
+		</mx:Canvas>
 		
 	</mx:ViewStack>
 	

@@ -5,10 +5,10 @@
 	
 	<!-- domain controllers -->
 	<state:Controller id="state"/>
-	<draw:Controller id="draw"/>
+	<draw:DrawDomain id="draw"/>
 	
 	<!-- view -->
-	<mx:Canvas width="300" height="200" horizontalCenter="0" verticalCenter="0" backgroundColor="#0066FF" backgroundAlpha="0.1" borderStyle="solid" borderColor="#FFFFFF" cornerRadius="8" alpha="0.5">
+	<mx:Canvas width="300" height="200" horizontalCenter="0" verticalCenter="0">
 		
 		<mx:Label text="Document Settings" horizontalCenter="0" y="10"/>
 		

@@ -1,29 +1,28 @@
 package com.flightxd.flightdraw.domains.draw.commands
 {
-	import com.flightxd.flightdraw.domains.draw.Controller;
-	import com.flightxd.flightdraw.domains.draw.model.Document;
+	import com.flightxd.flightdraw.domains.draw.DrawDomain;
+	import com.flightxd.flightdraw.domains.draw.view.Document;
 	
 	import flight.commands.ICommand;
+	import flight.utils.Singleton;
 	
 	public class UpdateDocument implements ICommand
 	{
-		public var client:Controller;
+//		public var client:DrawDomain = Singleton.getInstance(DrawDomain) as DrawDomain;
+//		
+//		[Arguments(0)] public var title:String;
+//		[Arguments(1)] public var width:Number;
+//		[Arguments(2)] public var height:Number;
 		
-		[Arguments(0)] public var title:String;
-		[Arguments(1)] public var width:Number;
-		[Arguments(2)] public var height:Number;
-		
-		public function execute():Boolean
+		public function execute():void
 		{
-			if(client.model.document == null) {
-				client.model.document = new Document();
-			}
-			
-			client.model.document.title = title;
-			client.model.document.width = width;
-			client.model.document.height = height;
-			
-			return true;
+//			if(client.document == null) {
+//				client.document = new Document();
+//			}
+//			
+//			client.document.title = title;
+//			client.document.width = width;
+//			client.document.height = height;
 		}
 		
 	}
