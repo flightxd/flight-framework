@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
-	<mx:Canvas width="600" height="400" horizontalCenter="0" verticalCenter="0">
-		<mx:Canvas width="548" height="346" horizontalCenter="0" y="10">
-		</mx:Canvas>
-		<mx:Button x="471" y="364" label="Print drawing"/>
-	</mx:Canvas>
-	
-</mx:Canvas>
