@@ -178,17 +178,17 @@ package flight.net
 			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
 			try {
-				for each (var params:Array in resultHandlers) {
+				while (resultHandlers.length > 0) {
+					var params:Array = resultHandlers.shift();
 					var handler:Function = params[0];
-					params = [result].concat( params.slice(1) );
+					params[0] = result;
 					var formatted:* = handler.apply(null, params);
 					if (formatted !== undefined) { // i.e. return type was not void
 						result = formatted;
 					}
 				}
 				
-				dispatchEvent(new Event(Event.COMPLETE));
-				release();
+				release(Event.COMPLETE);
 			} catch(e:ResponseError) {
 				cancel(e);
 			}
@@ -205,17 +205,17 @@ package flight.net
 			_progress = 1;
 			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
-			for each (var params:Array in faultHandlers) {
+			while (faultHandlers.length > 0) {
+				var params:Array = faultHandlers.shift();
 				var handler:Function = params[0];
-				params = [fault].concat( params.slice(1) );
+				params[0] = fault;
 				var formatted:* = handler.apply(null, params);
 				if (formatted !== undefined) { // i.e. return type was not void
 					fault = formatted;
 				}
 			}
 			
-			dispatchEvent(new Event(Event.CANCEL));
-			release();
+			release(Event.CANCEL);
 			return this;
 		}
 		
@@ -243,14 +243,11 @@ package flight.net
 		}
 		
 		
-		protected function release():void
+		protected function release(type:String):void
 		{
 			var target:IEventDispatcher;
 			var eventType:String;
 			var args:Array;
-			
-			resultHandlers = [];
-			faultHandlers = [];
 			
 			for each (args in completeEvents) {
 				target = args[0];
@@ -270,7 +267,12 @@ package flight.net
 				target.removeEventListener(eventType, onCancel);
 			}
 			
-			dispatcher = null;
+			// resetting the event dispatcher ensures listeners will only be triggered once
+			if (dispatcher != null) {
+				var oldDispatcher:IEventDispatcher = dispatcher;
+				dispatcher = null;
+				oldDispatcher.dispatchEvent(new Event(type));
+			}
 		}
 		
 		private function onComplete(event:Event):void

@@ -28,10 +28,10 @@ package flight.domain
 	
 	import flight.commands.IAsyncCommand;
 	import flight.commands.ICommand;
-	import flight.commands.IMergingCommand;
 	import flight.commands.IUndoableCommand;
 	import flight.errors.CommandError;
 	import flight.events.PropertyEvent;
+	import flight.net.Response;
 	import flight.utils.getClassName;
 	
 	/**
@@ -168,7 +168,7 @@ package flight.domain
 					// or if a MacroCommand.pause() would be a better implementation
 					if (!asyncCommand.hasEventListener(Event.COMPLETE)) {
 						asyncCommand.addEventListener(Event.COMPLETE, onAsyncComplete)
-						asyncCommand.response.addFaultHandler(onCommandFault);
+						asyncCommand.addEventListener(Event.CANCEL, onAsyncCancel);
 					}
 					asyncCommand.execute();
 				} else {
@@ -187,6 +187,11 @@ package flight.domain
 		private function onAsyncComplete(event:Event):void
 		{
 			executeNext();
+		}
+		
+		private function onAsyncCancel(event:Event):void
+		{
+			IAsyncCommand(event.target).response.addFaultHandler(onCommandFault);
 		}
 		
 		private function onCommandFault(error:Error):void

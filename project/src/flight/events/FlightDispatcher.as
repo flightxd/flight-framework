@@ -30,7 +30,7 @@ package flight.events
 	
 	public class FlightDispatcher implements IEventDispatcher
 	{
-		protected var dispatcher:EventDispatcher;
+		protected var dispatcher:IEventDispatcher;
 		
 		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
 		{
