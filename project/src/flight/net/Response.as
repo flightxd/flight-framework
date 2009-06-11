@@ -52,6 +52,17 @@ package flight.net
 		private var _status:String = PROGRESS;
 		private var _progress:Number = 0;
 		
+		
+		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
+																 cancelEvent:String = Event.CANCEL)
+		{
+			if (target != null) {
+				addCompleteEvent(target, completeEvent);
+				addCancelEvent(target, cancelEvent);
+			}
+		}
+		
+		
 		public function get status():String
 		{
 			return _status;
