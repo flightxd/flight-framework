@@ -25,7 +25,7 @@ package flight.list
 	 * A simple implementation of IList that uses a backing Array, Vector or
 	 * XMLList.
 	 */
-	public class Collection extends FlightDispatcher implements mx.collections.IList, IExternalizable
+	public class Collection extends FlightDispatcher implements IList, IExternalizable
 	{
 		use namespace list_internal;
 		
@@ -101,15 +101,7 @@ package flight.list
 		 */
 		public function addItem(item:Object):void
 		{
-			var oldValue:Object = adapter.length;
-			adapter.push(item);
-			
-			propertyChange("length", oldValue, adapter.length);
-			var event:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
-				event.kind = CollectionEventKind.ADD;
-				event.items.push(item);
-				event.location = adapter.length;
-			dispatchEvent(event);
+			addItemAt(item, length);
 		}
 		
 		/**
