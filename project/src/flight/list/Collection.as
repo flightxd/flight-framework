@@ -204,31 +204,26 @@ package flight.list
 		}
 		
 		/**
-		 * Moves the item to the specified index. Items at or above the index
-		 * will advance a position to make room for the item.
+		 * Place the item at the specified index.  
+	     * If an item was already at that index the new item will replace it and it 
+	     * will be returned.
 		 * 
-		 * @param	item			the item to move to the specified index
+		 * @param	item			item the new value for the index
 		 * @param	index			the index at which to place the item
 		 * 
-		 * @return					the item that was moved
+		 * @return					the item that was replaced, null if none
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			var oldIndex:int = adapter.indexOf(item);
-			if (oldIndex != -1) {
-				adapter.splice(oldIndex, 1);
-			} else {
-				oldIndex = adapter.length;
-			}
+			var oldItem:Object = adapter.splice(index, 1, item).pop();
 			
-			adapter.splice(index, 0, item);
-			var event:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
-				event.kind = CollectionEventKind.MOVE;
-				event.items.push(item);
-				event.oldLocation = oldIndex;
+			var event:CollectionEvent =
+					new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
+				event.kind = CollectionEventKind.REPLACE;
 				event.location = index;
+				event.items.push(item, oldItem);
 			dispatchEvent(event);
-			return item;
+			return oldItem;
 		}
 		
 		/**
