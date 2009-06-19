@@ -1,16 +1,45 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
+//	
+//	Permission is hereby granted, free of charge, to any person obtaining a copy
+//	of this software and associated documentation files (the "Software"), to deal
+//	in the Software without restriction, including without limitation the rights
+//	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//	copies of the Software, and to permit persons to whom the Software is
+//	furnished to do so, subject to the following conditions:
+//	
+//	The above copyright notice and this permission notice shall be included in
+//	all copies or substantial portions of the Software.
+//	
+//	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//	THE SOFTWARE.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 package flight.list
 {
-	import flash.net.registerClassAlias;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.utils.IDataInput;
 	import flash.utils.IDataOutput;
 	import flash.utils.IExternalizable;
-	import flash.utils.getQualifiedClassName;
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.PropertyEvent;
 	
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	import mx.events.CollectionEventKind;
+	
+	use namespace flash_proxy;
+	use namespace list_internal;
 	
 	/**
 	 * Dispatched when the IList has been updated in some way.
@@ -25,12 +54,12 @@ package flight.list
 	 * A simple implementation of IList that uses a backing Array, Vector or
 	 * XMLList.
 	 */
-	public class Collection extends FlightDispatcher implements IList, IExternalizable
+	public class Collection extends Proxy implements IList, IExternalizable
 	{
-		use namespace list_internal;
+		protected var dispatcher:EventDispatcher;
 		
-		// internally available to XMLListAdapter
-		list_internal var _source:*;
+		list_internal var _source:*;	// internally available to XMLListAdapter
+		
 		private var adapter:*;
 		
 		/**
@@ -215,10 +244,13 @@ package flight.list
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
-			var oldItem:Object = adapter.splice(index, 1, item).pop();
+			var oldValue:Object = adapter.length;
+			var oldItem:Object = adapter.splice(index, 1, item)[0];
 			
-			var event:CollectionEvent =
-					new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
+			if (oldValue != adapter.length) {
+				propertyChange("length", oldValue, adapter.length);
+			}
+			var event:CollectionEvent = new CollectionEvent(CollectionEvent.COLLECTION_CHANGE);
 				event.kind = CollectionEventKind.REPLACE;
 				event.location = index;
 				event.items.push(item, oldItem);
@@ -252,7 +284,102 @@ package flight.list
 		{
 			output.writeObject(_source);
 		}
-
+		
+		
+		override flash_proxy function getProperty(name:*):*
+		{
+			return _source[name];
+		}
+		
+		override flash_proxy function setProperty(name:*, value:*):void
+		{
+			_source[name] = value;
+		}
+		
+		override flash_proxy function deleteProperty(name:*):Boolean
+		{
+			return delete _source[name];
+		}
+		
+		override flash_proxy function hasProperty(name:*):Boolean
+		{
+			return (name in _source);
+		}
+		
+		override flash_proxy function callProperty(name:*, ... rest):*
+		{
+			return _source[name].apply(_source, rest);
+		}
+		
+		override flash_proxy function nextName(index:int):String
+		{
+			return String(index - 1);
+		}
+		
+		override flash_proxy function nextValue(index:int):*
+		{
+			return _source[index - 1];
+		}
+		
+		override flash_proxy function nextNameIndex(index:int):int
+		{
+			return (index + 1) % (adapter.length + 1);
+		}
+		
+		
+		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
+		{
+			if (dispatcher == null) {
+				dispatcher = new EventDispatcher(this);
+			}
+			
+			dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
+		{
+			if (dispatcher != null) {
+				dispatcher.removeEventListener(type, listener, useCapture);
+			}
+		}
+		
+		public function dispatchEvent(event:Event):Boolean
+		{
+			if (dispatcher != null && dispatcher.hasEventListener(event.type)) {
+				return dispatcher.dispatchEvent(event);
+			}
+			return false;
+		}
+		
+		public function hasEventListener(type:String):Boolean
+		{
+			if (dispatcher != null) {
+				return dispatcher.hasEventListener(type);
+			}
+			return false;
+		}
+		
+		public function willTrigger(type:String):Boolean
+		{
+			if (dispatcher != null) {
+				return dispatcher.willTrigger(type);
+			}
+			return false;
+		}
+		
+		protected function dispatch(type:String):Boolean
+		{
+			if (dispatcher != null && dispatcher.hasEventListener(type)) {
+				return dispatcher.dispatchEvent( new Event(type) );
+			}
+			return false;
+		}
+		
+		protected function propertyChange(property:String, oldValue:Object, newValue:Object):void
+		{
+			PropertyEvent.dispatchChange(this, property, oldValue, newValue);
+		}
+		
 	}
 }
 

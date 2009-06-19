@@ -34,7 +34,7 @@ package flight.utils
 	public class Registry
 	{
 		private static var scopeIndex:Dictionary = new Dictionary();
-		private static var watcherBySite:Dictionary = new Dictionary();
+		private static var watcherByTarget:Dictionary = new Dictionary();
 		private static var watcherByIndex:Dictionary = new Dictionary();
 		
 		public static function register(index:Object, value:Object, scope:Object = null):void
@@ -63,30 +63,26 @@ package flight.utils
 		public static function lookup(index:Object, scope:Object = null):*
 		{
 			if (scope != null) {
-				var values:Dictionary = scopeIndex[scope];			// get values by scope (null is treated as the global scope)
 				
-				if (values != null && index in values) {
-					return values[index];
-				}
-				
-				if ("owner" in scope && scope["owner"] != null) {
+				if (scopeIndex[scope] != null && index in scopeIndex[scope]) {
+					return scopeIndex[scope][index];
+				} else if ("owner" in scope && scope["owner"] != null) {
 					return lookup(index, scope["owner"]);
-				}
-				if ("parent" in scope && scope["parent"] != null) {
-					return lookup(index, scope["parent"]);
+				} else if ("parent" in scope) {
+					if (scope["parent"] is Function) {
+						return lookup(index, scope["parent"]());
+					} else {
+						return lookup(index, scope["parent"]);
+					}
 				}
 			}
 			
-			// check the global scope last (indexed by null)
-			if (scopeIndex[null] == null) {
-				scopeIndex[null] = new Dictionary();
-			}
 			return scopeIndex[null][index];
 		}
 		
-		public static function sync(site:Object, prop:String, index:Object, scope:Object = null):void
+		public static function sync(target:Object, prop:String, index:Object, scope:Object = null):void
 		{
-			desync(site, prop);
+			desync(target, prop);
 			var syncDetail:Array = arguments;
 			
 			if (watcherByIndex[index] == null) {
@@ -94,30 +90,36 @@ package flight.utils
 			}
 			watcherByIndex[index].push(syncDetail);
 			
-			if (watcherBySite[site] == null) {
-				watcherBySite[site] = {};
+			if (watcherByTarget[target] == null) {
+				watcherByTarget[target] = {};
 			}
-			watcherBySite[site][prop] = syncDetail;
+			watcherByTarget[target][prop] = syncDetail;
 			
-			site[prop] = lookup(index, scope);
+			target[prop] = lookup(index, scope);
 		}
 		
-		public static function desync(site:Object, prop:String):void
+		public static function desync(target:Object, prop:String):void
 		{
-			var bySite:Object = watcherBySite[site];
-			if (bySite == null) {
+			var byTarget:Object = watcherByTarget[target];
+			if (byTarget == null) {
 				return;
 			}
 			
-			var syncDetail:Array = bySite[prop];
+			var syncDetail:Array = byTarget[prop];
 			if (syncDetail == null) {
 				return;
 			}
 			
 			var byIndex:Array = watcherByIndex[ syncDetail[2] ];
 			byIndex.splice(byIndex.indexOf(syncDetail), 1);
-			delete watcherBySite[site][prop];
+			delete watcherByTarget[target][prop];
 		}
 		
+		private static var inited:Boolean = init();
+		private static function init():Boolean
+		{
+			scopeIndex[null] = new Dictionary();
+			return true;
+		}
 	}
 }

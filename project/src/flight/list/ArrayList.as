@@ -24,25 +24,26 @@
 
 package flight.list
 {
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	import flight.events.PropertyEvent;
+	import flight.events.FlightDispatcher;
+	import flight.events.ListEvent;
+	import flight.events.ListEventKind;
 	import flight.vo.IValueObject;
-
-	public class ArrayList extends Proxy implements IList, IValueObject
+	
+	use namespace list_internal;
+	
+	[Event(name="listChange", type="flight.events.ListEvent")]
+	
+	public class ArrayList extends FlightDispatcher implements IList, IValueObject
 	{
-		use namespace list_internal;
-		
 		public var idField:String = "id";	// TODO: replace with dataMap
 		
-		protected var dispatcher:EventDispatcher;
+		list_internal var _source:*;	// internally available to XMLListAdapter
 		
-		// internally available to XMLListAdapter
-		list_internal var _source:*;
 		private var adapter:*;
+		private var _selection:ISelection;
+		private var _mxlist:MXList;
 		
 		public function ArrayList(source:* = null)
 		{
@@ -52,6 +53,34 @@ package flight.list
 		public function get numItems():int
 		{
 			return adapter.length;
+		}
+		
+		[Bindable(event="mxlist")]
+		public function get mxlist():MXList
+		{
+			if (_mxlist == null) {
+				_mxlist = new MXList(this);
+			}
+			return _mxlist;
+		}
+		
+		[Bindable(event="selectionChange")]
+		public function get selection():ISelection
+		{
+			if (_selection == null) {
+				_selection = new Selection(this);
+			}
+			return _selection;
+		}
+		public function set selection(value:ISelection):void
+		{
+			if (_selection == value) {
+				return;
+			}
+			
+			var oldValue:Object = _selection;
+			_selection = value;
+			propertyChange("selection", oldValue, _selection);
 		}
 		
 		[Bindable(event="sourceChange")]
@@ -78,38 +107,54 @@ package flight.list
 			}
 			
 			propertyChange("source", oldValue, _source);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent(new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.RESET));
 		}
 		
 		public function addItem(item:Object):Object
 		{
-			var oldValue:Object = adapter.length;
+			var oldValue:int = adapter.length;
 			adapter.push(item);
+			
 			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD,
+										 adapter.slice(oldValue, oldValue+1), oldValue) );
 			return item;
 		}
 		
 		public function addItemAt(item:Object, index:int):Object
 		{
-			var oldValue:Object = adapter.length;
+			var oldValue:int = adapter.length;
+			if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
+			}
 			adapter.splice(index, 0, item);
+			
 			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD,
+										 adapter.slice(index, index+1), index) );
 			return item;
 		}
 		
 		public function addItems(items:*, index:int=0x7FFFFFFF):*
 		{
-			var oldValue:Object = adapter.length;
+			var oldValue:int = adapter.length;
+			if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
+			} else if (index > oldValue) {
+				index = oldValue;
+			}
 			adapter.splice.apply(adapter, [index, 0].concat(items));
+			
 			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD, items, index) );
 			return items;
 		}
 		
 		public function getItemAt(index:int):Object
 		{
+			if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
+			}
 			return _source[index];
 		}
 		
@@ -144,27 +189,41 @@ package flight.list
 		
 		public function removeItemAt(index:int):Object
 		{
-			var oldValue:Object = adapter.length;
-			var item:Object = adapter.splice(index, 1)[0];
+			var oldValue:int = adapter.length;
+			if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
+			}
+			var items:* = adapter.splice(index, 1);
+			var item:Object = items[0];
+			
 			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
 			return item;
 		}
 		
 		public function removeItems(index:int=0, length:int=0x7FFFFFFF):*
 		{
-			var oldValue:Object = adapter.length;
+			var oldValue:int = adapter.length;
+			if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
+			}
 			var items:* = adapter.splice(index, length);
+			
 			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
 			return items;
 		}
 		
 		public function setItemIndex(item:Object, index:int):Object
 		{
-			adapter.splice(adapter.indexOf(item), 1);
+			var oldIndex:int = adapter.indexOf(item);
+			if (oldIndex == -1) {
+				return addItemAt(item, index);
+			}
+			
+			var items:* = adapter.splice(oldIndex, 1);
 			adapter.splice(index, 0, item);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.MOVE, items, index, oldIndex) );
 			return item;
 		}
 		
@@ -186,10 +245,14 @@ package flight.list
 			var item1:Object = _source[index1];
 			var item2:Object = _source[index2];
 			
-			adapter.splice(index2, 1);
-			adapter.splice(index1, 1, item2);
+			var items:* = adapter.splice(index2, 1);
+			if (items is XMLList) {
+				items += adapter.splice(index1, 1, item2);
+			} else {
+				items.push( adapter.splice(index1, 1, item2) );
+			}
 			adapter.splice(index2, 0, item1);
-			dispatchEvent(new Event(Event.CHANGE));
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.MOVE, items, index1, index2) );
 		}
 		
 		public function equals(value:Object):Boolean
@@ -209,100 +272,6 @@ package flight.list
 		public function clone():Object
 		{
 			return new ArrayList( adapter.concat() );
-		}
-		
-		override flash_proxy function getProperty(name:*):*
-		{
-			return _source[name];
-		}
-		
-		override flash_proxy function setProperty(name:*, value:*):void
-		{
-			_source[name] = value;
-		}
-		
-		override flash_proxy function deleteProperty(name:*):Boolean
-		{
-			return delete _source[name];
-		}
-		
-		override flash_proxy function hasProperty(name:*):Boolean
-		{
-			return (name in _source);
-		}
-		
-		override flash_proxy function callProperty(name:*, ... rest):*
-		{
-			return _source[name].apply(_source, rest);
-		}
-		
-		override flash_proxy function nextName(index:int):String
-		{
-			return String(index - 1);
-		}
-		
-		override flash_proxy function nextValue(index:int):*
-		{
-			return _source[index - 1];
-		}
-		
-		override flash_proxy function nextNameIndex(index:int):int
-		{
-			return (index + 1) % (adapter.length + 1);
-		}
-		
-		
-		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
-		{
-			if (dispatcher == null) {
-				dispatcher = new EventDispatcher(this);
-			}
-			
-			dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
-		}
-		
-		public function removeEventListener(type:String, listener:Function, useCapture:Boolean=false):void
-		{
-			if (dispatcher != null) {
-				dispatcher.removeEventListener(type, listener, useCapture);
-			}
-		}
-		
-		public function dispatchEvent(event:Event):Boolean
-		{
-			if (dispatcher != null && dispatcher.hasEventListener(event.type)) {
-				return dispatcher.dispatchEvent(event);
-			}
-			return false;
-		}
-		
-		public function hasEventListener(type:String):Boolean
-		{
-			if (dispatcher != null) {
-				return dispatcher.hasEventListener(type);
-			}
-			return false;
-		}
-		
-		public function willTrigger(type:String):Boolean
-		{
-			if (dispatcher != null) {
-				return dispatcher.willTrigger(type);
-			}
-			return false;
-		}
-		
-		protected function dispatch(type:String):Boolean
-		{
-			if (dispatcher != null && dispatcher.hasEventListener(type)) {
-				return dispatcher.dispatchEvent( new Event(type) );
-			}
-			return false;
-		}
-		
-		protected function propertyChange(property:String, oldValue:Object, newValue:Object):void
-		{
-			PropertyEvent.dispatchChange(this, property, oldValue, newValue);
 		}
 		
 	}

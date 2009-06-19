@@ -10,7 +10,10 @@
 	<component id="ValueObject"				class="flight.vo.ValueObject"/>
 	<component id="ObjectEditor"			class="flight.utils.ObjectEditor"/>
 	<component id="ArrayList"				class="flight.list.ArrayList"/>
+	<component id="Selection"				class="flight.list.Selection"/>
+	<component id="Collection"				class="flight.list.Collection"/>
 	<component id="Bind"					class="flight.binding.Bind"/>
+	<component id="Binding"					class="flight.binding.Binding"/>
 	
 	<!-- configs -->
 	<component id="Config"					class="flight.config.Config"/>

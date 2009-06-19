@@ -26,7 +26,7 @@ package flight.list
 {
 	import flash.events.IEventDispatcher;
 	
-	[Event(name="change", type="flash.events.Event")]
+	[Event(name="listChange", type="flight.events.ListEvent")]
 	
 	public interface IList extends IEventDispatcher
 	{

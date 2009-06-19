@@ -41,6 +41,7 @@ package flight.domain
 	{
 		private var _response:IResponse;
 		
+		[Bindable(event="responseChange")]
 		public function get response():IResponse
 		{
 			if (_response == null) {
@@ -50,21 +51,28 @@ package flight.domain
 		}
 		public function set response(value:IResponse):void
 		{
-			var r:Response = _response as Response;
-			var v:Response = value as Response;
+			if (_response == value) {
+				return;
+			}
 			
-			if (r != null) {
-				r.removeEventListener(Event.COMPLETE, onComplete);
-				r.removeEventListener(Event.CANCEL, onCancel);
-				if (v != null) {
-					v.merge(r);
+			var oldValue:Object = _response;
+			
+			if (_response != null) {
+				_response.removeEventListener(Event.COMPLETE, onComplete);
+				_response.removeEventListener(Event.CANCEL, onCancel);
+				if (value != null) {
+					value.merge(_response);
 				}
 			}
+			
 			_response = value;
-			if (v != null) {
-				v.addEventListener(Event.COMPLETE, onComplete);
-				v.addEventListener(Event.CANCEL, onCancel);
+			
+			if (_response != null) {
+				_response.addEventListener(Event.COMPLETE, onComplete);
+				_response.addEventListener(Event.CANCEL, onCancel);
 			}
+			
+			propertyChange("response", oldValue, _response);
 		}
 		
 		private function onComplete(event:Event):void

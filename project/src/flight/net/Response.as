@@ -31,14 +31,15 @@ package flight.net
 	import flight.errors.ResponseError;
 	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
+	import flight.position.IPosition;
+	import flight.position.Position;
 	import flight.utils.IMerging;
+	
+	[Event(name="complete", type="flash.events.Event")]
+	[Event(name="cancel", type="flash.events.Event")]
 	
 	public class Response extends FlightDispatcher implements IResponse, IMerging
 	{
-		public static const PROGRESS:String = "progress";
-		public static const RESULT:String = "result";
-		public static const FAULT:String = "fault";
-		
 		protected var result:Object;
 		protected var fault:Error;
 		
@@ -46,11 +47,10 @@ package flight.net
 		protected var faultHandlers:Array = [];
 		
 		private var completeEvents:Array;
-		private var progressEvents:Array;
 		private var cancelEvents:Array;
 		
-		private var _status:String = PROGRESS;
-		private var _progress:Number = 0;
+		private var _status:String = ResponseStatus.PROGRESS;
+		private var _progress:IPosition;
 		
 		
 		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
@@ -68,8 +68,11 @@ package flight.net
 			return _status;
 		}
 		
-		public function get progress():Number
+		public function get progress():IPosition
 		{
+			if (_progress == null) {
+				_progress = new Position();
+			}
 			return _progress;
 		}
 		
@@ -91,7 +94,7 @@ package flight.net
 		{
 			resultParams.unshift(handler);
 			resultHandlers.push(resultParams);
-			if (status == RESULT) {
+			if (status == ResponseStatus.RESULT) {
 				complete(result);
 			}
 			return this;
@@ -128,7 +131,7 @@ package flight.net
 		{
 			faultParams.unshift(handler);
 			faultHandlers.push(faultParams);
-			if (status == FAULT) {
+			if (status == ResponseStatus.FAULT) {
 				cancel(fault);
 			}
 			return this;
@@ -160,16 +163,6 @@ package flight.net
 			target.addEventListener(eventType, onComplete);
 		}
 		
-		public function addProgressEvent(target:IEventDispatcher, eventType:String,
-										 progressProperty:String = "bytesLoaded", totalProperty:String = "bytesTotal"):void
-		{
-			if (progressEvents == null) {
-				progressEvents = [];
-			}
-			progressEvents.push( [target, eventType, progressProperty, totalProperty] );
-			target.addEventListener(eventType, onProgress);
-		}
-		
 		public function addCancelEvent(target:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
 		{
 			if (cancelEvents == null) {
@@ -184,8 +177,8 @@ package flight.net
 			result = data;
 			
 			var oldValues:Array = [_status, _progress];
-			_status = RESULT;
-			_progress = 1;
+			_status = ResponseStatus.RESULT;
+			_progress.position = _progress.max;
 			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
 			try {
@@ -212,8 +205,8 @@ package flight.net
 			fault = error;
 			
 			var oldValues:Array = [_status, _progress];
-			_status = FAULT;
-			_progress = 1;
+			_status = ResponseStatus.FAULT;
+			_progress.position = _progress.max;
 			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
 			
 			while (faultHandlers.length > 0) {
@@ -237,9 +230,9 @@ package flight.net
 				resultHandlers = resultHandlers.concat(source.resultHandlers);
 				faultHandlers = faultHandlers.concat(source.resultHandlers);
 				
-				if (status == RESULT) {
+				if (status == ResponseStatus.RESULT) {
 					complete(result);
-				} else if (status == FAULT) {
+				} else if (status == ResponseStatus.FAULT) {
 					cancel(fault);
 				}
 				return true;
@@ -266,12 +259,6 @@ package flight.net
 				target.removeEventListener(eventType, onComplete);
 			}
 			
-			for each (args in progressEvents) {
-				target = args[0];
-				eventType = args[1];
-				target.removeEventListener(eventType, onProgress);
-			}
-			
 			for each (args in cancelEvents) {
 				target = args[0];
 				eventType = args[1];
@@ -295,23 +282,6 @@ package flight.net
 			} else {
 				complete(event.target);
 			}
-		}
-		
-		private function onProgress(event:Event):void
-		{
-			var oldValue:Object = _progress;
-			var info:Array = getEventInfo(event, progressEvents);
-			var prop:String = info[2];
-			if (prop in event) {
-				_progress = parseFloat(event[prop]);
-				prop = info[3];
-				if (prop in event) {
-					_progress /= parseFloat(event[prop]);
-				}
-			} else {
-				_progress += .1 * (1 - _progress);
-			}
-			PropertyEvent.dispatchChange(this, "progress", oldValue, _progress);
 		}
 		
 		private function onCancel(event:Event):void

@@ -25,7 +25,7 @@
 package flight.commands
 {
 	import flight.events.PropertyEvent;
-	import flight.net.Response;
+	import flight.net.ResponseStatus;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
 	
@@ -202,7 +202,7 @@ package flight.commands
 				
 				if (command is IAsyncCommand) {
 					var asyncCommand:IAsyncCommand = command as IAsyncCommand;
-					if (asyncCommand.response.status == Response.FAULT) {
+					if (asyncCommand.response.status == ResponseStatus.FAULT) {
 						return;
 					}
 					

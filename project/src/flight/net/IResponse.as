@@ -26,6 +26,7 @@ package flight.net
 {
 	import flash.events.IEventDispatcher;
 	
+	import flight.position.IPosition;
 	import flight.utils.IMerging;
 	
 	[Event(name="complete", type="flash.events.Event")]
@@ -42,12 +43,13 @@ package flight.net
 		function get status():String;
 		
 		/**
-		 * The percent completion of the asynchronous response. The progress range
-		 * is from zero to one, one being 100% completed. Responses are often zero
-		 * until complete when no progress measurement is available.
+		 * The progress of the asynchronous response represented as a position.
+		 * The progress range will depend on its context, but by default is from
+		 * zero to one, one being 100% complete. Responses progress position is
+		 * often zero until complete when no progress measurement is available.
 		 */
 		[Bindable(event="progressChange")]
-		function get progress():Number;
+		function get progress():IPosition;
 		
 		/**
 		 * Adds a handler function to handle the successful results of the

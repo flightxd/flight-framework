@@ -22,22 +22,36 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.list
+package flight.position
 {
-	public interface ISelection
+	public interface IPosition
 	{
-		function get index():int;
-		function set index(value:int):void;
+		function get position():Number;
+		function set position(value:Number):void;
 		
-		function get item():Object;
-		function set item(value:Object):void;
+		function get percent():Number;
+		function set percent(value:Number):void;
 		
-		function get multiselect():Boolean;
-		function set multiselect(value:Boolean):void;
+		function get min():Number;
+		function set min(value:Number):void;
 		
-		function get indices():IList;
+		function get max():Number;
+		function set max(value:Number):void;
 		
-		function get items():IList;
+		function get size():Number;
+		function set size(value:Number):void;
+		
+		function get interval():Number;
+		function set interval(value:Number):void;
+		
+		function get intervalLarge():Number;
+		function set intervalLarge(value:Number):void;
+		
+		function increment():void;
+		function decrement():void;
+		
+		function incrementLarge():void;
+		function decrementLarge():void;
 		
 	}
 }
