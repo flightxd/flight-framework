@@ -42,11 +42,12 @@ package flight.list
 		public function Selection(list:IList)
 		{
 			this.list = list;
-			_indices.addEventListener(ListEvent.LIST_CHANGE, onIndicesChange, false, 0xF);
-			_items.addEventListener(ListEvent.LIST_CHANGE, onItemsChange, false, 0xF);
+			list.addEventListener(ListEvent.LIST_CHANGE, onListChange, false, 0xF);
+			_indices.addEventListener(ListEvent.LIST_CHANGE, onSelectionChange, false, 0xF);
+			_items.addEventListener(ListEvent.LIST_CHANGE, onSelectionChange, false, 0xF);
 		}
 		
-		[Bindable(event="index")]
+		[Bindable(event="indexChange")]
 		public function get index():int
 		{
 			return _index;
@@ -61,12 +62,16 @@ package flight.list
 			var oldValues:Array = [_index, _item];
 			_index = value;
 			_item = list.getItemAt(_index);
+			
+			updatingLists = true;
 			_indices.source = [_index];
+			_items.source = [_item];
+			updatingLists = false;
 			
 			PropertyEvent.dispatchChangeList(this, ["index", "item"], oldValues);
 		}
 		
-		[Bindable(event="item")]
+		[Bindable(event="itemChange")]
 		public function get item():Object
 		{
 			return _item;
@@ -84,7 +89,11 @@ package flight.list
 			var oldValues:Array = [_item, _index];
 			_item = value;
 			_index = i;
+			
+			updatingLists = true;
 			_items.source = [_item];
+			_indices.source = [_index];
+			updatingLists = false;
 			
 			PropertyEvent.dispatchChangeList(this, ["item", "index"], oldValues);
 		}
@@ -105,114 +114,91 @@ package flight.list
 			propertyChange("multiselect", oldValue, _multiselect);
 		}
 		
-		[Bindable(event="indices")]
+		[Bindable(event="indicesChange")]
 		public function get indices():IList
 		{
 			return _indices;
 		}
 		
-		[Bindable(event="items")]
+		[Bindable(event="itemsChange")]
 		public function get items():IList
 		{
 			return _items;
 		}
 		
-		private function onIndicesChange(event:ListEvent):void
+		private function onListChange(event:ListEvent):void
 		{
-			if (!_multiselect && _indices.numItems > 1) {
-				_indices.source = event.items != null ? event.items[0] : _indices.getItemAt(0);
-				event.stopImmediatePropagation();
-				return;
+			var tmpItems:Array = [];
+			for (var i:int = 0; i < _items.numItems; i++) {
+				var item:Object = _items.getItemAt(i);
+				var index:int = list.getItemIndex(item);
+				
+				if (index != -1) {
+					tmpItems.push(item);
+				}
 			}
 			
-			var tmpItems:Array;
-			var tmpIndex:int;
-			
-			switch (event.kind) {
-				case ListEventKind.ADD :
-					
-					tmpItems = [];
-					for each (tmpIndex in event.items) {
-						tmpItems.push(list.getItemAt(tmpIndex));
-					}
-					_items.addItems(tmpItems, event.location1);
-					
-					break;
-				case ListEventKind.REMOVE :
-					_items.removeItems(event.location1, event.items.length);
-					break;
-				case ListEventKind.MOVE :
-					if (event.items.length == 1) {
-						var tmpItem:Object = list.getItemAt(event.items[0] as Number);
-						_items.setItemIndex(tmpItem, event.location1);
-					} else {
-						_items.swapItemsAt(event.location1, event.location2);
-					}
-					break;
-				case ListEventKind.RESET :
-					tmpItems = [];
-					for (var i:int = 0; i < _indices.numItems; i++) {
-						tmpIndex = _indices.getItemAt(i) as Number;
-						tmpItems.push(list.getItemAt(tmpIndex));
-					}
-					_items.source = tmpItems;
-					break;
-			}
-			
-			var oldValues:Array = [_index, _item];
-			_index = _indices.getItemAt(0) as Number || -1;
-			_item = list.getItemAt(_index);
-			
-			PropertyEvent.dispatchChangeList(this, ["index", "item"], oldValues); 
+			_items.source = tmpItems;
 		}
 		
-		private function onItemsChange(event:ListEvent):void
+		private function onSelectionChange(event:ListEvent):void
 		{
-			if (!_multiselect && _items.numItems > 1) {
-				_items.source = event.items != null ? event.items[0] : _items.getItemAt(0);
+			if (updatingLists) {
+				return;
+			}
+			
+			var list1:ArrayList = event.target as ArrayList;
+			if (!_multiselect && list1.numItems > 1) {
+				list1.source = event.items != null ? event.items[0] : list1.getItemAt(0);
 				event.stopImmediatePropagation();
 				return;
 			}
 			
-			var tmpIndices:Array;
-			var tmpItem:Object;
+			var list2:ArrayList = (list1 == _indices) ? _items : _indices;
+			var getData:Function = (list1 == _indices) ? list.getItemAt : list.getItemIndex;
+			var tmpArray:Array;
+			var tmpObject:Object;
 			
+			updatingLists = true;
 			switch (event.kind) {
 				case ListEventKind.ADD :
-					
-					tmpIndices = [];
-					for each (tmpItem in event.items) {
-						tmpIndices.push(list.getItemIndex(tmpItem));
+					tmpArray = [];
+					for each (tmpObject in event.items) {
+						tmpArray.push( getData(tmpObject) );
 					}
-					_indices.addItems(tmpIndices, event.location1);
-					
+					list2.addItems(tmpArray, event.location1);
 					break;
 				case ListEventKind.REMOVE :
-					_indices.removeItems(event.location1, event.items.length);
+					list2.removeItems(event.location1, event.items.length);
 					break;
 				case ListEventKind.MOVE :
 					if (event.items.length == 1) {
-						var tmpIndex:int = list.getItemIndex(event.items[0]);
-						_indices.setItemIndex(tmpIndex, event.location1);
+						tmpObject = getData(event.items[0]);
+						list2.setItemIndex(tmpObject, event.location1);
 					} else {
-						_indices.swapItemsAt(event.location1, event.location2);
+						list2.swapItemsAt(event.location1, event.location2);
 					}
+					break;
+				case ListEventKind.REPLACE :
+					tmpObject = getData(event.items[0]);
+					list2.setItemAt(tmpObject, event.location1);
 					break;
 				case ListEventKind.RESET :
-					tmpIndices = [];
-					for (var i:int = 0; i < _items.numItems; i++) {
-						tmpItem = _items.getItemAt(i);
-						tmpIndices.push(list.getItemIndex(tmpItem));
+					tmpArray = [];
+					for (var i:int = 0; i < list1.numItems; i++) {
+						tmpObject = list1.getItemAt(i);
+						tmpArray.push( getData(tmpObject) );
 					}
-					_indices.source = tmpIndices;
+					list2.source = tmpArray;
 					break;
 			}
+			updatingLists = false;
 			
-			var oldValues:Array = [_item, _index];
+			var oldValues:Array = [_index, _item];
+			_index = _indices.numItems > 0 ? _indices.getItemAt(0) as Number : -1;
 			_item = _items.getItemAt(0);
-			_index = list.getItemIndex(_item);
 			
-			PropertyEvent.dispatchChangeList(this, ["item", "index"], oldValues);
+			PropertyEvent.dispatchChangeList(this, ["index", "item"], oldValues); 
 		}
 		
 	}

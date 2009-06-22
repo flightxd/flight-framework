@@ -24,15 +24,10 @@
 
 package flight.net
 {
-	import flash.events.IEventDispatcher;
-	
-	import flight.position.IPosition;
+	import flight.progress.IProgress;
 	import flight.utils.IMerging;
 	
-	[Event(name="complete", type="flash.events.Event")]
-	[Event(name="cancel", type="flash.events.Event")]
-	
-	public interface IResponse extends IEventDispatcher, IMerging
+	public interface IResponse extends IMerging
 	{
 		/**
 		 * Indication of whether the response is in progress, has been completed
@@ -49,7 +44,7 @@ package flight.net
 		 * often zero until complete when no progress measurement is available.
 		 */
 		[Bindable(event="progressChange")]
-		function get progress():IPosition;
+		function get progress():IProgress;
 		
 		/**
 		 * Adds a handler function to handle the successful results of the

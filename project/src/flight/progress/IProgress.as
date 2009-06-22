@@ -22,89 +22,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.list
+package flight.progress
 {
-	import flash.events.IEventDispatcher;
-	
-	[Event(name="listChange", type="flight.events.ListEvent")]
-	
-	public interface IList extends IEventDispatcher
+	public interface IProgress
 	{
-		/**
-		 * 
-		 */
-		[Bindable(event="numItemsChange")]
-		function get numItems():int;
+//		function get status():String;
 		
-		/**
-		 * 
-		 */
-		function addItem(item:Object):Object;
+		function get position():Number;
+		function set position(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function addItemAt(item:Object, index:int):Object;
+		function get percent():Number;
+		function set percent(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function addItems(items:*, index:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function getItemAt(index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function getItemById(id:String):Object;
-		
-		/**
-		 * 
-		 */
-		function getItemIndex(item:Object):int;
-		
-		/**
-		 * 
-		 */
-		function getItems(index:int = 0, length:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function removeItem(item:Object):Object;
-		
-		/**
-		 * 
-		 */
-		function removeItemAt(index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function removeItems(index:int = 0, length:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function setItemAt(item:Object, index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function setItemIndex(item:Object, index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function swapItems(item1:Object, item2:Object):void
-		
-		/**
-		 * 
-		 */
-		function swapItemsAt(index1:int, index2:int):void
+		function get length():Number;
+		function set length(value:Number):void;
 		
 	}
 }

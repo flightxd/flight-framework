@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.position
+package flight.progress
 {
 	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
@@ -31,31 +31,34 @@ package flight.position
 	{
 		private var _position:Number = 0;
 		private var _percent:Number = 0;
+		private var _length:Number = 1;
 		private var _min:Number = 0;
 		private var _max:Number = 1;
-		private var _size:Number = 0;
-		private var _interval:Number = 0.01;
-		private var _intervalLarge:Number = 0.1;
+		private var _positionSize:Number = 0;
+		private var _stepSize:Number = 0.01;
+		private var _skipSize:Number = 0.1;
 		
+		[Bindable(event="positionChange")]
 		public function get position():Number
 		{
 			return _position;
 		}
 		public function set position(value:Number):void
 		{
-			value = Math.max(_min, Math.min(_max - _size, value));
+			value = Math.max(_min, Math.min(_max - _positionSize, value));
 			if (_position == value) {
 				return;
 			}
 			
 			var oldValues:Array = [_position, _percent];
 			_position = value;
-			var space:Number = (_max - _size - _min);
+			var space:Number = (_max - _positionSize - _min);
 			_percent = space == 0 ? 1 : _position / space;
 			
 			PropertyEvent.dispatchChangeList(this, ["position", "percent"], oldValues);
 		}
 		
+		[Bindable(event="percentChange")]
 		public function get percent():Number
 		{
 			return _percent;
@@ -69,12 +72,33 @@ package flight.position
 			
 			var oldValues:Array = [_percent, _position];
 			_percent = value;
-			var space:Number = (_max - _size - _min);
+			var space:Number = (_max - _positionSize - _min);
 			_position = _min + _percent * space;
 			
 			PropertyEvent.dispatchChangeList(this, ["percent", "position"], oldValues);
 		}
 		
+		[Bindable(event="lengthChange")]
+		public function get length():Number
+		{
+			return _length;
+		}
+		public function set length(value:Number):void
+		{
+			value = Math.max(0, value);
+			if (_length == value) {
+				return;
+			}
+			
+			var oldValues:Array = [_length, _max];
+			_length = value;
+			_max = _min + _positionSize + _length;
+			
+			position = position;
+			PropertyEvent.dispatchChangeList(this, ["length", "max"], oldValues);
+		}
+		
+		[Bindable(event="minChange")]
 		public function get min():Number
 		{
 			return _min;
@@ -85,8 +109,8 @@ package flight.position
 				return;
 			}
 			
-			var oldValues:Array = [_min];
-			var properties:Array = ["min"];
+			var oldValues:Array = [_min, _length];
+			var properties:Array = ["min", "length"];
 			_min = value;
 			
 			if (_max < _min) {
@@ -94,16 +118,18 @@ package flight.position
 				properties.push("max");
 				_max = _min;
 			}
-			if (_size > _max - _min) {
-				oldValues.push(_size);
-				properties.push("size");
-				_size = _max - _min;
+			if (_positionSize > _max - _min) {
+				oldValues.push(_positionSize);
+				properties.push("positionSize");
+				_positionSize = _max - _min;
 			}
+			_length = _max - _positionSize - _min;
 			
 			position = position;
 			PropertyEvent.dispatchChangeList(this, properties, oldValues);
 		}
 		
+		[Bindable(event="maxChange")]
 		public function get max():Number
 		{
 			return _max;
@@ -114,8 +140,8 @@ package flight.position
 				return;
 			}
 			
-			var oldValues:Array = [_max];
-			var properties:Array = ["max"];
+			var oldValues:Array = [_max, _length];
+			var properties:Array = ["max", "length"];
 			_max = value;
 			
 			if (_min > _max) {
@@ -123,80 +149,85 @@ package flight.position
 				properties.push("min");
 				_min = _max;
 			}
-			if (_size > _max - _min) {
-				oldValues.push(_size);
-				properties.push("size");
-				_size = _max - _min;
+			if (_positionSize > _max - _min) {
+				oldValues.push(_positionSize);
+				properties.push("positionSize");
+				_positionSize = _max - _min;
 			}
+			_length = _max - _positionSize - _min;
 			
 			position = position;
 			PropertyEvent.dispatchChangeList(this, properties, oldValues);
 		}
 		
-		public function get size():Number
+		[Bindable(event="positionSizeChange")]
+		public function get positionSize():Number
 		{
-			return _size;
+			return _positionSize;
 		}
-		public function set size(value:Number):void
+		public function set positionSize(value:Number):void
 		{
 			value = Math.min(_max - _min, value);
-			if (_size == value) {
+			if (_positionSize == value) {
 				return;
 			}
 			
-			var oldValue:Object = _size;
-			_size = value;
-			propertyChange("size", oldValue, _size);
+			var oldValues:Array = [_positionSize, _length];
+			_positionSize = value;
+			_length = _max - _positionSize - _min;
+			PropertyEvent.dispatchChangeList(this, ["positionSize", "length"], oldValues);
 		}
 		
-		public function get interval():Number
+		[Bindable(event="stepSizeChange")]
+		public function get stepSize():Number
 		{
-			return _interval;
+			return _stepSize;
 		}
-		public function set interval(value:Number):void
+		public function set stepSize(value:Number):void
 		{
-			if (_interval == value) {
+			if (_stepSize == value) {
 				return;
 			}
 			
-			var oldValue:Object = _interval;
-			_interval = value;
-			propertyChange("interval", oldValue, _interval);
+			var oldValue:Object = _stepSize;
+			_stepSize = value;
+			propertyChange("stepSize", oldValue, _stepSize);
 		}
 		
-		public function get intervalLarge():Number
+		[Bindable(event="skipSizeChange")]
+		public function get skipSize():Number
 		{
-			return _intervalLarge;
+			return _skipSize;
 		}
-		public function set intervalLarge(value:Number):void
+		public function set skipSize(value:Number):void
 		{
-			if (_intervalLarge == value) {
+			if (_skipSize == value) {
 				return;
 			}
 			
-			var oldValue:Object = _intervalLarge;
-			_intervalLarge = value;
-			propertyChange("intervalLarge", oldValue, _intervalLarge);
+			var oldValue:Object = _skipSize;
+			_skipSize = value;
+			propertyChange("skipSize", oldValue, _skipSize);
 		}
 		
-		public function increment():void
+		public function forward():void
 		{
-			position += interval;
+			position += stepSize;
 		}
 		
-		public function decrement():void
+		public function backward():void
 		{
-			position -= interval;
+			position -= stepSize;
 		}
 		
-		public function incrementLarge():void
+		public function skipForward():void
 		{
-			position += intervalLarge;
+			position += skipSize;
 		}
 		
-		public function decrementLarge():void
+		public function skipBackward():void
 		{
-			position -= intervalLarge;
+			position -= skipSize;
 		}
 	}
 }

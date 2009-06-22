@@ -31,12 +31,9 @@ package flight.net
 	import flight.errors.ResponseError;
 	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
-	import flight.position.IPosition;
-	import flight.position.Position;
+	import flight.progress.IProgress;
+	import flight.progress.Progress;
 	import flight.utils.IMerging;
-	
-	[Event(name="complete", type="flash.events.Event")]
-	[Event(name="cancel", type="flash.events.Event")]
 	
 	public class Response extends FlightDispatcher implements IResponse, IMerging
 	{
@@ -50,7 +47,7 @@ package flight.net
 		private var cancelEvents:Array;
 		
 		private var _status:String = ResponseStatus.PROGRESS;
-		private var _progress:IPosition;
+		private var _progress:IProgress;
 		
 		
 		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
@@ -68,10 +65,10 @@ package flight.net
 			return _status;
 		}
 		
-		public function get progress():IPosition
+		public function get progress():IProgress
 		{
 			if (_progress == null) {
-				_progress = new Position();
+				_progress = new Progress();
 			}
 			return _progress;
 		}
@@ -176,10 +173,10 @@ package flight.net
 		{
 			result = data;
 			
-			var oldValues:Array = [_status, _progress];
+			var oldValue:Object = _status;
 			_status = ResponseStatus.RESULT;
-			_progress.position = _progress.max;
-			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
+			_progress.position = _progress.length;
+			propertyChange("status", oldValue, _status);
 			
 			try {
 				while (resultHandlers.length > 0) {
@@ -192,7 +189,7 @@ package flight.net
 					}
 				}
 				
-				release(Event.COMPLETE);
+				release();
 			} catch(e:ResponseError) {
 				cancel(e);
 			}
@@ -204,10 +201,10 @@ package flight.net
 		{
 			fault = error;
 			
-			var oldValues:Array = [_status, _progress];
+			var oldValue:Object = _status;
 			_status = ResponseStatus.FAULT;
-			_progress.position = _progress.max;
-			PropertyEvent.dispatchChangeList(this, ["status", "progress"], oldValues);
+			_progress.position = _progress.length;
+			propertyChange("status", oldValue, _status);
 			
 			while (faultHandlers.length > 0) {
 				var params:Array = faultHandlers.shift();
@@ -219,7 +216,7 @@ package flight.net
 				}
 			}
 			
-			release(Event.CANCEL);
+			release();
 			return this;
 		}
 		
@@ -246,8 +243,7 @@ package flight.net
 			return new Responder(onComplete, onCancel);
 		}
 		
-		
-		protected function release(type:String):void
+		protected function release():void
 		{
 			var target:IEventDispatcher;
 			var eventType:String;
@@ -263,13 +259,6 @@ package flight.net
 				target = args[0];
 				eventType = args[1];
 				target.removeEventListener(eventType, onCancel);
-			}
-			
-			// resetting the event dispatcher ensures listeners will only be triggered once
-			if (dispatcher != null) {
-				var oldDispatcher:IEventDispatcher = dispatcher;
-				dispatcher = null;
-				oldDispatcher.dispatchEvent(new Event(type));
 			}
 		}
 		

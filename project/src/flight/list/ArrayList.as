@@ -84,6 +84,7 @@ package flight.list
 		}
 		
 		[Bindable(event="sourceChange")]
+		[Bindable(event="listChange")]
 		public function get source():*
 		{
 			return _source;
@@ -214,11 +215,26 @@ package flight.list
 			return items;
 		}
 		
+		public function setItemAt(item:Object, index:int):Object
+		{
+			if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
+			}
+			adapter.splice(index, 0, item);
+			var items:* = adapter.slice(index, index + 2);
+			adapter.splice(index + 1, 1);
+			
+			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REPLACE, items, index) );
+			return item;
+		}
+		
 		public function setItemIndex(item:Object, index:int):Object
 		{
 			var oldIndex:int = adapter.indexOf(item);
 			if (oldIndex == -1) {
 				return addItemAt(item, index);
+			} else if (index < 0) {
+				index = Math.max(adapter.length + index, 0);
 			}
 			
 			var items:* = adapter.splice(oldIndex, 1);

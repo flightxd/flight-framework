@@ -22,36 +22,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.position
+package flight.progress
 {
-	public interface IPosition
+	public interface IPlayer extends IProgress
 	{
-		function get position():Number;
-		function set position(value:Number):void;
+		function play():void
+		function pause():void;
+		function stop():void;
 		
-		function get percent():Number;
-		function set percent(value:Number):void;
-		
-		function get min():Number;
-		function set min(value:Number):void;
-		
-		function get max():Number;
-		function set max(value:Number):void;
-		
-		function get size():Number;
-		function set size(value:Number):void;
-		
-		function get interval():Number;
-		function set interval(value:Number):void;
-		
-		function get intervalLarge():Number;
-		function set intervalLarge(value:Number):void;
-		
-		function increment():void;
-		function decrement():void;
-		
-		function incrementLarge():void;
-		function decrementLarge():void;
-		
+		function seek(position:Number = 0):void;
 	}
 }

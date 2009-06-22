@@ -25,7 +25,6 @@
 package flight.binding
 {
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
@@ -101,9 +100,17 @@ package flight.binding
 			}
 			
 			explicitValue = value;
+			
 			var source:Object = getSource(_sourcePath.length - 1);
 			if (source != null) {
-				source[property] = value;
+				if (property in source) {
+					if (!applyOnly) {
+						explicitValue = null;
+					}
+					source[property] = value;
+				} else {
+					trace("Warning: Binding access of undefined property '" + property + "' in " + getClassName(source) + ".");
+				}
 			}
 		}
 		
@@ -249,7 +256,7 @@ package flight.binding
 			unbindPath(pathIndex);
 			
 			var prop:String;
-			var len:int = applyOnly ? _sourcePath.length - 1 : _sourcePath.length;
+			var len:int = (applyOnly && explicitValue != null) ? _sourcePath.length - 1 : _sourcePath.length;
 			for (pathIndex; pathIndex < len; pathIndex++) {
 				
 				if (source == null) {
@@ -276,14 +283,13 @@ package flight.binding
 				source = source[prop];
 			}
 			
-			_resolved = Boolean(pathIndex == len && !(applyOnly && source == null) );
-			
+			_resolved = Boolean(pathIndex == _sourcePath.length || source != null);
 			if (!_resolved) {
 				return;
 			}
 			
 			if (explicitValue != null) {
-				var newValue:Object = explicitValue;
+				var tmpValue:Object = explicitValue;
 				
 				if (!applyOnly) {
 					source = getSource(_sourcePath.length-1);
@@ -293,7 +299,11 @@ package flight.binding
 				}
 				
 				prop = _sourcePath[_sourcePath.length-1];
-				source = source[prop] = newValue;
+				if (prop in source) {
+					source = source[prop] = tmpValue;
+				} else {
+					trace("Warning: Binding access of undefined property '" + prop + "' in " + getClassName(source) + ".");
+				}
 			}
 			
 			return source;

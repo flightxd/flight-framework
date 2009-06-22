@@ -25,6 +25,8 @@
 package flight.domain
 {
 	import flash.events.Event;
+	import flash.utils.clearTimeout;
+	import flash.utils.setTimeout;
 	
 	import flight.commands.IAsyncCommand;
 	import flight.net.IResponse;
@@ -39,12 +41,14 @@ package flight.domain
 	 */
 	public class AsyncCommand extends Command implements IAsyncCommand
 	{
+		private var interval:uint;
 		private var _response:IResponse;
 		
 		[Bindable(event="responseChange")]
 		public function get response():IResponse
 		{
 			if (_response == null) {
+				// set response through the setter for appropriate handlers
 				response = new Response();
 			}
 			return _response;
@@ -56,33 +60,39 @@ package flight.domain
 			}
 			
 			var oldValue:Object = _response;
-			
-			if (_response != null) {
-				_response.removeEventListener(Event.COMPLETE, onComplete);
-				_response.removeEventListener(Event.CANCEL, onCancel);
-				if (value != null) {
-					value.merge(_response);
-				}
-			}
-			
 			_response = value;
 			
 			if (_response != null) {
-				_response.addEventListener(Event.COMPLETE, onComplete);
-				_response.addEventListener(Event.CANCEL, onCancel);
+				if (oldValue != null) {
+					_response.merge(oldValue);
+				} else {
+					_response.addResultHandler(onResult);
+					_response.addFaultHandler(onFault);
+				}
 			}
 			
 			propertyChange("response", oldValue, _response);
 		}
 		
-		private function onComplete(event:Event):void
+		private function complete(event:Event):void
 		{
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		private function onCancel(event:Event):void
+		private function cancel(event:Event):void
 		{
 			dispatchEvent(new Event(Event.CANCEL));
+		}
+		
+		private function onResult(data:Object):void
+		{
+			interval = setTimeout(complete, 1);
+		}
+		
+		private function onFault(error:Error):void
+		{
+			clearTimeout(interval);
+			setTimeout(cancel, 1);
 		}
 	}
 }

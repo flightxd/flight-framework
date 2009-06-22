@@ -22,89 +22,31 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.list
+package flight.progress
 {
-	import flash.events.IEventDispatcher;
-	
-	[Event(name="listChange", type="flight.events.ListEvent")]
-	
-	public interface IList extends IEventDispatcher
+	public interface IPosition extends IProgress
 	{
-		/**
-		 * 
-		 */
-		[Bindable(event="numItemsChange")]
-		function get numItems():int;
+		function get min():Number;
+		function set min(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function addItem(item:Object):Object;
+		function get max():Number;
+		function set max(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function addItemAt(item:Object, index:int):Object;
+		function get positionSize():Number;
+		function set positionSize(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function addItems(items:*, index:int = 0x7FFFFFFF):*;
+		function get stepSize():Number;
+		function set stepSize(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function getItemAt(index:int):Object;
+		function get skipSize():Number;
+		function set skipSize(value:Number):void;
 		
-		/**
-		 * 
-		 */
-		function getItemById(id:String):Object;
+		function forward():void;
+		function backward():void;
 		
-		/**
-		 * 
-		 */
-		function getItemIndex(item:Object):int;
+		function skipForward():void;
+		function skipBackward():void;
 		
-		/**
-		 * 
-		 */
-		function getItems(index:int = 0, length:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function removeItem(item:Object):Object;
-		
-		/**
-		 * 
-		 */
-		function removeItemAt(index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function removeItems(index:int = 0, length:int = 0x7FFFFFFF):*;
-		
-		/**
-		 * 
-		 */
-		function setItemAt(item:Object, index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function setItemIndex(item:Object, index:int):Object;
-		
-		/**
-		 * 
-		 */
-		function swapItems(item1:Object, item2:Object):void
-		
-		/**
-		 * 
-		 */
-		function swapItemsAt(index1:int, index2:int):void
 		
 	}
 }
