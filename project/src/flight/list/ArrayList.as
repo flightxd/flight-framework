@@ -84,7 +84,6 @@ package flight.list
 		}
 		
 		[Bindable(event="sourceChange")]
-		[Bindable(event="listChange")]
 		public function get source():*
 		{
 			return _source;

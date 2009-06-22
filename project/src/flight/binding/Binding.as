@@ -291,11 +291,13 @@ package flight.binding
 			if (explicitValue != null) {
 				var tmpValue:Object = explicitValue;
 				
-				if (!applyOnly) {
-					source = getSource(_sourcePath.length-1);
-					explicitValue = null;
-				} else {
+				if (applyOnly && pathIndex == len) {
 					indicesIndex[source] = pathIndex;
+				} else {
+					source = getSource(_sourcePath.length-1);
+					if (!applyOnly) {
+						explicitValue = null;
+					}
 				}
 				
 				prop = _sourcePath[_sourcePath.length-1];
