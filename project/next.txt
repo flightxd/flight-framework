@@ -1,3 +1,5 @@
+* test-run of a MXML-defined DomainController, complete with MacroCommands (lists of actions)
+
 *complete entire list solution
 
 * Revisit multi-dispatch of propertyChange events for binding (in PropertyEvent.dispatchChange)

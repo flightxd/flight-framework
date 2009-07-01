@@ -25,74 +25,66 @@
 package flight.config
 {
 	import flash.events.Event;
-	import flash.events.IEventDispatcher;
+	import flash.events.IOErrorEvent;
+	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	
 	dynamic public class XMLConfig extends Config
 	{
+		private var _source:String;
 		
 		public function XMLConfig(source:String = null)
 		{
-			this.source = [source];
+			this.source = source;
 		}
 		
-		public override function set source(value:Array):void
+		[Bindable(event="sourceChange")]
+		public function get source():String
 		{
-			if (super.source == value) {
+			return _source;
+		}
+		public function set source(value:String):void
+		{
+			if (_source == value) {
 				return;
 			}
 			
-			super.source = value;
+			var oldValue:Object = _source;
+			_source = value;
 			
-			if (value is String) {
-				// load
+			// load XML file of configuration properties
+			if (_source) {
 				var loader:URLLoader = new URLLoader();
-				configureListeners(loader);
-				loader.load(new URLRequest(value as String));
+					loader.addEventListener(Event.COMPLETE, onComplete);
+					loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+					loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+					loader.load( new URLRequest(value) );
 			}
-		}
-		
-		private function configureListeners(dispatcher:IEventDispatcher):void
-		{
-			dispatcher.addEventListener(Event.COMPLETE, onComplete);
-//			dispatcher.addEventListener(Event.OPEN, onOpen);
-//			dispatcher.addEventListener(ProgressEvent.PROGRESS, onProgress);
-//			dispatcher.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
-//			dispatcher.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHttpStatus);
-//			dispatcher.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			
+			propertyChange("source", oldValue, _source);
 		}
 		
 		private function onComplete(event:Event):void
 		{
 			var loader:URLLoader = URLLoader(event.target);
-			configurations = formatSource(XML(loader.data));
+			var children:XMLList = new XML(loader.data).children();
+			var properties:Object = {};
+			for each (var child:XML in children) {
+				properties[child.name()] = child;
+			}
+			this.properties = properties;
 		}
 		
-//		private function onOpen(event:Event):void
-//		{
-//			trace("onOpen: " + event);
-//		}
-//		
-//		private function onProgress(event:ProgressEvent):void
-//		{
-//			trace("onProgress loaded:" + event.bytesLoaded + " total: " + event.bytesTotal);
-//		}
-//		
-//		private function onSecurityError(event:SecurityErrorEvent):void
-//		{
-//			trace("onSecurityError: " + event);
-//		}
-//		
-//		private function onHttpStatus(event:HTTPStatusEvent):void
-//		{
-//			trace("onHttpStatus: " + event);
-//		}
-//		
-//		private function onIOError(event:IOErrorEvent):void
-//		{
-//			trace("onIOError: " + event);
-//		}
+		private function onSecurityError(event:SecurityErrorEvent):void
+		{
+			trace(event.text);
+		}
+		
+		private function onIOError(event:IOErrorEvent):void
+		{
+			trace(event.text);
+		}
 
 	}
 }

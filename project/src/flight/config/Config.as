@@ -25,207 +25,238 @@
 package flight.config
 {
 	import flash.display.DisplayObject;
-	import flash.utils.getDefinitionByName;
 	
 	import flight.events.PropertyEvent;
 	import flight.utils.Singleton;
 	import flight.utils.Type;
 	
-	import mx.binding.utils.BindingUtils;
-	import mx.core.IMXMLObject;
-	
-	[DefaultProperty("source")]
+	/**
+	 * Config is the base class for all configurations, an easy way to popluate
+	 * and access your application's initial settings. Each Config subtype is
+	 * a single instance that (1) defines and/or (2) retreives a set of
+	 * initialization properties. Config properties can be accessed either on
+	 * the class instance through its Singleton getInstance(), or on Config's
+	 * <code>main</code> configuration where all of the systems properties are
+	 * available.
+	 * 
+	 * <p>The most common configurations define a set of properties on their
+	 * class definition, either as ActionScript or MXML. These properties are
+	 * most useful when first populated with default values, which may be
+	 * overwritten once other configurations populate their <code>configs</code>
+	 * list as decendants. This hierarchical structure flattens all properties
+	 * upward to the top-most configuration, <code>Config.main</code>.</p>
+	 * 
+	 * <p>Certain subtypes of Config are built to retreive data from external
+	 * sources, such as an XML file or parsed from the url of the web page.
+	 * These more active configuration types are most often used within the
+	 * <code>configs</code> list of another configuration.</p>
+	 * 
+	 * @see		#configs
+	 */
+	[DefaultProperty("configs")]
 	dynamic public class Config extends Singleton
 	{
-		private static const REGISTRY_SCOPE:String = "Config";
-		
+		/**
+		 * Global configuration with access to all config properties within the
+		 * system. The <code>main</code> config holds all configurations within
+		 * its <code>configs</code> list.
+		 */
 		public static var main:Config = new Config();
 		
-		private var _id:Object;
-		private var _source:Array;
-		
-		private var _configurations:Object;
-		private var _viewReference:DisplayObject;
-		
-		public function Config()
+		// the typeMap is used in formatting string-based properties
+		private var typeMap:Object =
 		{
-			if (main != null) {
-				main.source = main.source.concat(this);
-			}
+			"true" :		true,
+			"false" :		false,
+			"NaN" :			NaN,
+			"null" :		null,
+			"undefined" :	undefined
+		};
+		
+		private var _display:DisplayObject;
+		
+		private var _configs:Array = [];
+		private var _properties:Object = {};
+		
+		/**
+		 * Singleton initialization, establishing hierarchy with the global
+		 * <code>main</code> config. Unlike the constructor this method is
+		 * invoked only once for this type, despite the number of instances
+		 * created.
+		 */
+		override protected function init():void
+		{
+			// initialize the properties object with class-defined properties
+			var properties:Object = {};
+			var propList:XMLList = Type.describeProperties(this)
+					.(attribute("declaredBy").toString().indexOf("flight.config::") == -1);
 			
-			source = [];
-		}
-		
-		[Bindable(event="configurationsChange")]
-		public function get configurations():Object
-		{
-			return _configurations;
-		}
-		public function set configurations(value:Object):void
-		{
-			if (_configurations == value) {
-				return;
-			}
-			
-var newValue:Object = {};
-
-for (var i:String in _configurations) {
-	newValue[i] = _configurations[i];
-}
-
-for (i in value) {
-	newValue[i] = value[i];
-	// subclass configs may not be dynamic, we will fail silently
-	try {
-		this[i] = value[i];
-	} catch(e:Error) {
-	}
-}
-			var oldValue:Object = _configurations;
-			_configurations = newValue;
-			PropertyEvent.dispatchChange(this, "configurations", oldValue, _configurations);
-		}
-		
-		[Bindable(event="sourceChange")]
-		public function get source():Array
-		{
-			return _source;
-		}
-		public function set source(value:Array):void
-		{
-			if (_source == value) {
-				return;
-			}
-			
-if (value is Array) {
-	var mainSourceAltered:Boolean = false;
-	if (main && this != main) {
-		var mainSource:Array = main.source.concat();
-	}
-	
-	for each (var source:Config in value) {
-		// let's not duplicate sources in main, they'll all filter up
-		var index:int;
-		if (mainSource && (index = mainSource.indexOf(source)) != -1) {
-			mainSource.splice(index, 1);
-			mainSourceAltered = true;
-		}
-		
-		BindingUtils.bindSetter(update, source, "configurations");
-	}
-	
-	if (mainSource && mainSourceAltered) {
-		main.source = mainSource;
-	}
-}
-			var oldValue:Array = _source;
-			_source = value;
-			PropertyEvent.dispatchChange(this, "source", oldValue, _source);
-		}
-		
-		[Bindable(event="viewReferenceChange")]
-		public function get viewReference():DisplayObject
-		{
-			return _viewReference;
-		}
-		public function set viewReference(value:DisplayObject):void
-		{
-			if (_viewReference == value) {
-				return;
-			}
-			
-			var oldValue:DisplayObject = _viewReference;
-			_viewReference = value;
-			PropertyEvent.dispatchChange(this, "viewReference", oldValue, _viewReference);
-		}
-		
-		private var inited:uint;
-		override public function initialized(document:Object, id:String):void
-		{
-			super.initialized(document, id);
-			if (id != null) {
-				this._id = id;
-			}
-//			trace("Initialized", ++inited, "times");
-			if (viewReference != null) {
-				return;
-			}
-			if (document is DisplayObject) {
-				viewReference = document as DisplayObject;
-			}
-			else if (document is Config) {
-				BindingUtils.bindProperty(this, "viewReference", document, "viewReference");
-			}
-			
-			// initialize the configurations object
-			var configurations:Object = {};
-			var propList:XMLList = getProperties();
 			for each (var prop:XML in propList) {
-				var name:String = prop.@name;
-				configurations[name] = this[name];
+				var i:String = prop.@name;
+				properties[i] = this[i];
 			}
-			this.configurations = configurations;
+			_properties = properties;
+			
+			// add every singleton config to the global 'main' - only the
+			// 'main' config will receive a null and won't be added to itself
+			if (main != null) {
+				main.configs.push(this);
+				addEventListener("propertiesChange", main.onPropertiesChange);
+			}
 		}
 		
 		/**
-		 * Format data pulled in from the source param to its native types (boolean etc.)
+		 * Dynamic object holding all name/value pairs of properties available
+		 * on this configuration, based on its own properties and those in its
+		 * hierarchy. Replacing this object overwrites this configuration's
+		 * property definitions as well as those above in hierarchy.
 		 */
-		protected function formatSource(source:Object):Object
+		[Bindable(event="propertiesChange")]
+		public function get properties():Object
 		{
-			var propList:XMLList = getProperties();
-			
-			for (var name:String in source) {
-				var prop:XMLList = propList.(@name == name);
-				var value:Object = source[name];
-				if (value != null && prop.length()) {
-					var type:Class = getDefinitionByName(prop.@type.toString()) as Class;
-					source[name] = (type == Boolean && value == "false") ? false : type(value);
-				}
-			}
-			
-			return source;
+			return _properties;
 		}
-		
-		// "data" is used as update is a bindSetter
-		private function update(data:Object):void
+		public function set properties(value:Object):void
 		{
-			// if the configurations have not been initialized yet (they are null or
-			// or empty) then we won't process them yet
-			if (data == null) {
+			if (_properties == value) {
 				return;
 			}
 			
-			var empty:Boolean = true;
-			for (var prop:String in data) {
-				empty = false;
-				break;
-			}
-			
-			if (empty) {
-				return;
-			}
-			
-			// can't just update using data, because of overrides, must do all sources
-			var sources:Array = source as Array;
-			var newConfigurations:Object = {};
-			
-			for each (var config:Config in sources) {
-				// populate the dynamic properties
-				var configurations:Object = config.configurations;
-				for (var i:String in configurations) {
-					newConfigurations[i] = configurations[i];
+			// simple collection of values by name
+			for (var i:String in value) {
+				_properties[i] = value[i];
+				
+				// update the properties on the class
+				try {
+					this[i] = value[i];
+				} catch(e:ReferenceError) {
+					// subtype may not be dynamic or define this property, fail silently
 				}
 			}
 			
-			this.configurations = newConfigurations;
+			propertyChange("properties", _properties, _properties);
 		}
 		
-		protected function getProperties():XMLList
+		/**
+		 * A list of supporting configurations that populate and overwrite this
+		 * Config's properties. The <code>configs</code> list is resolved from
+		 * the top to the bottom, where the bottom-most configuration in the
+		 * <code>configs</code> list takes precedence over all properties
+		 * previously set.
+		 */
+		[ArrayElementType("flight.config.Config")]
+		[Bindable(event="configsChange")]
+		public function get configs():Array
 		{
-			return Type.describeProperties(this)
-					.(attribute('access') != 'readonly'
-					&& attribute('declaredBy') != "flight.config::Config"
-					&& !attribute('uri').length());
+			return _configs;
 		}
+		public function set configs(value:Array):void
+		{
+			if (_configs == value) {
+				return;
+			}
+			
+			var config:Config
+			for each (config in _configs) {
+				config.removeEventListener("propertiesChange", onPropertiesChange);
+			}
+			
+			var oldValue:Array = _configs;
+			_configs = value;
+			
+			for each (config in _configs) {
+				// remove this sub-config from the main config - main will receive its
+				// properties through the hierarchy
+				var mainIndex:int = main.configs.indexOf(config);
+				if (mainIndex != -1) {
+					main.configs.splice(mainIndex, 1);
+					config.removeEventListener("propertiesChange", main.onPropertiesChange);
+				}
+				config.addEventListener("propertiesChange", onPropertiesChange);
+				if (config.display == null) {
+					config.display = _display;
+				}
+			}
+			updateProperties();
+			
+			propertyChange("configs", oldValue, _configs);
+		}
+		
+		/**
+		 * 
+		 */
+		[Bindable(event="displayChange")]
+		public function get display():DisplayObject
+		{
+			return _display;
+		}
+		public function set display(value:DisplayObject):void
+		{
+			if (_display == value) {
+				return;
+			}
+			
+			var oldValue:DisplayObject = _display;
+			_display = value;
+			for each (var config:Config in _configs) {
+				if (config.display == null) {
+					config.display = _display;
+				}
+			}
+			propertyChange("display", oldValue, _display);
+		}
+		
+		override public function initialized(document:Object, id:String):void
+		{
+			super.initialized(document, id);
+			
+			if (display != null && document is DisplayObject) {
+				display = document as DisplayObject;
+			}
+		}
+		
+		/**
+		 * Format data pulled in from the configs param to its native types (boolean etc.)
+		 */
+		protected function formatProperties(properties:Object):void
+		{
+			for (var i:String in properties) {
+				
+				var value:Object = properties[i];
+				if ( !(value is String) ) {
+					continue;
+				}
+				
+				if ( !isNaN(Number(value)) ) {
+					properties[i] = Number(value);
+				} else if (value in typeMap) {
+					properties[i] = typeMap[value];
+				}
+			}
+			
+			this.properties = properties;
+		}
+		
+		protected function updateProperties():void
+		{
+			// can't just update using data, because of overrides, must do all configs
+			var configProperties:Object = {};
+			
+			for each (var config:Config in _configs) {
+				for (var i:String in config.properties) {
+					configProperties[i] = config.properties[i];
+				}
+			}
+			
+			properties = configProperties;
+		}
+		
+		private function onPropertiesChange(event:PropertyEvent):void
+		{
+			if (event.newValue != null) {
+				updateProperties();
+			}
+		}
+		
 	}
 }

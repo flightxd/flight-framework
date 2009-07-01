@@ -150,6 +150,11 @@ package flight.list
 			return items;
 		}
 		
+		public function containsItem(item:Object):Boolean
+		{
+			return Boolean(adapter.indexOf(item) != -1);
+		}
+		
 		public function getItemAt(index:int):Object
 		{
 			if (index < 0) {

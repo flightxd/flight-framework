@@ -29,14 +29,16 @@ package flight.config
 	
 	dynamic public class URLConfig extends Config
 	{
-		public function URLConfig()
+		
+		override protected function init():void
 		{
-			if (!ExternalInterface.available) {
+			if ( !ExternalInterface.available ) {
 				return;
 			}
+			
 			var queryString:String = ExternalInterface.call("eval", "location.search");
 			if (queryString.length > 0) {
-				configurations = formatSource(new URLVariables(queryString.substr(1)));	// remove the '?' from the search string
+				formatProperties( new URLVariables(queryString.substr(1)) );	// remove the '?' from the search string
 			}
 		}
 		

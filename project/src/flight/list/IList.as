@@ -54,6 +54,11 @@ package flight.list
 		/**
 		 * 
 		 */
+		function containsItem(item:Object):Boolean;
+		
+		/**
+		 * 
+		 */
 		function getItemAt(index:int):Object;
 		
 		/**

@@ -29,29 +29,38 @@ package flight.config
 	dynamic public class SharedObjectConfig extends Config
 	{
 		private var _sharedObject:SharedObject;
-		private var _id:Object;
+		private var _id:String;
 		
-		public function SharedObjectConfig(id:Object = null)
+		public function SharedObjectConfig(id:String = null)
 		{
 			this.id = id;
 		}
 		
-		// TODO: is this necessary? add binding, etc?
-		public function set id(value:Object):void
+		[Bindable(event="idChange")]
+		public function get id():String
+		{
+			return _id
+		}
+		public function set id(value:String):void
 		{
 			if (_id == value) {
 				return;
 			}
 			
+			var oldValue:Object = _id;
 			_id = value;
 			
-			_sharedObject = SharedObject.getLocal( "config_" + String(_id) );
-			configurations = formatSource(sharedObject.data);
+			if (_id) {
+				_sharedObject = SharedObject.getLocal("config_" + _id);
+				formatProperties(_sharedObject.data);
+			}
+			propertyChange("id", oldValue, _id);
 		}
 		
 		override public function initialized(document:Object, id:String):void
 		{
 			super.initialized(document, id);
+			
 			if (id != null) {
 				this.id = id;
 			}

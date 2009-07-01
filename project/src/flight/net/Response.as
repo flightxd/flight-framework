@@ -47,7 +47,7 @@ package flight.net
 		private var cancelEvents:Array;
 		
 		private var _status:String = ResponseStatus.PROGRESS;
-		private var _progress:IProgress;
+		private var _progress:IProgress = new Progress();
 		
 		
 		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
@@ -67,9 +67,6 @@ package flight.net
 		
 		public function get progress():IProgress
 		{
-			if (_progress == null) {
-				_progress = new Progress();
-			}
 			return _progress;
 		}
 		

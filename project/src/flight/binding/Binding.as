@@ -102,15 +102,17 @@ package flight.binding
 			explicitValue = value;
 			
 			var source:Object = getSource(_sourcePath.length - 1);
-			if (source != null) {
-				if (property in source) {
-					if (!applyOnly) {
-						explicitValue = null;
-					}
-					source[property] = value;
-				} else {
-					trace("Warning: Binding access of undefined property '" + property + "' in " + getClassName(source) + ".");
+			if (source == null) {
+				return;
+			}
+			
+			if (property in source) {
+				if (!applyOnly) {
+					explicitValue = null;
 				}
+				source[property] = value;
+			} else {
+				trace("Warning: Binding access of undefined property '" + property + "' in " + getClassName(source) + ".");
 			}
 		}
 		
@@ -221,30 +223,32 @@ package flight.binding
 		
 		private function update(source:Object, pathIndex:int = 0):void
 		{
-			if (!updating) {
-				updating = true;
-				
-				var oldValue:Object = _value;
-				_value = bindPath(source, pathIndex);		// udpate full path
-				
-				if (oldValue != _value) {
-					
-					// update bound targets
-					for (var target:* in bindIndex) {
-						
-						var bindList:Array = bindIndex[target];
-						for (var i:int = 0; i < bindList.length; i++) {
-							
-							var prop:String = bindList[i];
-							target[prop] = _value;
-						}
-					}
-					// update bound listeners
-					PropertyEvent.dispatchChange(this, _property, oldValue, _value);
-				}
-				
-				updating = false;
+			if (updating) {
+				return;
 			}
+			
+			updating = true;
+			
+			var oldValue:Object = _value;
+			_value = bindPath(source, pathIndex);		// udpate full path
+			
+			if (oldValue != _value) {
+				
+				// update bound targets
+				for (var target:* in bindIndex) {
+					
+					var bindList:Array = bindIndex[target];
+					for (var i:int = 0; i < bindList.length; i++) {
+						
+						var prop:String = bindList[i];
+						target[prop] = _value;
+					}
+				}
+				// update bound listeners
+				PropertyEvent.dispatchChange(this, _property, oldValue, _value);
+			}
+			
+			updating = false;
 		}
 		
 		private function bindPath(source:Object, pathIndex:int):*
