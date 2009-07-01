@@ -1,19 +1,31 @@
+* do a size evaluation of each major feature (file size in SWF)
+
 * test-run of a MXML-defined DomainController, complete with MacroCommands (lists of actions)
 
-*complete entire list solution
+* replace bindable Array types with IList's throughout the framework
 
-* Revisit multi-dispatch of propertyChange events for binding (in PropertyEvent.dispatchChange)
-
-* Consider implementing IMerging in ValueObjects - BE sure to make clone, merge and equals available globally
-
-* refactor bind to move applyOnly out and property-updates in.
-
-* review to see if a Config can be made into an implicit singleton (for instantiation and auto-complete)
-
-* update history with correct bindings.
-* update history to have a currentTotalPosition and totalLength (or similar)
+* refactor binding to move applyOnly out and property-updates in (right now the shared Binding's will
+	break if shared between someone who needs applyOnly and someone who needs 2-way)
+* find a way to make bindEventListener truly be weak-reference (build into a baseclass?)
 
 
-* update history to reset combining upon execution of a command that does not match the currentTotalPosition (eg, undo has occured)
-*delete the worthless config property in utils
-*fix config solution
+* refactor XMLConfig to use flight services (objectize the xml structure)
+
+future features:
+* add flight services as an alternative to flex services
+	- RemotingService
+	_ SOAPService
+	- HTTPService
+	- RESTSerivce with formatters and serialization framework
+		XML to ValueObject serialization/deserialization
+		JSON		"							"
+		CSV/TAB		"							"
+
+* DataMapper Library
+* Dependency Injection (specifically for View components)
+* activeRecord and/or database sync
+* JavaScript utilities
+	- browser-captured key combos (ctrl+z, ctrl+y, others)
+	- Mac scroll wheel
+	- Browser History
+	- right-click menu

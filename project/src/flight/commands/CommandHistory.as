@@ -239,6 +239,7 @@ package flight.commands
 				return false;
 			}
 			
+			mergingCommand = null;
 			currentPosition--;
 			return true;
 		}

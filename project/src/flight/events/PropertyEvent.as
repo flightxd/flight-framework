@@ -33,15 +33,17 @@ package flight.events
 	public class PropertyEvent extends PropertyChangeEvent
 	{
 		public static const _CHANGE:String = "Change";
-		public static const PROPERTY_CHANGE:String = "property" + _CHANGE;
+		public static const PROPERTY_CHANGE:String = "propertyChange";
 		
 		/**
 		 * 
 		 */
 		public static function dispatchChange(source:IEventDispatcher, property:Object, oldValue:Object, newValue:Object):void
 		{
+			var event:PropertyEvent;
+			
 			if ( source.hasEventListener(property + _CHANGE) ) {
-				var event:PropertyEvent = new PropertyEvent(property + _CHANGE, property, oldValue, newValue);
+				event = new PropertyEvent(property + _CHANGE, property, oldValue, newValue);
 				source.dispatchEvent(event);
 			}
 			
