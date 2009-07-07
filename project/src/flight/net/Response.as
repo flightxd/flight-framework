@@ -95,17 +95,22 @@ package flight.net
 		}
 		
 		/**
-		 * Removes a handler function which has been previously added.
+		 * Removes a handler function which has been previously added. If the
+		 * same handler was added multiple times, removeResultHandler will
+		 * remove the last instance of the handler. To remove all instances
+		 * added removeResultHandler will need to be called multiple times for
+		 * each handler.
 		 * 
 		 * @param The handler function
 		 * @return A reference to this instance for method chaining.
 		 */
 		public function removeResultHandler(handler:Function):IResponse
 		{
-			var length:uint = resultHandlers.length;
-			for (var i:uint = 0; i < length; i++) {
+			var i:uint = resultHandlers.length;
+			while (i--) {
 				if (resultHandlers[i][0] == handler) {
-					resultHandlers.splice(i--, 1);
+					resultHandlers.splice(i, 1);
+					break;
 				}
 			}
 			return this;
