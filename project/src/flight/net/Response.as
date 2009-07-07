@@ -137,17 +137,22 @@ package flight.net
 		}
 		
 		/**
-		 * Removes a handler function which has been previously added.
+		 * Removes a handler function which has been previously added. If the
+		 * same handler was added multiple times, removeFaultHandler will
+		 * remove the last instance of the handler. To remove all instances
+		 * added removeFaultHandler will need to be called multiple times for
+		 * each handler.
 		 * 
 		 * @param The handler function
 		 * @return A reference to this instance for method chaining.
 		 */
 		public function removeFaultHandler(handler:Function):IResponse
 		{
-			var length:uint = faultHandlers.length;
-			for (var i:uint = 0; i < length; i++) {
+			var i:uint = resultHandlers.length;
+			while (i--) {
 				if (faultHandlers[i][0] == handler) {
-					faultHandlers.splice(i--, 1);
+					faultHandlers.splice(i, 1);
+					break;
 				}
 			}
 			return this;
