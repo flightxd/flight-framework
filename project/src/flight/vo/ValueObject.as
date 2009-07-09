@@ -63,6 +63,8 @@ package flight.vo
 			return ValueObject.clone(this);
 		}
 		
+		// ========== Static Methods ========== //
+		
 		/**
 		 * Evaluates the equality of two objects of the same type, based on
 		 * their properties. This method uses ActionScript's serialization

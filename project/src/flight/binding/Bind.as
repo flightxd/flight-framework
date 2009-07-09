@@ -49,7 +49,7 @@ package flight.binding
 		private var _targetPath:String;
 		
 		public function Bind(target:Object = null, targetPath:String = null,
-							 source:Object = null, sourcePath:String = null, twoWay:Boolean = false):void
+							 source:Object = null, sourcePath:String = null, twoWay:Boolean = false)
 		{
 			_target = target;
 			_targetPath = targetPath;
@@ -217,12 +217,8 @@ package flight.binding
 		 */
 		public function initialized(document:Object, id:String):void
 		{
-			if (target == null) {
-				target = document;
-			}
-			if (source == null) {
-				source = document;
-			}
+			target = document;
+			source = document;
 		}
 		
 		/**

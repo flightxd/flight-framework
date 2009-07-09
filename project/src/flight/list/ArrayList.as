@@ -42,7 +42,7 @@ package flight.list
 		list_internal var _source:*;	// internally available to XMLListAdapter
 		
 		private var adapter:*;
-		private var _selection:ISelection;
+		private var _selection:ListSelection;
 		private var _mxlist:MXList;
 		
 		public function ArrayList(source:* = null)
@@ -50,6 +50,7 @@ package flight.list
 			this.source = source;
 		}
 		
+		[Bindable(event="numItemsChange")]
 		public function get numItems():int
 		{
 			return adapter.length;
@@ -65,22 +66,12 @@ package flight.list
 		}
 		
 		[Bindable(event="selectionChange")]
-		public function get selection():ISelection
+		public function get selection():ListSelection
 		{
 			if (_selection == null) {
-				_selection = new Selection(this);
+				_selection = new ListSelection(this);
 			}
 			return _selection;
-		}
-		public function set selection(value:ISelection):void
-		{
-			if (_selection == value) {
-				return;
-			}
-			
-			var oldValue:Object = _selection;
-			_selection = value;
-			propertyChange("selection", oldValue, _selection);
 		}
 		
 		[Bindable(event="sourceChange")]
@@ -135,8 +126,13 @@ package flight.list
 			return item;
 		}
 		
-		public function addItems(items:*, index:int=0x7FFFFFFF):*
+		public function addItems(items:*, index:int = 0x7FFFFFFF):*
 		{
+			// empty list
+			if (items[0] === undefined) {
+				return items;
+			}
+			
 			var oldValue:int = adapter.length;
 			if (index < 0) {
 				index = Math.max(adapter.length + index, 0);
@@ -178,7 +174,7 @@ package flight.list
 			return adapter.indexOf(item);
 		}
 		
-		public function getItems(index:int=0, length:int=0x7FFFFFFF):*
+		public function getItems(index:int=0, length:int = 0x7FFFFFFF):*
 		{
 			if (index < 0) {
 				index = Math.max(adapter.length + index, 0);
@@ -199,23 +195,26 @@ package flight.list
 				index = Math.max(adapter.length + index, 0);
 			}
 			var items:* = adapter.splice(index, 1);
-			var item:Object = items[0];
-			
-			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
-			return item;
+			// empty list
+			if (items[0] !== undefined) {
+				propertyChange("numItems", oldValue, adapter.length);
+				dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
+			}
+			return items[0];
 		}
 		
-		public function removeItems(index:int=0, length:int=0x7FFFFFFF):*
+		public function removeItems(index:int=0, length:int = 0x7FFFFFFF):*
 		{
 			var oldValue:int = adapter.length;
 			if (index < 0) {
 				index = Math.max(adapter.length + index, 0);
 			}
 			var items:* = adapter.splice(index, length);
-			
-			propertyChange("numItems", oldValue, adapter.length);
-			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
+			// empty list
+			if (items[0] !== undefined) {
+				propertyChange("numItems", oldValue, adapter.length);
+				dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
+			}
 			return items;
 		}
 		
@@ -302,7 +301,7 @@ import flash.utils.flash_proxy;
 import flight.events.FlightDispatcher;
 import flight.list.ArrayList;
 import flight.list.IList;
-import flight.list.ISelection;
+import flight.list.ListSelection;
 
 namespace list_internal;
 

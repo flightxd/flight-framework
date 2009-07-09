@@ -27,67 +27,145 @@ package flight.net
 	import flight.progress.IProgress;
 	import flight.utils.IMerging;
 	
-	public interface IResponse extends IMerging
+	/**
+	 * An IResponse object represents a response to some action, replacing a
+	 * function's regular return value in order to support asynchronous actions.
+	 * By adding callback handlers an invoking object can receive the action's
+	 * result when it completes.
+	 */
+	public interface IResponse
 	{
 		/**
 		 * Indication of whether the response is in progress, has been completed
-		 * or has thrown an error. Valid values of status are 'progress', 'result'
-		 * and 'fault' respectfully.
+		 * or has faulted. Valid values of status are 'progress', 'result' and
+		 * 'fault' respectfully.
+		 * 
+		 * @see		flight.net.ResponseStatus
 		 */
 		[Bindable(event="statusChange")]
 		function get status():String;
 		
 		/**
-		 * The progress of the asynchronous response represented as a position.
-		 * The progress range will depend on its context, but by default is from
-		 * zero to one, one being 100% complete. Responses progress position is
-		 * often zero until complete when no progress measurement is available.
+		 * The progress of the response completion. Valuable when measuring
+		 * asynchronous progression.
+		 * 
+		 * @see		flight.progress.IProgress
 		 */
 		[Bindable(event="progressChange")]
 		function get progress():IProgress;
+		function set progress(value:IProgress):void;
 		
 		/**
-		 * Adds a handler function to handle the successful results of the
-		 * response. The function should accept the data as the first parameter.
-		 * If the handler's purpose is to format the data, the handler function
-		 * must return the newly formatted data, if not, the return type must be
-		 * void. Formatted data will be used in subsequent result handlers. The
-		 * first result handler recieves the IEventDispatcher and returns the
-		 * results. Other formatters may turn string data into XML or JSON text
-		 * into an object.
+		 * Adds a callback handler to be invoked with the successful results of
+		 * the response. Result handlers receive data and have the opportunity
+		 * to format the data for subsequent handlers. They can also trigger the
+		 * response's fault if the data is invalid by throwing a ResponseError.
 		 * 
-		 * @param The handler function
-		 * @param Additional parameters to pass to this handler upon execution.
-		 * @return A reference to this instance for method chaining.
+		 * <p>The method signature should describe a data object as the first
+		 * parameter. Additional parameters may be defined and provided when
+		 * adding the result handler.</p>
+		 * 
+		 * <p>To pass on formatted data the handler must return the new value in
+		 * its method signature, otherwise the return type should be
+		 * <code>void</code>.</p>
+		 * 
+		 * <p>
+		 * <pre>
+		 * 	import flight.errors.ResponseError;
+		 * 	
+		 * 	// example of a formatting handler - also showing a possible fault
+		 * 	private function onResult(data:Object):Object
+		 * 	{
+		 * 		var amf:ByteArray = data as ByteArray;
+		 * 		try {
+		 * 			data = amf.readObject();
+		 * 		} catch (error:Error) {
+		 * 			// ejects out of the result handling phase and into fault handling
+		 * 			throw new ResponseError("Invalid AMF response: " + amf.toString());
+		 * 		}
+		 * 		return data;
+		 * 	}
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	handler			The handler method to be invoked upon
+		 * 							response success.
+		 * @param	resultParams	Additional parameters to be passed to the
+		 * 							handler upon execution.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
+		 * 
+		 * @see		flight.errors.ResponseError
 		 */
 		function addResultHandler(handler:Function, ... resultParams):IResponse;
 		
 		/**
-		 * Adds a handler function to handle any errors or faults of  the
-		 * response. The function should accept an ErrorEvent as the first
-		 * parameter.
+		 * Removes a result callback handler that has been previously added.
 		 * 
-		 * @param The handler function
-		 * @param Additional parameters to pass to this handler upon execution.
-		 * @return A reference to this instance for method chaining.
+		 * @param	handler			The handler method to remove.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
+		 */
+		function removeResultHandler(handler:Function):IResponse;
+		
+		/**
+		 * Adds a callback handler to be invoked with the failure of the
+		 * response, receiving an error.
+		 * 
+		 * <p>The method signature should describe an error type as the first
+		 * parameter. Additional parameters may be defined and provided when
+		 * adding the fault handler.</p>
+		 * 
+		 * <p>
+		 * <pre>
+		 * 	import mx.controls.Alert;
+		 * 	
+		 * 	// example of a fault handler
+		 * 	private function onFault(error:Error):void
+		 * 	{
+		 * 		Alert.show(error.message, "Error");
+		 * 	}
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	handler			The handler method to be invoked upon
+		 * 							response failure.
+		 * @param	resultParams	Additional parameters to be passed to the
+		 * 							handler upon execution.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
+		 * 
+		 * @see		flight.errors.ResponseError
 		 */
 		function addFaultHandler(handler:Function, ... faultParams):IResponse;
 		
 		/**
-		 * Triggers the result cycle.
+		 * Removes a fault callback handler that has been previously added.
 		 * 
-		 * @param The resulting data.
-		 * @return A reference to this instance for method chaining.
+		 * @param	handler			The handler method to remove.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
 		 */
-		function complete(data:Object):IResponse;
+		function removeFaultHandler(handler:Function):IResponse;
+		 
+		/**
+		 * Completes the response with the specified data, triggering the result
+		 * cycle.
+		 * 
+		 * @param	data			The resulting data.
+		 */
+		function complete(data:Object):void;
 		
 		/**
-		 * Triggers the fault cycle.
+		 * Cancels the response with an error, triggering the fault cycle.
 		 * 
-		 * @param The faulting error.
-		 * @return A reference to this instance for method chaining.
+		 * @param	error			The faulting error.
 		 */
-		function cancel(error:Error):IResponse;
+		function cancel(error:Error):void;
 		
 	}
 }

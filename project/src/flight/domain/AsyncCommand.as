@@ -59,27 +59,35 @@ package flight.domain
 				return;
 			}
 			
-			var oldValue:Object = _response;
+			if (_response != null) {
+				_response.removeResultHandler(onResult);
+				_response.removeFaultHandler(onFault);
+				
+				// link old response to the 
+				if (value != null) {
+					value.addResultHandler(_response.complete);
+					value.addFaultHandler(_response.cancel);
+					_response.progress = value.progress;
+				}
+			}
+			
+			var oldValue:IResponse = _response;
 			_response = value;
 			
 			if (_response != null) {
-				if (oldValue != null) {
-					_response.merge(oldValue);
-				} else {
-					_response.addResultHandler(onResult);
-					_response.addFaultHandler(onFault);
-				}
+				_response.addResultHandler(onResult);
+				_response.addFaultHandler(onFault);
 			}
 			
 			propertyChange("response", oldValue, _response);
 		}
 		
-		private function complete(event:Event):void
+		private function complete():void
 		{
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		private function cancel(event:Event):void
+		private function cancel():void
 		{
 			dispatchEvent(new Event(Event.CANCEL));
 		}

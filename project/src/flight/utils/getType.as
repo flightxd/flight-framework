@@ -28,6 +28,13 @@ package flight.utils
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
+	/**
+	 * Global method for getting an objects type.
+	 * 
+	 * @param	value			The object being evaluated. If the object is a
+	 * 							class it will be returned as the type and not
+	 * 							the type Class.
+	 */
 	public function getType(value:Object):Class
 	{
 		if (value is Class) {

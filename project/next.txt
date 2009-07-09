@@ -1,8 +1,19 @@
+* ListSelection indeces add LAST item to the 'index'
+* possible rename DomainController init (singleton init) to construct?
+
+** Move bindable metadata tags from interfaces to implementations
+** MXML-required classes for AS3-only MXML
+
+
+
 * do a size evaluation of each major feature (file size in SWF)
 
 * test-run of a MXML-defined DomainController, complete with MacroCommands (lists of actions)
 
+* domain model proof-of-concept (model wrapping the data source)
+
 * replace bindable Array types with IList's throughout the framework
+* update CommandHistory to take advantage of its commands.selection property
 
 * refactor binding to move applyOnly out and property-updates in (right now the shared Binding's will
 	break if shared between someone who needs applyOnly and someone who needs 2-way)

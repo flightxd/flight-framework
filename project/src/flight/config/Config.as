@@ -86,23 +86,7 @@ package flight.config
 		 */
 		override protected function init():void
 		{
-			// initialize the properties object with class-defined properties
-			var properties:Object = {};
-			var propList:XMLList = Type.describeProperties(this)
-					.(attribute("declaredBy").toString().indexOf("flight.config::") == -1);
-			
-			for each (var prop:XML in propList) {
-				var i:String = prop.@name;
-				properties[i] = this[i];
-			}
-			_properties = properties;
-			
-			// add every singleton config to the global 'main' - only the
-			// 'main' config will receive a null and won't be added to itself
-			if (main != null) {
-				main.configs.push(this);
-				addEventListener("propertiesChange", main.onPropertiesChange);
-			}
+			introspect();
 		}
 		
 		/**
@@ -129,7 +113,7 @@ package flight.config
 				// update the properties on the class
 				try {
 					this[i] = value[i];
-				} catch(e:ReferenceError) {
+				} catch (error:ReferenceError) {
 					// subtype may not be dynamic or define this property, fail silently
 				}
 			}
@@ -209,10 +193,11 @@ package flight.config
 		override public function initialized(document:Object, id:String):void
 		{
 			super.initialized(document, id);
-			
 			if (display != null && document is DisplayObject) {
 				display = document as DisplayObject;
 			}
+			
+			introspect();
 		}
 		
 		/**
@@ -249,6 +234,28 @@ package flight.config
 			}
 			
 			properties = configProperties;
+		}
+		
+		private function introspect():void
+		{
+			// initialize the properties object with class-defined properties
+			var properties:Object = {};
+			var propList:XMLList = Type.describeProperties(this)
+					.(attribute("declaredBy").toString().indexOf("flight.config::") == -1);
+			
+			for each (var prop:XML in propList) {
+				var i:String = prop.@name;
+				properties[i] = this[i];
+			}
+			_properties = properties;
+			
+			// add every singleton config to the global 'main' - only the
+			// 'main' config will receive a null and won't be added to itself
+			if (main != null) {
+				main.configs.push(this);
+				main.updateProperties();
+				addEventListener("propertiesChange", main.onPropertiesChange);
+			}
 		}
 		
 		private function onPropertiesChange(event:PropertyEvent):void

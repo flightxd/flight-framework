@@ -34,12 +34,14 @@ package flight.binding
 	import flight.utils.getClassName;
 	import flight.utils.getType;
 	
+	import mx.core.IMXMLObject;
+	
 	[Event(name="propertyChange", type="flight.events.PropertyEvent")]
 	
 	/**
 	 * 
 	 */
-	public class Binding extends FlightDispatcher
+	public class Binding extends FlightDispatcher implements IMXMLObject
 	{
 		public var applyOnly:Boolean = false;
 		
@@ -72,17 +74,21 @@ package flight.binding
 		/**
 		 * 
 		 */
-		public function get sourcePath():String
+		public function get resolved():Boolean
 		{
-			return _sourcePath.join(".");
+			return _resolved;
 		}
 		
 		/**
 		 * 
 		 */
-		public function get resolved():Boolean
+		public function get sourcePath():String
 		{
-			return _resolved;
+			return _sourcePath.join(".");
+		}
+		public function set sourcePath(value:String):void
+		{
+			reset(getSource(0), value);
 		}
 		
 		/**
@@ -400,6 +406,18 @@ package flight.binding
 			binding.release();
 			
 			return true;
+		}
+		
+		/**
+		 * Allows Binding to automatically set source to the host MXML component. This
+		 * method is reserved for internal use by MXML instantiated components.
+		 * 
+		 * @param	document		The MXML component where the Bind is defined.
+		 * @param	id				The id of the Bind isn't used internally.
+		 */
+		public function initialized(document:Object, id:String):void
+		{
+			reset(document, sourcePath);
 		}
 		
 		private static function getBindingEvents(target:Object, property:String):Array

@@ -24,16 +24,35 @@
 
 package flight.progress
 {
+	/**
+	 * Base interface for all types that represent a progression.
+	 */
 	public interface IProgress
 	{
-// 	function get status():String;
+		/**
+		 * The type of progression represented by this object as a string, for
+		 * example: "Bytes", "KB" or "pixels".
+		 */
+		function get type():String;
+		function set type(value:String):void;
 		
+		/**
+		 * The current position in the progression, between 0 and
+		 * <code>length</code>.
+		 */
 		function get position():Number;
 		function set position(value:Number):void;
 		
+		/**
+		 * The percent complete in the progress, as a number between 0 and 1
+		 * with 1 being 100% complete.
+		 */
 		function get percent():Number;
 		function set percent(value:Number):void;
 		
+		/**
+		 * The total length of the progression.
+		 */
 		function get length():Number;
 		function set length(value:Number):void;
 		

@@ -27,12 +27,40 @@ package flight.progress
 	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
 	
+	/**
+	 * Data object representing a progression of any type.
+	 */
 	public class Progress extends FlightDispatcher implements IProgress
 	{
+		private var _type:String;
 		private var _position:Number = 0;
 		private var _percent:Number = 0;
 		private var _length:Number = 1;
 		
+		/**
+		 * The type of progression represented by this object. Any string value
+		 * is valid, such as "bytes", "KB" or "pixels".
+		 */
+		[Bindable(event="positionChange")]
+		public function get type():String
+		{
+			return _type;
+		}
+		public function set type(value:String):void
+		{
+			if (_type == value) {
+				return;
+			}
+			
+			var oldValue:Object = _type;
+			_type = value;
+			propertyChange("type", oldValue, _type);
+		}
+		
+		/**
+		 * The current position in the progression, between 0 and
+		 * <code>length</code>.
+		 */
 		[Bindable(event="positionChange")]
 		public function get position():Number
 		{
@@ -52,6 +80,10 @@ package flight.progress
 			PropertyEvent.dispatchChangeList(this, ["position", "percent"], oldValues);
 		}
 		
+		/**
+		 * The percent complete in the progress, as a number between 0 and 1
+		 * with 1 being 100% complete.
+		 */
 		[Bindable(event="percentChange")]
 		public function get percent():Number
 		{
@@ -71,6 +103,9 @@ package flight.progress
 			PropertyEvent.dispatchChangeList(this, ["percent", "position"], oldValues);
 		}
 		
+		/**
+		 * The total length of the progression.
+		 */
 		[Bindable(event="lengthChange")]
 		public function get length():Number
 		{
@@ -87,6 +122,8 @@ package flight.progress
 			_length = value;
 			if (_position > _length) {
 				position = _length;
+			} else if (_position > 0) {
+				percent = _position / _length;
 			}
 			propertyChange("length", oldValue, _length);
 		}

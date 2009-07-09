@@ -22,20 +22,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.utils
+package flight.list
 {
-	import flash.utils.getQualifiedClassName;
-	
 	/**
-	 * Returns the exact class name, without package or path.
 	 * 
-	 * @param	value			The object for which the class name is desired.
-	 * 							Any ActionScript value may be passed including
-	 * 							all ActionScript types, object instances,
-	 * 							primitive types such as uint, and class objects. 
 	 */
-	public function getClassName(value:Object):String
+	public interface IListSelection extends ISelection
 	{
-		return getQualifiedClassName(value).split("::").pop();
+		/**
+		 * 
+		 */
+		function get index():int;
+		function set index(value:int):void;
+		
+		/**
+		 * 
+		 */
+		function get indices():IList;
+		
 	}
 }

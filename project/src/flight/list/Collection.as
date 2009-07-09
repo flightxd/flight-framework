@@ -42,17 +42,19 @@ package flight.list
 	use namespace list_internal;
 	
 	/**
-	 * Dispatched when the IList has been updated in some way.
+	 * Dispatched when the Collection has been updated in some way.
 	 * 
-	 * @eventType					mx.events.CollectionEvent.COLLECTION_CHANGE
+	 * @eventType	mx.events.CollectionEvent.COLLECTION_CHANGE
 	 */
 	[Event(name="collectionChange", type="mx.events.CollectionEvent")]
 	
 	[RemoteClass(alias="flight.list.Collection")]
 	
 	/**
-	 * A simple implementation of IList that uses a backing Array, Vector or
+	 * A simple implementation of Flex's IList that wraps an Array, Vector or
 	 * XMLList.
+	 * 
+	 * @see		mx.collections.IList
 	 */
 	public class Collection extends Proxy implements IList, IExternalizable
 	{
@@ -65,7 +67,7 @@ package flight.list
 		/**
 		 * Construct a new Collection using the specified Array, Vector or
 		 * XMLList as its source. If no source is specified an empty Array
-		 * will be used.
+		 * will be created.
 		 */
 		public function Collection(source:* = null)
 		{
@@ -73,9 +75,7 @@ package flight.list
 		}
 		
 		/**
-		 * Get the number of items in the list.
-		 * 
-		 * @return	int			representing the length of the source.
+		 * The number of items in the list.
 		 */
 		[Bindable(event="lengthChange")]
 		public function get length():int
@@ -84,14 +84,13 @@ package flight.list
 		}
 		
 		/**
-		 * The source Array, Vector or XMLList for this Collection. Any changes
-		 * done through the IList interface will be reflected in the source. If  
-		 * no source is supplied the Collection will create an Array internally.
-		 * Changes made directly to the underlying source (e.g., calling 
-		 * <code>myCollection.source.pop()</code> will not cause <code>
-		 * CollectionEvents</code> to be dispatched.
+		 * The source Array, Vector or XMLList for this Collection. Changes made
+		 * through the IList interface will be reflected by the source. If no  
+		 * source is supplied the Collection will create an Array internally.
 		 * 
-		 * @return				An Array that represents the underlying source.
+		 * <p>Changes made directly to the underlying source (e.g., calling 
+		 * <code>myCollection.source.pop()</code> will not cause
+		 * <code>CollectionEvents</code> to be dispatched.</p>
 		 */
 		[Bindable(event="sourceChange")]
 		public function get source():*
@@ -126,7 +125,7 @@ package flight.list
 		/**
 		 * Add the specified item to the end of the list.
 		 * 
-		 * @param	item			the item to add
+		 * @param	item			The item to be added.
 		 */
 		public function addItem(item:Object):void
 		{
@@ -134,11 +133,12 @@ package flight.list
 		}
 		
 		/**
-		 * Add the item at the specified index.  
-		 * Any item that was after this index is moved out by one.  
+		 * Add the item at the specified index. Items on or following the index
+		 * will be moved down by one.  
+		 *   
 		 * 
-		 * @param	item			the item to place at the index
-		 * @param	index			the index at which to place the item
+		 * @param	item			The item to be added.
+		 * @param	index			The index at which to add the item.
 		 */
 		public function addItemAt(item:Object, index:int):void
 		{
@@ -156,10 +156,10 @@ package flight.list
 		/**
 		 * Get the item at the specified index.
 		 * 
-		 * @param	index			the index from which to retrieve the item
-		 * @param	prefetch		unused in this implementation of IList.
+		 * @param	index			The index from which to retrieve the item.
+		 * @param	prefetch		Unused in this implementation of IList.
 		 * 
-		 * @return					the item at the specified index
+		 * @return					The item at the specified index.
 		 */
 		public function getItemAt(index:int, prefetch:int=0):Object
 		{
@@ -169,10 +169,10 @@ package flight.list
 		/**
 		 * Returns the index of the item in the collection.
 		 * 
-		 * @param	item			the item to find
+		 * @param	item			The item to locate.
 		 * 
-		 * @return					the index of the item, or -1 if the item is
-		 * 							unnavailable.
+		 * @return					The index of the item, or -1 if the item is
+		 * 							not found.
 		 */
 		public function getItemIndex(item:Object):int
 		{
@@ -180,7 +180,7 @@ package flight.list
 		}
 		
 		/**
-		 * Currently not implemented.
+		 * Unused in this implementation of IList.
 		 */
 		public function itemUpdated(item:Object, property:Object=null, oldValue:Object=null, newValue:Object=null):void
 		{
@@ -201,10 +201,11 @@ package flight.list
 		}
 		
 		/**
-		 * Removes the specified item from this list, should it exist.
+		 * Removes the specified item from this list.
 		 * 
-		 * @param	item			the item that should be removed
-		 * @return					the item that was removed
+		 * @param	item			The item to remove.
+		 * 
+		 * @return					The item that was removed.
 		 */
 		public function removeItem(item:Object):Object
 		{
@@ -212,11 +213,11 @@ package flight.list
 		}
 		
 		/**
-		 * Remove the item at the specified index and return it.
-		 * Any items that were after this index are now one index earlier.
+		 * Remove the item at the specified index. Items following the index
+		 * will be moved up by one.  
 		 * 
-		 * @param	index			the index from which to remove the item
-		 * @return					the item that was removed
+		 * @param	index			The index from which to remove the item.
+		 * @return					The item that was removed.
 		 */
 		public function removeItemAt(index:int):Object
 		{
@@ -233,14 +234,13 @@ package flight.list
 		}
 		
 		/**
-		 * Place the item at the specified index.  
-	     * If an item was already at that index the new item will replace it and it 
-	     * will be returned.
+		 * Place the item at the specified index. If an item already exists at
+		 * the specified location it will be replaced by the new item.
 		 * 
-		 * @param	item			item the new value for the index
-		 * @param	index			the index at which to place the item
+		 * @param	item			The new item to set.
+		 * @param	index			The index at which to place the item.
 		 * 
-		 * @return					the item that was replaced, null if none
+		 * @return					The item that was replaced, or null.
 		 */
 		public function setItemAt(item:Object, index:int):Object
 		{
@@ -259,8 +259,7 @@ package flight.list
 		}
 		
 		/**
-		 * Return an Array that is populated in the same order as the IList
-		 * implementation.
+		 * Return an Array that is populated in the same order as the list.
 		 */ 
 		public function toArray():Array
 		{
@@ -285,6 +284,7 @@ package flight.list
 			output.writeObject(_source);
 		}
 		
+		// ========== Proxy Methods ========== //
 		
 		override flash_proxy function getProperty(name:*):*
 		{
@@ -326,6 +326,7 @@ package flight.list
 			return (index + 1) % (adapter.length + 1);
 		}
 		
+		// ========== Dispatcher Methods ========== //
 		
 		public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
 		{

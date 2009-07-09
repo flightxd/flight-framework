@@ -30,79 +30,166 @@ package flight.net
 	
 	import flight.errors.ResponseError;
 	import flight.events.FlightDispatcher;
-	import flight.events.PropertyEvent;
 	import flight.progress.IProgress;
 	import flight.progress.Progress;
-	import flight.utils.IMerging;
 	
-	public class Response extends FlightDispatcher implements IResponse, IMerging
+	/**
+	 * An Response object represents a response to some action, replacing a
+	 * function's regular return value in order to support asynchronous actions.
+	 * By adding callback handlers an object can receive the action's result
+	 * when the response is complete.
+	 * 
+	 * <p>Response supports both asynchronous and synchronous actions. When
+	 * handlers are added <em>after</em> the response has completed (which is
+	 * the case for synchronous actions) it is immediately invoked. The effect
+	 * is the same as if the handler were added before response completion.</p>
+	 */
+	public class Response extends FlightDispatcher implements IResponse
 	{
+		/**
+		 * The stored result of the response upon completion and subsequent
+		 * formatting.
+		 */
 		protected var result:Object;
+		
+		/**
+		 * The stored error of the response upon cancelation.
+		 */
 		protected var fault:Error;
 		
+		/**
+		 * List of result handlers. 
+		 */
 		protected var resultHandlers:Array = [];
 		protected var faultHandlers:Array = [];
 		
+		// lists of event listeners
 		private var completeEvents:Array;
 		private var cancelEvents:Array;
+		private var progressEvents:Array;
 		
 		private var _status:String = ResponseStatus.PROGRESS;
-		private var _progress:IProgress = new Progress();
+		private var _progress:IProgress;
 		
-		
-		public function Response(target:IEventDispatcher = null, completeEvent:String = Event.COMPLETE,
-																 cancelEvent:String = Event.CANCEL)
+		/**
+		 * Creates a new Response object. Response objects should be created as
+		 * far along the action path (as deep in the stack) as possible to take
+		 * full advantage of the common API.
+		 * 
+		 * @param	result			Either data or error to immediately complete
+		 * 							or cancel the response.
+		 */
+		public function Response(result:* = undefined)
 		{
-			if (target != null) {
-				addCompleteEvent(target, completeEvent);
-				addCancelEvent(target, cancelEvent);
+			if (result is Error) {
+				cancel(result as Error);
+			} else if (result !== undefined) {
+				complete(result);
 			}
 		}
 		
-		
+		/**
+		 * Indication of whether the response is in progress, has been completed
+		 * or has faulted. Valid values of status are 'progress', 'result' and
+		 * 'fault' respectfully.
+		 * 
+		 * @see		flight.net.ResponseStatus
+		 */
 		public function get status():String
 		{
 			return _status;
 		}
 		
+		/**
+		 * The progress of the response completion. Valuable when measuring
+		 * asynchronous progression.
+		 * 
+		 * @see		flight.progress.IProgress
+		 */
 		public function get progress():IProgress
 		{
+			// lazy instantiation to conserve memory
+			if (_progress == null) {
+				progress = new Progress();
+			}
 			return _progress;
+		}
+		public function set progress(value:IProgress):void
+		{
+			if (_progress == value) {
+				return;
+			}
+			
+			var oldValue:Object = _progress;
+			_progress = value;
+			if (_progress != null && _status != ResponseStatus.PROGRESS) {
+				_progress.position = _progress.length;
+			}
+			propertyChange("progress", oldValue, _progress);
 		}
 		
 		/**
-		 * Adds a handler function to handle the successful results of the
-		 * response. The function should accept the data as the first parameter.
-		 * If the handler's purpose is to format the data, the handler function
-		 * must return the newly formatted data, if not, the return type must be
-		 * void. Formatted data will be used in subsequent result handlers. The
-		 * first result handler recieves the IEventDispatcher and returns the
-		 * results. Other formatters may turn string data into XML or JSON text
-		 * into an object.
+		 * Adds a callback handler to be invoked with the successful results of
+		 * the response. Result handlers receive data and have the opportunity
+		 * to format the data for subsequent handlers. They can also trigger the
+		 * response's fault if the data is invalid by throwing a ResponseError.
 		 * 
-		 * @param The handler function
-		 * @param Additional parameters to pass to this handler upon execution.
-		 * @return A reference to this instance for method chaining.
+		 * <p>The method signature should describe a data object as the first
+		 * parameter. Additional parameters may be defined and provided when
+		 * adding the result handler.</p>
+		 * 
+		 * <p>To pass on formatted data the handler must return the new value in
+		 * its method signature, otherwise the return type should be
+		 * <code>void</code>.</p>
+		 * 
+		 * <p>
+		 * <pre>
+		 * 	import flight.errors.ResponseError;
+		 * 	
+		 * 	// example of a formatting handler - also showing a possible fault
+		 * 	private function onResult(data:Object):Object
+		 * 	{
+		 * 		var amf:ByteArray = data as ByteArray;
+		 * 		try {
+		 * 			data = amf.readObject();
+		 * 		} catch (error:Error) {
+		 * 			// ejects out of the result handling phase and into fault handling
+		 * 			throw new ResponseError("Invalid AMF response: " + amf.toString());
+		 * 		}
+		 * 		return data;
+		 * 	}
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	handler			The handler method to be invoked upon
+		 * 							response success.
+		 * @param	resultParams	Additional parameters to be passed to the
+		 * 							handler upon execution.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
+		 * 
+		 * @see		flight.errors.ResponseError
 		 */
 		public function addResultHandler(handler:Function, ... resultParams):IResponse
 		{
 			resultParams.unshift(handler);
 			resultHandlers.push(resultParams);
 			if (status == ResponseStatus.RESULT) {
-				complete(result);
+				runHandlers();
 			}
 			return this;
 		}
 		
 		/**
-		 * Removes a handler function which has been previously added. If the
-		 * same handler was added multiple times, removeResultHandler will
-		 * remove the last instance of the handler. To remove all instances
-		 * added removeResultHandler will need to be called multiple times for
-		 * each handler.
+		 * Removes a result callback handler that has been previously added. If
+		 * the same handler has been added more than once, removeResultHandler()
+		 * will only remove the latest instance of the handler.
 		 * 
-		 * @param The handler function
-		 * @return A reference to this instance for method chaining.
+		 * @param	handler			The handler method to remove.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
 		 */
 		public function removeResultHandler(handler:Function):IResponse
 		{
@@ -110,146 +197,264 @@ package flight.net
 			while (i--) {
 				if (resultHandlers[i][0] == handler) {
 					resultHandlers.splice(i, 1);
-					break;
+					return this;
 				}
 			}
 			return this;
 		}
 		
-		
 		/**
-		 * Adds a handler function to handle any errors or faults of  the
-		 * response. The function should accept an ErrorEvent as the first
-		 * parameter.
+		 * Adds a callback handler to be invoked with the failure of the
+		 * response, receiving an error.
 		 * 
-		 * @param The handler function
-		 * @param Additional parameters to pass to this handler upon execution.
-		 * @return A reference to this instance for method chaining.
+		 * <p>The method signature should describe an error type as the first
+		 * parameter. Additional parameters may be defined and provided when
+		 * adding the fault handler.</p>
+		 * 
+		 * <p>
+		 * <pre>
+		 * 	import mx.controls.Alert;
+		 * 	
+		 * 	// example of a fault handler
+		 * 	private function onFault(error:Error):void
+		 * 	{
+		 * 		Alert.show(error.message, "Error");
+		 * 	}
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	handler			The handler method to be invoked upon
+		 * 							response failure.
+		 * @param	resultParams	Additional parameters to be passed to the
+		 * 							handler upon execution.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
+		 * 
+		 * @see		flight.errors.ResponseError
 		 */
 		public function addFaultHandler(handler:Function, ... faultParams):IResponse
 		{
 			faultParams.unshift(handler);
 			faultHandlers.push(faultParams);
 			if (status == ResponseStatus.FAULT) {
-				cancel(fault);
+				runHandlers();
 			}
 			return this;
 		}
 		
 		/**
-		 * Removes a handler function which has been previously added. If the
-		 * same handler was added multiple times, removeFaultHandler will
-		 * remove the last instance of the handler. To remove all instances
-		 * added removeFaultHandler will need to be called multiple times for
-		 * each handler.
+		 * Removes a fault callback handler that has been previously added. If
+		 * the same handler has been added more than once, removeFaultHandler()
+		 * will only remove the latest instance of the handler.
 		 * 
-		 * @param The handler function
-		 * @return A reference to this instance for method chaining.
+		 * @param	handler			The handler method to remove.
+		 * 
+		 * @return					A reference to this instance of IResponse,
+		 * 							useful for method chaining.
 		 */
 		public function removeFaultHandler(handler:Function):IResponse
 		{
-			var i:uint = resultHandlers.length;
+			var i:uint = faultHandlers.length;
 			while (i--) {
 				if (faultHandlers[i][0] == handler) {
 					faultHandlers.splice(i, 1);
-					break;
+					return this;
 				}
 			}
 			return this;
 		}
 		
-		public function addCompleteEvent(target:IEventDispatcher, eventType:String, resultProperty:String = "target"):void
+		/**
+		 * Adds Response as an event listener to the target event, resulting in
+		 * a response completion once the event is triggered. A convenient
+		 * method for tying the response into an asynchronous event flow.
+		 * 
+		 * <p>Example using the Flash Player's URLLoader:
+		 * <pre>
+		 * var urlLoader:URLLoader = new URLLoader();
+		 * var response:Response = new Response();
+		 * response.addCompleteEvent(urlLoader, Event.COMPLETE);
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	target			The event dispatcher object that Response
+		 * 							will listen to.
+		 * @param	eventType		Event type dispatched by the target.
+		 * @param	resultProperty	A property on the event object that will be
+		 * 							used as the data for result handlers.
+		 * 
+		 * @return					A reference to this instance of Response,
+		 * 							useful for method chaining.
+		 */
+		public function addCompleteEvent(target:IEventDispatcher, eventType:String, resultProperty:String = "target"):Response
 		{
 			if (completeEvents == null) {
 				completeEvents = [];
 			}
 			completeEvents.push( [target, eventType, resultProperty] );
 			target.addEventListener(eventType, onComplete);
+			return this;
 		}
 		
-		public function addCancelEvent(target:IEventDispatcher, eventType:String, faultProperty:String = "text"):void
+		/**
+		 * Adds Response as an event listener to the target event, resulting in
+		 * a response cancelation once the event is triggered. A convenient
+		 * method for tying the response into an asynchronous event flow.
+		 * 
+		 * <p>Example using the Flash Player's URLLoader:
+		 * <pre>
+		 * var urlLoader:URLLoader = new URLLoader();
+		 * var response:Response = new Response();
+		 * response.addCompleteEvent(urlLoader, Event.COMPLETE);
+		 * response.addCancelEvent(urlLoader, SecurityErrorEvent.SECURITY_ERROR);
+		 * response.addCancelEvent(urlLoader, IOErrorEvent.IO_ERROR);
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	target			The event dispatcher object that Response
+		 * 							will listen to.
+		 * @param	eventType		Event type dispatched by the target.
+		 * @param	resultProperty	A property on the event object that will be
+		 * 							used as the data for result handlers.
+		 * 
+		 * @return					A reference to this instance of Response,
+		 * 							useful for method chaining.
+		 */
+		public function addCancelEvent(target:IEventDispatcher, eventType:String, faultProperty:String = "text"):Response
 		{
 			if (cancelEvents == null) {
 				cancelEvents = [];
 			}
 			cancelEvents.push( [target, eventType, faultProperty] );
 			target.addEventListener(eventType, onCancel);
+			return this;
 		}
 		
-		public function complete(data:Object):IResponse
+		/**
+		 * Adds Response as an event listener to the target event, resulting in
+		 * a response cancelation once the event is triggered. A convenient
+		 * method for tying the response into an asynchronous event flow.
+		 * 
+		 * <p>Example using the Flash Player's URLLoader:
+		 * <pre>
+		 * var urlLoader:URLLoader = new URLLoader();
+		 * var response:Response = new Response();
+		 * response.addCompleteEvent(urlLoader, Event.COMPLETE);
+		 * response.addCancelEvent(urlLoader, SecurityErrorEvent.SECURITY_ERROR);
+		 * response.addCancelEvent(urlLoader, IOErrorEvent.IO_ERROR);
+		 * response.addProgressEvent(urlLoader, ProgressEvent.PROGRESS, "bytesLoaded", "bytesTotal");
+		 * response.progress.type = "Bytes";
+		 * </pre>
+		 * </p>
+		 * 
+		 * @param	target			The event dispatcher object that Response
+		 * 							will listen to.
+		 * @param	eventType		Event type dispatched by the target.
+		 * @param	resultProperty	A property on the event object that will be
+		 * 							used as the data for result handlers.
+		 * 
+		 * @return					A reference to this instance of Response,
+		 * 							useful for method chaining.
+		 */
+		public function addProgressEvent(target:IEventDispatcher, eventType:String,
+										 positionProperty:String = "position", lengthProperty:String = "length"):Response
+		{
+			if (progressEvents == null) {
+				progressEvents = [];
+			}
+			progressEvents.push( [target, eventType, positionProperty, lengthProperty] );
+			target.addEventListener(eventType, onProgress);
+			return this;
+		}
+		
+		/**
+		 * Completes the response with the specified data, triggering the result
+		 * cycle.
+		 * 
+		 * @param	data			The resulting data.
+		 */
+		public function complete(data:Object):void
 		{
 			result = data;
 			
 			var oldValue:Object = _status;
 			_status = ResponseStatus.RESULT;
-			_progress.position = _progress.length;
+			if (_progress != null) {
+				_progress.position = _progress.length;
+			}
 			propertyChange("status", oldValue, _status);
 			
-			try {
-				while (resultHandlers.length > 0) {
-					var params:Array = resultHandlers.shift();
-					var handler:Function = params[0];
-					params[0] = result;
-					var formatted:* = handler.apply(null, params);
-					if (formatted !== undefined) { // i.e. return type was not void
-						result = formatted;
-					}
-				}
-				
-				release();
-			} catch(e:ResponseError) {
-				cancel(e);
-			}
-			
-			return this;
+			release();
+			runHandlers();
 		}
 		
-		public function cancel(error:Error):IResponse
+		/**
+		 * Cancels the response with an error, triggering the fault cycle.
+		 * 
+		 * @param	error			The faulting error.
+		 */
+		public function cancel(error:Error):void
 		{
 			fault = error;
 			
 			var oldValue:Object = _status;
 			_status = ResponseStatus.FAULT;
-			_progress.position = _progress.length;
+			if (_progress != null) {
+				_progress.position = _progress.length;
+			}
 			propertyChange("status", oldValue, _status);
 			
-			while (faultHandlers.length > 0) {
-				var params:Array = faultHandlers.shift();
-				var handler:Function = params[0];
-				params[0] = fault;
-				var formatted:* = handler.apply(null, params);
-				if (formatted !== undefined) { // i.e. return type was not void
-					fault = formatted;
-				}
-			}
-			
 			release();
-			return this;
+			runHandlers();
 		}
 		
-		public function merge(source:Object):Boolean
-		{
-			if (source is Response) {
-				
-				resultHandlers = resultHandlers.concat(source.resultHandlers);
-				faultHandlers = faultHandlers.concat(source.resultHandlers);
-				
-				if (status == ResponseStatus.RESULT) {
-					complete(result);
-				} else if (status == ResponseStatus.FAULT) {
-					cancel(fault);
-				}
-				return true;
-			}
-			
-			return false;
-		}
-		
+		/**
+		 * Convenient construction of Flash Player's Responder specific to this
+		 * Response.
+		 * 
+		 * @return					A Responder object wrapping Response's
+		 * 							complete and cancel methods.
+		 */
 		public function createResponder():Responder
 		{
-			return new Responder(onComplete, onCancel);
+			return new Responder(complete, cancel);
 		}
 		
+		/**
+		 * Runs the appropriate result or fault cycle, invoking each handler and
+		 * tracking data formatting.
+		 */
+		protected function runHandlers():void
+		{
+			if (_status == ResponseStatus.PROGRESS) {
+				return;
+			}
+			
+			var handlers:Array = _status == ResponseStatus.RESULT ? resultHandlers : faultHandlers;
+			try {
+				while (handlers.length > 0) {
+					// stored parameters of the add-handler methods
+					var params:Array = handlers.shift();
+					var handler:Function = params[0];
+					// reuse the parameters by swapping the function with the data
+					params[0] = this[_status];
+					var formatted:* = handler.apply(null, params);
+					// if the return type was not void then replace 'result' or 'fault'
+					if (formatted !== undefined) {
+						this[_status] = formatted;
+					}
+				}
+				
+			} catch (error:ResponseError) {
+				cancel(error);
+			}
+		}
+		
+		/**
+		 * Releases complete and cancel event handlers once the response has
+		 * been resolved.
+		 */
 		protected function release():void
 		{
 			var target:IEventDispatcher;
@@ -269,6 +474,9 @@ package flight.net
 			}
 		}
 		
+		/**
+		 * Catches complete events and retrieves the appropriate data.
+		 */
 		private function onComplete(event:Event):void
 		{
 			var info:Array = getEventInfo(event, completeEvents);
@@ -280,6 +488,9 @@ package flight.net
 			}
 		}
 		
+		/**
+		 * Catches cancel events and retrieves the appropriate error.
+		 */
 		private function onCancel(event:Event):void
 		{
 			var info:Array = getEventInfo(event, cancelEvents);
@@ -288,7 +499,7 @@ package flight.net
 			if (prop in event) {
 				error = event[prop];
 				if ( !(error is Error) ) {
-					error = new Error(event[prop]);
+					error = new Error(error);
 				}
 				cancel(error as Error);
 			} else {
@@ -296,6 +507,28 @@ package flight.net
 			}
 		}
 		
+		private function onProgress(event:Event):void
+		{
+			var info:Array = getEventInfo(event, progressEvents);
+			var position:String = info[2];
+			var length:String = info[3];
+			if (position in event) {
+				if (length in event) {
+					progress.length = event[length];
+					progress.position = event[position];
+				} else {
+					var percent:Number = parseFloat(event[position]);
+					if (percent > 1) {
+						percent /= 100;
+					}
+					progress.percent = percent;
+				}
+			}
+		}
+		
+		/**
+		 * Retrieves the appropriate info for the complete or cancel event.
+		 */
 		private function getEventInfo(match:Event, eventsList:Array):Array
 		{
 			for each (var args:Array in eventsList) {

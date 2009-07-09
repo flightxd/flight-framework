@@ -33,7 +33,6 @@ package flight.list
 		/**
 		 * 
 		 */
-		[Bindable(event="numItemsChange")]
 		function get numItems():int;
 		
 		/**

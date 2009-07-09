@@ -28,8 +28,11 @@ package flight.list
 	import flight.events.ListEvent;
 	import flight.events.ListEventKind;
 	import flight.events.PropertyEvent;
-
-	public class Selection extends FlightDispatcher implements ISelection
+	
+	/**
+	 * 
+	 */
+	public class ListSelection extends FlightDispatcher implements IListSelection
 	{
 		private var list:IList;
 		private var updatingLists:Boolean;
@@ -39,7 +42,7 @@ package flight.list
 		private var _indices:ArrayList = new ArrayList();
 		private var _items:ArrayList = new ArrayList();
 		
-		public function Selection(list:IList)
+		public function ListSelection(list:IList)
 		{
 			this.list = list;
 			list.addEventListener(ListEvent.LIST_CHANGE, onListChange, false, 0xF);
@@ -126,6 +129,11 @@ package flight.list
 			return _items;
 		}
 		
+		public function select(items:*):void
+		{
+			_items.source = items;
+		}
+		
 		private function onListChange(event:ListEvent):void
 		{
 			var tmpItems:Array = [];
@@ -194,11 +202,13 @@ package flight.list
 			}
 			updatingLists = false;
 			
-			var oldValues:Array = [_index, _item];
+			var oldIndex:int = _index;
+			var oldItem:Object = _item;
 			_index = _indices.numItems > 0 ? _indices.getItemAt(0) as Number : -1;
 			_item = _items.getItemAt(0);
 			
-			PropertyEvent.dispatchChangeList(this, ["index", "item"], oldValues); 
+			propertyChange("index", oldIndex, _index);
+			propertyChange("item", oldItem, _item); 
 		}
 		
 	}

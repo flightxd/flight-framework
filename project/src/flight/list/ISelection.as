@@ -24,20 +24,32 @@
 
 package flight.list
 {
+	/**
+	 * 
+	 */
 	public interface ISelection
 	{
-		function get index():int;
-		function set index(value:int):void;
-		
+		/**
+		 * 
+		 */
 		function get item():Object;
 		function set item(value:Object):void;
 		
+		/**
+		 * 
+		 */
 		function get multiselect():Boolean;
 		function set multiselect(value:Boolean):void;
 		
-		function get indices():IList;
-		
+		/**
+		 * 
+		 */
 		function get items():IList;
+		
+		/**
+		 * 
+		 */
+		function select(items:*):void;
 		
 	}
 }

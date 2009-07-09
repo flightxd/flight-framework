@@ -25,7 +25,6 @@
 package flight.utils
 {
 	import flash.events.IEventDispatcher;
-	import flash.utils.Dictionary;
 	
 	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
@@ -35,24 +34,51 @@ package flight.utils
 	import mx.core.IMXMLObject;
 	import mx.events.PropertyChangeEvent;
 	
+	/**
+	 * Through the use of value-object's clone() and equals(), ObjectEditor
+	 * copies, compares, and allows changes to be committed to some source
+	 * object. This utility streamlines form and data editing by keeping
+	 * modifications separate from the data source until a merge is appropriate.
+	 * 
+	 * <p>ObjectEditor objects are singular to the source they reference. By
+	 * getting instances through the static edit() you can ensure that there is
+	 * only one instance of ObjectEditor per source at any given time.</p>
+	 * 
+	 * @see		#edit
+	 */
 	public class ObjectEditor extends FlightDispatcher implements IMXMLObject
 	{
-		private var _value:Object;
+		private var _target:Object;
 		private var _source:Object;
 		
+		/**
+		 * Indicator of whether the editor's target has been modified from its
+		 * original source.
+		 */
 		[Bindable(event="modifiedChange")]
 		public function get modified():Boolean
 		{
-			return (_source is IValueObject) ? !IValueObject(_source).equals(_value)
-											 : !ValueObject.equals(_source, _value);
+			return (_source is IValueObject) ? !IValueObject(_source).equals(_target)
+											 : !ValueObject.equals(_source, _target);
 		}
 		
-		[Bindable(event="valueChange")]
-		public function get value():Object
+		/**
+		 * The target object of the editor is a copy of the source. This object
+		 * is the target of all changes and can be committed, reverted or just
+		 * discarded once editing is complete.
+		 */
+		[Bindable(event="targetChange")]
+		public function get target():Object
 		{
-			return _value;
+			return _target;
 		}
 		
+		/**
+		 * The source object of the editor represents some data source to be
+		 * compared during editing. Changes to the data should be made on the
+		 * editor's target and then committed, at which point the changes will
+		 * be applied to the source.
+		 */
 		[Bindable(event="sourceChange")]
 		public function get source():Object
 		{
@@ -63,66 +89,101 @@ package flight.utils
 			if (_source == value) {
 				return;
 			}
-			var oldValues:Array = [modified, _value, _source];
 			
+			var oldValues:Array = [modified, _target, _source];
+			var registered:ObjectEditor = Registry.lookup(_source, ObjectEditor);
+			
+			// remove ties to the old source
 			if (_source != null) {
+				_target = null;
 				if (_source is IEventDispatcher) {
-					IEventDispatcher(_source).removeEventListener(PropertyEvent.PROPERTY_CHANGE, onChange);
-					IEventDispatcher(_value).removeEventListener(PropertyEvent.PROPERTY_CHANGE, onChange);
+					IEventDispatcher(_source).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, onChange);
+					IEventDispatcher(_target).removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, onChange);
 				}
 				
-				_value = null;
-				if (editors[_source] == this) {
-					delete editors[_source];
+				// remove the global reference
+				if (registered == this) {
+					registered = null;
+					Registry.unregister(_source, ObjectEditor);
 				}
 			}
 			
 			_source = value;
 			
 			if (_source != null) {
-				if (editors[_source] != null) {
-					_value = editors[_source]._value;
+				// register the global reference
+				if (registered != null) {
+					_target = registered._target;
 				} else {
-					editors[_source] = this;
-					_value = (_source is IValueObject) ? IValueObject(_source).clone()
+					Registry.register(_source, this, ObjectEditor);
+					// create the new target
+					_target = (_source is IValueObject) ? IValueObject(_source).clone()
 													   : ValueObject.clone(_source);
 				}
 				
 				if (_source is IEventDispatcher) {
-					IEventDispatcher(_source).addEventListener(PropertyEvent.PROPERTY_CHANGE, onChange, false, 0, true);
-					IEventDispatcher(_value).addEventListener(PropertyEvent.PROPERTY_CHANGE, onChange, false, 0, true);
+					IEventDispatcher(_source).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, onChange, false, 0, true);
+					IEventDispatcher(_target).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, onChange, false, 0, true);
 				}
 			}
 			
-			PropertyEvent.dispatchChangeList(this, ["modified", "value", "source"], oldValues);
+			PropertyEvent.dispatchChangeList(this, ["modified", "target", "source"], oldValues);
 		}
 		
+		/**
+		 * Construct a new ObjectEditor specific to the supplied data source.
+		 * 
+		 * @param	source			Optional data source to initialize with.
+		 */
 		public function ObjectEditor(source:Object = null)
 		{
 			this.source = source;
 		}
 		
+		/**
+		 * Merges all changes from the target to the source when editing is
+		 * complete.
+		 */
 		public function commit():void
 		{
-			merge(_value, _source);
+			merge(_target, _source);
 			source = null;
 		}
 		
+		/**
+		 * Merges the data source onto the target, reverting any changes made.
+		 */
 		public function revert():void
 		{
-			merge(_source, _value);
+			merge(_source, _target);
 		}
 		
+		/**
+		 * Discard both source and target objects, canceling changes and
+		 * all editing.
+		 */
 		public function cancel():void
 		{
 			source = null;
 		}
 		
+		/**
+		 * Forces the modified property to refresh.
+		 */
 		public function refresh():void
 		{
-			PropertyEvent.dispatchChange(this, "modified", null, modified);
+			propertyChange("modified", null, modified);
 		}
 		
+		/**
+		 * Called after an ObjectEditor has been created and instantiated and
+		 * the source specified on the MXML tag has been initialized.
+		 * 
+		 * @param	document		The MXML document that created this
+		 * 							ObjectEditor object.
+		 * @param	id				The identifier used by the MXML document to
+		 * 							refer to this object.
+		 */
 		public function initialized(document:Object, id:String):void
 		{
 			if (id != null && _source != null) {
@@ -130,23 +191,54 @@ package flight.utils
 			}
 		}
 		
+		/**
+		 * General listener to source property changes.
+		 */
 		private function onChange(event:PropertyChangeEvent):void
 		{
 			refresh();
 		}
 		
+		// ========== Static Methods ========== //
 		
-		private static var editors:Dictionary = new Dictionary(true);
+		/**
+		 * Similar to the singleton, edit() returns a single global instance of
+		 * ObjectEditor specific to the supplied source. Each data source will
+		 * have its own ObjectEditor.
+		 * 
+		 * @param	source			The data source to wrap with an editor.
+		 * 
+		 * @return					An ObjectEditor specific to the source and
+		 * 							ready with a cloned target for editing.
+		 */
 		public static function edit(source:Object):ObjectEditor
 		{
-			if (editors[source] == null) {
-				editors[source] = new ObjectEditor(source);
+			var registered:ObjectEditor = Registry.lookup(source, ObjectEditor) as ObjectEditor;
+			if (registered == null) {
+				registered = new ObjectEditor(source);
 			}
-			return editors[source];
+			return registered;
 		}
 		
+		/**
+		 * Utility for merging the data of a source object to some target. The
+		 * objects are not required to be of the same type, but should have
+		 * compatible property signatures or the merge will fail. If the target
+		 * implements the IMerging interface, its merge() method will be called.
+		 * 
+		 * @param	source			Any object with data to be merged.
+		 * @param	target			Any object, will receive data from the
+		 * 							source.
+		 * 
+		 * @see		flight.utils.IMerging
+		 */
 		public static function merge(source:Object, target:Object):void
 		{
+			if (target is IMerging) {
+				IMerging(target).merge(source);
+				return;
+			}
+			
 			var name:String;
 			var propList:XMLList = Type.describeProperties( source );
 				propList = propList.(child("metadata").(@name == "Transient").length() == 0);

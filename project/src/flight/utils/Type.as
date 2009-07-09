@@ -30,13 +30,31 @@ package flight.utils
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
+	/**
+	 * The static Type class contains a collection of type-specific utilities,
+	 * including object reflection. Reflection is described in XML, which
+	 * format is documented in the <code>flash.utils</code> package. XML
+	 * descriptions are cached for performance.
+	 * 
+	 * @see		flash.utils#describeType
+	 */
 	public class Type
 	{
+		// global cache improves reflection performance significantly
 		private static var typeCache:Dictionary = new Dictionary();
-		private static var inheritanceCache:Dictionary = new Dictionary();
-		private static var propertyCache:Dictionary = new Dictionary();
-		private static var methodCache:Dictionary = new Dictionary();
 		
+		/**
+		 * Evaluates whether an object or class is derived from a specific
+		 * data type, class or interface. The isType() method is comparable to
+		 * ActionScript's <code>is</code> operator except that it also makes
+		 * class to class evaluations.
+		 * 
+		 * @param	value			The object or class to evaluate.
+		 * @param	type			The data type to check against.
+		 * 
+		 * @return					True if the object or class is derived from
+		 * 							the data type.
+		 */
 		public static function isType(value:Object, type:Class):Boolean
 		{
 			if ( !(value is Class) ) {
@@ -51,114 +69,134 @@ package flight.utils
 			return Boolean( inheritance.(@type == getQualifiedClassName(type)).length() > 0 );
 		}
 		
+		/**
+		 * Determines the property type without accessing the property directly.
+		 * Evaluation is based on the property definition and not by its value.
+		 * 
+		 * @param	value			An object or class containing the property
+		 * 							definition to evaluate.
+		 * @param	property		The name of the property to be evaluated
+		 * 
+		 * @return					The class definition of the property type,
+		 * 							as described by the property definition, or
+		 * 							null if no definition was found.
+		 */
 		public static function getPropertyType(value:Object, property:String):Class
 		{
-			if ( !(property in value) ) {
+			if ( !(value is Class) && !(property in value) ) {
 				return null;
 			}
 			
-			// retrieve the correct property type from the property list
-			var typeName:String = describeProperties(value).(@name == property)[0].@type;
-			if (!typeName) {
-				return null;
-			}
+			// retrieve the correct property from the property list
+			var propList:XMLList = describeProperties(value).(@name == property);
 			
-			return getDefinitionByName(typeName) as Class;
+			return (propList.length() > 0) ? getDefinitionByName( propList[0].@type ) as Class : null;
 		}
 		
-		public static function getTypeProperty(value:Object, type:Class):String
-		{
-			var typeName:String = getQualifiedClassName(type);
-			
-			// retrieve the correct type property from the property list
-			var propList:XMLList = describeProperties(value).(@type == typeName);
-			
-			return (propList.length() > 0) ? propList[0].@name : "";
-		}
-		
+		/**
+		 * Ensures a class has a registered alias for object serialization and
+		 * remoting. If the class doesn't yet have an alias it will be
+		 * registered with it's full qualified class name, for example:
+		 * <code>flight.utils.Type</code>. If the class has already been
+		 * assigned an alias then its previous registration will be honored.
+		 * 
+		 * @param	value			The object or class to register.
+		 * 
+		 * @return					True if the registration was successful,
+		 * 							otherwise the object already has an alias.
+		 * 
+		 * @see		flash.net#registerClassAlias
+		 */
 		public static function registerType(value:Object):Boolean
 		{
 			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
+			// if not already registered
 			var alias:String = describeType(value).@alias;
-			if (!alias.length) {		// if not already registered
-				registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
+			if (alias.length) {
+				return false;
 			}
 			
+			registerClassAlias(getQualifiedClassName(value).split("::").join("."), value as Class);
 			return true;
 		}
 		
-		public static function describeType(value:Object):XML
+		/**
+		 * Primary reflection method, producing an XML description of the object
+		 * or class specified. Results are cached internally for performance.
+		 * 
+		 * @param	value			The object or class to introspect.
+		 * @param	refreshCache	Forces a new description to be generated,
+		 * 							useful only when a class alias has changed.
+		 * 
+		 * @return					An XML description, which format is
+		 * 							documented in the <code>flash.utils</code>
+		 * 							package.
+		 * 
+		 * @see		flash.utils#describeType
+		 */
+		public static function describeType(value:Object, refreshCache:Boolean = false):XML
 		{
 			if ( !(value is Class) ) {
 				value = getType(value);
 			}
 			
-			if (typeCache[value] == null) {
+			if (refreshCache || typeCache[value] == null) {
 				typeCache[value] = flash.utils.describeType(value);
 			}
 			
 			return typeCache[value];
 		}
 		
+		/**
+		 * Targeted reflection describing an object's inheritance, including
+		 * extended classes and implemented interfaces.
+		 * 
+		 * @param	value			The object or class to introspect.
+		 * 
+		 * @return					A list of XML inheritance descriptions.
+		 */
 		public static function describeInheritance(value:Object):XMLList
 		{
-			if ( !(value is Class) ) {
-				value = getType(value);
-			}
-			
-			if (inheritanceCache[value] == null) {
-				inheritanceCache[value] = describeType(value).factory.*.(localName() == "extendsClass" || localName() == "implementsInterface");
-			}
-			return inheritanceCache[value];
+			return describeType(value).factory.*.(localName() == "extendsClass" || localName() == "implementsInterface");
 		}
 		
+		/**
+		 * Targeted reflection describing an object's properties, including both
+		 * accessor's (getter/setters) and pure properties.
+		 * 
+		 * @param	value			The object or class to introspect.
+		 * @param	metadata		Optional filter to return only those
+		 * 							property descritions containing the
+		 * 							specified metadata.
+		 * 
+		 * @return					A list of XML property descriptions.
+		 */
 		public static function describeProperties(value:Object, metadata:String = null):XMLList
 		{
-			if ( !(value is Class) ) {
-				value = getType(value);
-			}
+			var properties:XMLList = describeType(value).factory.*.(localName() == "accessor" || localName() == "variable");
 			
-			if (propertyCache[value] == null) {
-				propertyCache[value] = describeType(value).factory.*.(localName() == "accessor" || localName() == "variable");
-			}
-			
-			if (metadata == null) {
-				return propertyCache[value];
-			}
-			
-			if (propertyCache[metadata] == null) {
-				propertyCache[metadata] = new Dictionary();
-			}
-			if (propertyCache[metadata][value] == null) {
-				propertyCache[metadata][value] = propertyCache[value].(child("metadata").(@name == metadata).length() > 0);
-			}
-			return propertyCache[metadata][value];
+			return (metadata == null) ? properties : properties.(child("metadata").(@name == metadata).length() > 0);
 		}
 		
+		
+		/**
+		 * Targeted reflection describing an object's methods.
+		 * 
+		 * @param	value			The object or class to introspect.
+		 * @param	metadata		Optional filter to return only those
+		 * 							method descritions containing the
+		 * 							specified metadata.
+		 * 
+		 * @return					A list of XML method descriptions.
+		 */
 		public static function describeMethods(value:Object, metadata:String = null):XMLList
 		{
-			if ( !(value is Class) ) {
-				value = getType(value);
-			}
+			var methods:XMLList = describeType(value).factory.method;
 			
-			if (methodCache[value] == null) {
-				methodCache[value] = describeType(value).factory.method;
-			}
-			
-			if (metadata == null) {
-				return methodCache[value];
-			}
-			
-			if (methodCache[metadata] == null) {
-				methodCache[metadata] = new Dictionary();
-			}
-			if (methodCache[metadata][value] == null) {
-				methodCache[metadata][value] = methodCache[value].(child("metadata").(@name == metadata).length() > 0);
-			}
-			return methodCache[metadata][value];
+			return (metadata == null) ? methods : methods.(child("metadata").(@name == metadata).length() > 0);
 		}
 		
 	}

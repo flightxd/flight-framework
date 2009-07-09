@@ -28,12 +28,12 @@ package flight.vo
 	 * IValueObject is a common interface for many data structures, allowing
 	 * complex objects to be treated as simple types, as value versus reference.
 	 * 
-	 * <p>A Value Object is an object that can be compared by the values of its
-	 * properties rather than its identiy. Two Value Objects may be equal
+	 * <p>A value object is an object that can be compared by the values of its
+	 * properties rather than its identiy. Two value objects may be equal
 	 * because their data is identical, even if they are individual reference
-	 * objects in ActionScript. Through implementing equals() two Value Objects
-	 * can be compared by their data, while clone() allows Value Objects to be
-	 * passed by value (as copies).<p>
+	 * objects in ActionScript. Through implementing equals() two value objects
+	 * can be compared by their data, while clone() allows value objects to be
+	 * passed by value (as copies).</p>
 	 * 
 	 * @see		#equals
 	 * @see		#clone

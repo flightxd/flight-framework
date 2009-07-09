@@ -28,19 +28,33 @@ package flight.utils
 	
 	/**
 	 * The Registry is a global store for system-wide values and objects.
-	 * Because Registry is a static class it is a single point of access
-	 * from anywhere. 
+	 * Because Registry represents a static class it provides a single point of
+	 * access everywhere. 
 	 */
 	public class Registry
 	{
-		private static var scopeIndex:Dictionary = new Dictionary();
-		private static var watcherByTarget:Dictionary = new Dictionary();
-		private static var watcherByIndex:Dictionary = new Dictionary();
+		// where system-wide values are stored by scope and index
+		private static var scopeIndex:Dictionary = new Dictionary(true);
+		private static var globalIndex:Dictionary = scopeIndex[null] = new Dictionary(true);
+		private static var watcherByTarget:Dictionary = new Dictionary(true);
+		private static var watcherByIndex:Dictionary = new Dictionary(true);
 		
+		/**
+		 * Register data with some global identifier for system-wide lookup.
+		 * 
+		 * @param	index			String or object identifier with which to
+		 * 							register and lookup data.
+		 * @param	value			Data to be registered.
+		 * @param	scope			Optionally register data to a specific scope
+		 * 							identifier, creating a localized scope
+		 * 							within the global space.
+		 * 
+		 * @see		#lookup
+		 */
 		public static function register(index:Object, value:Object, scope:Object = null):void
 		{
 			if (scopeIndex[scope] == null) {
-				scopeIndex[scope] = new Dictionary();
+				scopeIndex[scope] = new Dictionary(true);
 			}
 			
 			scopeIndex[scope][index] = value;
@@ -51,35 +65,66 @@ package flight.utils
 			}
 		}
 		
+		/**
+		 * Remove any data registered at the specified index and scope.
+		 * 
+		 * @param	index			String or object identifier with which to
+		 * 							locate and remove data.
+		 * @param	scope			Optionally remove data by a specific scope
+		 * 							identifier, a localized scope within the
+		 * 							global space.
+		 * 
+		 * @see		#register
+		 */
 		public static function unregister(index:Object, scope:Object = null):void
 		{
 			if (scopeIndex[scope] == null) {
-				scopeIndex[scope] = new Dictionary();
+				scopeIndex[scope] = new Dictionary(true);
 			}
 			
 			delete scopeIndex[scope][index];
 		}
 		
+		/**
+		 * Retrieve data registered at the specified index and scope.
+		 * 
+		 * @param	index			String or object identifier with which to
+		 * 							lookup registered data.
+		 * @param	scope			Optionally lookup data by a specific scope
+		 * 							identifier, a localized scope within the
+		 * 							global space.
+		 * 
+		 * @return					Registered data.
+		 * 
+		 * @see		#register
+		 */
 		public static function lookup(index:Object, scope:Object = null):*
 		{
-			if (scope != null) {
+			while (scope != null) {
 				
+				// if 
 				if (scopeIndex[scope] != null && index in scopeIndex[scope]) {
-					return scopeIndex[scope][index];
-				} else if ("owner" in scope && scope["owner"] != null) {
-					return lookup(index, scope["owner"]);
+					break;
+				}
+				
+				if ("owner" in scope && scope["owner"] != null) {
+					scope = scope["owner"];
 				} else if ("parent" in scope) {
 					if (scope["parent"] is Function) {
-						return lookup(index, scope["parent"]());
+						scope = scope["parent"]();
 					} else {
-						return lookup(index, scope["parent"]);
+						scope = scope["parent"];
 					}
 				}
 			}
 			
-			return scopeIndex[null][index];
+			return scopeIndex[scope][index];
 		}
 		
+		/**
+		 * @private
+		 * Possible deprecation.
+		 */
 		public static function sync(target:Object, prop:String, index:Object, scope:Object = null):void
 		{
 			desync(target, prop);
@@ -98,6 +143,10 @@ package flight.utils
 			target[prop] = lookup(index, scope);
 		}
 		
+		/**
+		 * @private
+		 * Possible deprecation.
+		 */
 		public static function desync(target:Object, prop:String):void
 		{
 			var byTarget:Object = watcherByTarget[target];
@@ -113,13 +162,6 @@ package flight.utils
 			var byIndex:Array = watcherByIndex[ syncDetail[2] ];
 			byIndex.splice(byIndex.indexOf(syncDetail), 1);
 			delete watcherByTarget[target][prop];
-		}
-		
-		private static var inited:Boolean = init();
-		private static function init():Boolean
-		{
-			scopeIndex[null] = new Dictionary();
-			return true;
 		}
 	}
 }

@@ -25,6 +25,7 @@
 package flight.commands
 {
 	import flight.events.PropertyEvent;
+	import flight.list.ArrayList;
 	import flight.net.ResponseStatus;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
@@ -43,16 +44,15 @@ package flight.commands
 		private var _historyPosition:int = 0;
 		private var _currentPosition:int = 0;			// the internal position of the _history at the present time.
 		private var _undoLimit:uint = 10;				// the internal level of undo's allowed.
-		private var _commands:Array = [];
+		private var _commands:ArrayList = new ArrayList();
 		private var _currentCommand:IUndoableCommand;
-		
 		
 		/**
 		 * The actual list of commands, in order of occurance. This list should
 		 * not be manipultated directly and should be treated as read only.
 		 */
 		[Bindable(event="commandsChange")]
-		public function get commands():Array
+		public function get commands():ArrayList
 		{
 			return _commands;
 		}
@@ -106,8 +106,8 @@ package flight.commands
 		}
 		public function set currentPosition(value:int):void
 		{
-			if (value > _commands.length) {
-				value = _commands.length;
+			if (value > _commands.numItems) {
+				value = _commands.numItems;
 			} else if (value < 0) {
 				value = 0;
 			}
@@ -122,20 +122,20 @@ package flight.commands
 			if (_currentPosition > value) {
 				
 				for (i = _currentPosition; i > value; i--) {
-					command = _commands[i-1];
+					command = _commands.getItemAt(i-1) as IUndoableCommand;
 					command.undo();
 				}
 			} else {
 				
 				for (i = _currentPosition; i < value; i++) {
-					command = _commands[i];
+					command = _commands.getItemAt(i) as IUndoableCommand;
 					command.redo();
 				}
 			}
 			
 			_currentPosition = value;
-			_historyPosition = _historyLength - (_commands.length - _currentPosition);
-			_currentCommand = _commands[_currentPosition-1];
+			_historyPosition = _historyLength - (_commands.numItems - _currentPosition);
+			_currentCommand = _commands.getItemAt(_currentPosition-1) as IUndoableCommand;
 			updateProperties();
 			
 			PropertyEvent.dispatchChangeList(this, ["currentCommand", "currentPosition", "historyPosition"], oldValues);
@@ -156,18 +156,17 @@ package flight.commands
 				return;
 			}
 			
-			var oldValues:Array = [_commands, _currentPosition, _undoLimit];
+			var oldValues:Array = [_currentPosition, _undoLimit];
 			
 			_undoLimit = value > 0 ? value : int.MAX_VALUE;
-			_commands.splice(_currentPosition, _commands.length - _currentPosition);
-			if (_commands.length > _undoLimit) {
+			_commands.removeItems(_currentPosition);
+			if (_commands.numItems > _undoLimit) {
 				_currentPosition = _undoLimit;
-				_commands.splice(0, _commands.length - _undoLimit);
+				_commands.removeItems(0, _commands.numItems - _undoLimit);
 			}
-			_commands = [].concat(_commands);
 			updateProperties();
 			
-			PropertyEvent.dispatchChangeList(this, ["commands", "currentPosition", "undoLimit"], oldValues);
+			PropertyEvent.dispatchChangeList(this, ["currentPosition", "undoLimit"], oldValues);
 		}
 		
 		/**
@@ -176,58 +175,62 @@ package flight.commands
 		 */
 		public function executeCommand(command:ICommand):void
 		{
-			if ( !(command is IUndoableCommand) || _commands.indexOf(command) != -1) {
+			if ( !(command is IUndoableCommand) || _commands.getItemIndex(command) != -1) {
 				command.execute();
-			} else {
+				return;
+			}
+			
+			// handle merging commands
+			if (command is IMergingCommand && IMergingCommand(command).merging) {
 				
-				if (command is IMergingCommand && IMergingCommand(command).merging) {
-					
-					if (mergingCommand == null || getType(mergingCommand) != getType(command)) {
-						mergingCommand = command as IMergingCommand;
-					} else {
-						
-						var merged:Boolean = mergingCommand.merge(command as IMergingCommand);
-						if (merged) {
-							return;
-						}
-						
-						mergingCommand = command as IMergingCommand;
-					}
-					
+				if (mergingCommand == null || getType(mergingCommand) != getType(command)) {
+					mergingCommand = command as IMergingCommand;
 				} else {
-					mergingCommand = null;
-				}
-				
-				command.execute();
-				
-				if (command is IAsyncCommand) {
-					var asyncCommand:IAsyncCommand = command as IAsyncCommand;
-					if (asyncCommand.response.status == ResponseStatus.FAULT) {
+					
+					var merged:Boolean = mergingCommand.merge(command as IMergingCommand);
+					if (merged) {
 						return;
 					}
 					
-					asyncCommand.response.addFaultHandler(onAsyncFault, command);
+					mergingCommand = command as IMergingCommand;
 				}
 				
-				
-				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
-				
-				_commands.splice(_currentPosition, _commands.length - _currentPosition, command);
-				if (_commands.length > _undoLimit) {
-					_currentPosition = _undoLimit;
-					_commands.splice(0, _commands.length - _undoLimit);
-				} else {
-					_currentPosition++;
-				}
-				_currentCommand = _commands[_currentPosition-1];
-				_historyPosition++;
-				_historyLength = _historyPosition;
-				_commands = [].concat(_commands);
-				updateProperties();
-				
-				PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
-				
+			} else {
+				mergingCommand = null;
 			}
+			
+			// execute command
+			command.execute();
+			
+			// handle asynchronous commands
+			if (command is IAsyncCommand) {
+				var asyncCommand:IAsyncCommand = command as IAsyncCommand;
+				if (asyncCommand.response.status == ResponseStatus.FAULT) {
+					return;
+				}
+				
+				asyncCommand.response.addFaultHandler(onAsyncFault, command);
+			}
+			
+			// update properties
+			var oldValues:Array = [_currentCommand, _historyPosition, _historyLength];
+			
+			_commands.removeItems(_currentPosition);
+			_commands.addItem(command);
+			if (_commands.numItems > _undoLimit) {
+				oldValues.push(_currentPosition - 1);
+				_currentPosition = _undoLimit;
+				_commands.removeItems(0, _commands.numItems - _undoLimit);
+			} else {
+				oldValues.push(_currentPosition);
+				_currentPosition++;
+			}
+			_currentCommand = _commands.getItemAt(_currentPosition-1) as IUndoableCommand;
+			_historyPosition++;
+			_historyLength = _historyPosition;
+			updateProperties();
+			
+			PropertyEvent.dispatchChangeList(this, ["currentCommand", "historyPosition", "historyLength", "currentPosition"], oldValues);
 		}
 		
 		/**
@@ -275,17 +278,17 @@ package flight.commands
 		 */
 		public function clearHistory():Boolean
 		{
-			if (_commands.length != 0) {
-				var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
+			if (_commands.numItems != 0) {
+				var oldValues:Array = [_currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
-				_commands = [];
+				_commands.source = [];
 				_currentCommand = null;
 				_currentPosition = 0;
 				_historyPosition = 0;
 				_historyLength = 0;
 				updateProperties();
 				
-				PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
+				PropertyEvent.dispatchChangeList(this, ["currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
 				return true;
 			}
 			return false;
@@ -299,31 +302,32 @@ package flight.commands
 			var oldValues:Array = [_canUndo, _canRedo];
 			
 			_canUndo = Boolean(_currentPosition > 0);
-			_canRedo = Boolean(_currentPosition < _commands.length);
+			_canRedo = Boolean(_currentPosition < _commands.numItems);
 			
 			PropertyEvent.dispatchChangeList(this, ["canUndo", "canRedo"], oldValues);
 		}
 		
 		protected function splice(startIndex:int, deleteCount:uint, ... values):void
 		{
-			var oldValues:Array = [_commands, _currentCommand, _currentPosition, _historyPosition, _historyLength];
+			var oldValues:Array = [_currentCommand, _currentPosition, _historyPosition, _historyLength];
 			
 			if (values.length == 1 && values[0] is Array) {
 				values = values[0];
 			}
 			var shift:int = values.length - deleteCount;
 			
-			_commands.splice.apply(_commands, [startIndex, deleteCount].concat(values) );
+			_commands.removeItems(startIndex, deleteCount);
+			_commands.addItems(values, startIndex);
+			
 			if (_currentPosition > startIndex) {
 				_historyPosition += shift;
 				_currentPosition += shift;
-				_currentCommand = _commands[_currentPosition-1];
+				_currentCommand = _commands.getItemAt(_currentPosition-1) as IUndoableCommand;
 			}
 			_historyLength += shift;
-			_commands = [].concat(_commands);
 			updateProperties();
 			
-			PropertyEvent.dispatchChangeList(this, ["commands", "currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
+			PropertyEvent.dispatchChangeList(this, ["currentCommand", "currentPosition", "historyPosition", "historyLength"], oldValues);
 		}
 		
 		/**
@@ -331,7 +335,7 @@ package flight.commands
 		 */
 		private function onAsyncFault(error:Error, command:IAsyncCommand):void
 		{
-			var index:int = _commands.indexOf(command);
+			var index:int = _commands.getItemIndex(command);
 			if (index != -1) {
 				splice(index, 1);
 			}

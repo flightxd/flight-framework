@@ -134,17 +134,6 @@ package flight.domain
 				}
 			}
 			
-			// TODO: deprecate the whole Argument metadata feature in favor of
-			// explicit property assignment and arguments order defined in addCommand
-			if (properties is Array) {
-				var list:Array = getArgumentList(command);
-				for (property in list) {
-					if (property in properties) {
-						command[ list[property] ] = properties[property];
-					}
-				}
-			}
-			
 			return command;
 		}
 		
@@ -194,13 +183,13 @@ package flight.domain
 				if (command is IAsyncCommand) {
 					response = IAsyncCommand(command).response;
 				} else {
-					dispatchResponse(getCommandType(command), new Response().complete(command));
+					dispatchResponse(getCommandType(command), new Response(command));
 				}
-			} catch(error:CommandError) {
+			} catch (error:CommandError) {
 				if (command is IAsyncCommand) {
 					releaseAsyncCommand(command as IAsyncCommand);
 				}
-				dispatchResponse(getCommandType(command), new Response().cancel(error));
+				dispatchResponse(getCommandType(command), new Response(error));
 			}
 		}
 		
@@ -217,7 +206,7 @@ package flight.domain
 								script();
 			
 			if (response == null) {
-				response = (result is IResponse) ? result as IResponse : new Response().complete(result);
+				response = (result is IResponse) ? result as IResponse : new Response(result);
 				dispatchResponse(type, response);
 			}
 		}
@@ -239,7 +228,7 @@ package flight.domain
 		protected function dispatchResponse(type:String, response:IResponse = null):IResponse
 		{
 			if (response == null) {
-				response = new Response().complete(null);
+				response = new Response(null);
 			}
 			
 			this.response = response;
@@ -258,17 +247,6 @@ package flight.domain
 			var asyncCommand:IAsyncCommand = event.target as IAsyncCommand;
 			releaseAsyncCommand(asyncCommand);
 			dispatchResponse(getCommandType(asyncCommand), asyncCommand.response);
-		}
-		
-		private static function getArgumentList(command:ICommand):Array
-		{
-			var list:Array = [];
-			
-			var argumentList:XMLList = Type.describeProperties(command, "Argument");
-			for each (var argument:XML in argumentList) {
-				list[argument.metadata.(@name == "Argument").arg.@value] = argument.@name;
-			}
-			return list;
 		}
 		
 	}

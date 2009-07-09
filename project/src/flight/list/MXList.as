@@ -30,7 +30,9 @@ package flight.list
 	
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
-
+	
+	[Event(name="collectionChange", type="mx.events.CollectionEvent")]
+	
 	public class MXList extends FlightDispatcher implements mx.collections.IList
 	{
 		private var list:flight.list.IList;

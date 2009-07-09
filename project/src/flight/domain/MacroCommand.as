@@ -31,7 +31,7 @@ package flight.domain
 	import flight.commands.IUndoableCommand;
 	import flight.errors.CommandError;
 	import flight.events.PropertyEvent;
-	import flight.net.Response;
+	import flight.list.ArrayList;
 	import flight.utils.getClassName;
 	
 	/**
@@ -46,12 +46,12 @@ package flight.domain
 		
 		private var currentCommand:ICommand;
 		private var undone:Boolean;
-		private var _commands:Array;
+		private var _commands:ArrayList;
 		private var _merging:Boolean = false;
 		
 		public function MacroCommand(commands:Array = null)
 		{
-			this.commands = commands != null ? commands : [];
+			this.commands = commands;
 		}
 		
 		public function get merging():Boolean
@@ -63,17 +63,23 @@ package flight.domain
 			_merging = value;
 		}
 		
-		[ArrayElementType("flight.commands.ICommand")]
 		/**
 		 * The list of commands to be executed.
 		 */
-		public function get commands():Array
+		[ArrayElementType("flight.commands.ICommand")]
+		[Bindable(event="commandsChange")]
+		public function get commands():ArrayList
 		{
 			return _commands;
 		}
-		public function set commands(value:Array):void
+		public function set commands(value:*):void
 		{
 			if (_commands == value) {
+				return;
+			}
+			
+			if ( !(value is ArrayList) ) {
+				_commands.source = value;
 				return;
 			}
 			
@@ -97,12 +103,12 @@ package flight.domain
 		 */
 		public function undo():void
 		{
-			var i:int = (currentCommand != null) ? commands.indexOf(currentCommand) :
-												commands.length - 1;
-			if (i == commands.length-1) {
+			var i:int = (currentCommand != null) ? _commands.getItemIndex(currentCommand) :
+												_commands.numItems - 1;
+			if (i == _commands.numItems - 1) {
 				
 				for (i; i >= 0; i--) {
-					var command:ICommand = commands[i];
+					var command:ICommand = _commands.getItemAt(i) as ICommand;
 					if (command is IUndoableCommand) {
 						IUndoableCommand(command).undo();
 					}
@@ -116,8 +122,8 @@ package flight.domain
 		{
 			if (undone) {
 				
-				for (var i:int = 0; i < commands.length; i++) {
-					var command:ICommand = commands[i];
+				for (var i:int = 0; i < _commands.numItems; i++) {
+					var command:ICommand = _commands.getItemAt(i) as ICommand;
 					if (command is IUndoableCommand) {
 						IUndoableCommand(command).redo();
 					}
@@ -130,11 +136,14 @@ package flight.domain
 		public function merge(source:Object):Boolean
 		{
 			if (source is MacroCommand) {
-				for each (var command:ICommand in MacroCommand(source).commands) {
-					commands.push(command);
+				var sourceCommands:ArrayList = MacroCommand(source)._commands;
+				var num:int = sourceCommands.numItems;
+				for (var i:int = 0; i < num; i++) {
+					var command:ICommand = sourceCommands.getItemAt(i) as ICommand;
+					_commands.addItem(command);
 				}
 			} else if (source is ICommand) {
-				commands.push(source);
+				_commands.addItem(source);
 			} else {
 				return false;
 			}
@@ -148,34 +157,32 @@ package flight.domain
 			
 			if (command != null) {
 				
-				i = commands.indexOf(command);
+				i = _commands.getItemIndex(command);
 				if (i == -1) {
 					throw new Error("Comand " + getClassName(command) + " does not exist in macro " + getClassName(this));
 				}
 				
 			} else if (currentCommand != null) {
-				i = commands.indexOf(currentCommand) + 1;
+				i = _commands.getItemIndex(currentCommand) + 1;
 			}
 			
 			
-			if (i < commands.length) {
+			if (i < _commands.numItems) {
 				
-				currentCommand = commands[i];
+				currentCommand = _commands.getItemAt(i) as ICommand;
 				
 				if (currentCommand is IAsyncCommand && queue) {
 					var asyncCommand:IAsyncCommand = currentCommand as IAsyncCommand;
-					// TODO: determine if this is the right method to intercept automatic command execution for custom direction
-					// or if a MacroCommand.pause() would be a better implementation
-					if (!asyncCommand.hasEventListener(Event.COMPLETE)) {
-						asyncCommand.addEventListener(Event.COMPLETE, onAsyncComplete)
-						asyncCommand.addEventListener(Event.CANCEL, onAsyncCancel);
-					}
+					// give internal listeners a negative priority to allow external
+					// listeners to interrupt regular flow.
+					asyncCommand.addEventListener(Event.COMPLETE, onAsyncComplete, false, -1)
+					asyncCommand.addEventListener(Event.CANCEL, onAsyncCancel, false, -1);
 					asyncCommand.execute();
 				} else {
 					try {
 						currentCommand.execute();
 						executeNext();
-					} catch(error:CommandError) {
+					} catch (error:CommandError) {
 						onCommandFault(error);
 					}
 				}
@@ -184,14 +191,28 @@ package flight.domain
 			}
 		}
 		
+		private function releaseAsyncCommand(command:IAsyncCommand):void
+		{
+			command.removeEventListener(Event.COMPLETE, onAsyncComplete);
+			command.removeEventListener(Event.CANCEL, onAsyncCancel);
+		}
+		
 		private function onAsyncComplete(event:Event):void
 		{
-			executeNext();
+			var asyncCommand:IAsyncCommand = event.target as IAsyncCommand;
+			releaseAsyncCommand(asyncCommand);
+			if (asyncCommand == currentCommand) {
+				executeNext();
+			}
 		}
 		
 		private function onAsyncCancel(event:Event):void
 		{
-			IAsyncCommand(event.target).response.addFaultHandler(onCommandFault);
+			var asyncCommand:IAsyncCommand = event.target as IAsyncCommand;
+			releaseAsyncCommand(asyncCommand);
+			if (asyncCommand == currentCommand) {
+				asyncCommand.response.addFaultHandler(onCommandFault);
+			}
 		}
 		
 		private function onCommandFault(error:Error):void

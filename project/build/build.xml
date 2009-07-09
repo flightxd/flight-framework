@@ -1,0 +1,87 @@
+<!--
+	This Ant Build file is included for generating ASDocs and the
+	flight-framework.swc. Don't expect it to work "out of the box", but feel
+	free to experiment -John Lindquist
+-->
+
+<!--
+	Special thanks to Ryan Taylor (http://www.boostworthy.com/blog/) for helping
+	set this up
+-->
+
+<!--
+	How to use build.properties file:
+
+	Your checkout should include a build.template.properties file. This is where
+	variables that change from system to system are stored. Simply rename the
+	file to build.properties and place it in the same directory as your
+	build.xml. When you run the build.xml it will automatically import the
+	build.properties file.
+
+	Make sure you change the path of the Flex SDK and if you are on a PC you
+	will need to add ".exe" to the asdoc.exe and compc.exe properties.
+-->
+
+<!-- 
+	Modified 6/20/09 by Jesse Freeman
+
+	- Externalized flex3dir, asdoc.exe, compc.exe paths to make build easier to
+	  set up across different platforms without having to modify the core
+	  build.xml.
+
+	- Modified the default target to call "compile" which includes docs and swc.
+-->
+
+<project name="Flight Framework ASDoc Generator" default="compile" basedir="..">
+	
+	<!-- import our build properties file -->
+	<property file="${basedir}/build/build.properties" />
+	
+	<property name="windowtitle" value="Flight Framework API Reference" />
+	<property name="maintitle" value="Flight Framework API Reference" />
+	<property name="footer" value="http://www.flightxd.com/flightframework" />
+	
+	<property name="bindir" value="${basedir}/bin" />
+	<property name="classesdir" value="${basedir}/src" />
+	<property name="docsdir" value="${basedir}/docs" />
+	
+	<property name="flex3bindir" value="${flex3dir}/bin" />
+	<property name="flex3libsdir" value="${flex3dir}/frameworks/libs" />
+	<property name="asdoc" value="${flex3bindir}/${asdoc.exe}" />
+	<property name="compc" value="${flex3bindir}/${compc.exe}" />
+	
+	<target name="compile" description="Creates swc and docs">
+		<antcall target="generateSWC" description="Generates a swc of the Flight Framework library" />
+		<antcall target="generateDocs" description="Generates documentation for the Flight Framework" />
+	</target>
+	
+	<target name="generateSWC" description="Generates a swc of the Flight Framework library">
+		<echo>Generating swc using '${classesdir}'</echo>
+		<exec executable="${compc}">
+			<arg line="-source-path ${classesdir}" />
+			<arg line="-output ${bindir}/flight-framework.swc" />
+			<arg line="-include-sources ${classesdir}" />
+		</exec>
+	</target>
+	
+	<target name="generateDocs" description="Generates documentation for the Flight Framework" depends="cleanDocs">
+		<echo>Generating documentation for '${docsdir}'...</echo>
+		<exec executable="${asdoc}">
+			<arg line="-source-path ${classesdir}" />
+			<arg line="-doc-sources ${classesdir}" />
+			<arg line="-window-title '${windowtitle}'" />
+			<arg line="-main-title '${maintitle}'" />
+			<arg line="-footer '${footer}'" />
+			<arg line="-output '${docsdir}'" />
+		</exec>
+	</target>
+	
+	<target name="cleanDocs" description="Cleans out the documentation directory.">
+		<echo>Cleaning out docs from '${docsdir}'...</echo>
+		<delete includeemptydirs="true">
+			<fileset dir="${docsdir}" includes="**/*">
+			</fileset>
+		</delete>
+	</target>
+	
+</project>
