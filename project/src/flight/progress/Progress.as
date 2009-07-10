@@ -24,6 +24,9 @@
 
 package flight.progress
 {
+	import flash.events.IEventDispatcher;
+	import flash.events.ProgressEvent;
+	
 	import flight.events.FlightDispatcher;
 	import flight.events.PropertyEvent;
 	
@@ -32,16 +35,26 @@ package flight.progress
 	 */
 	public class Progress extends FlightDispatcher implements IProgress
 	{
-		private var _type:String;
+		private var loader:IEventDispatcher;
+		private var _type:String = "";
 		private var _position:Number = 0;
 		private var _percent:Number = 0;
 		private var _length:Number = 1;
 		
+		public function Progress(loader:IEventDispatcher = null)
+		{
+			this.loader = loader;
+			if (loader != null) {
+				_type = "bytes";
+				loader.addEventListener(ProgressEvent.PROGRESS, onProgress, false, 0, true);
+			}
+		}
+		
 		/**
-		 * The type of progression represented by this object. Any string value
-		 * is valid, such as "bytes", "KB" or "pixels".
+		 * The type of progression represented by this object as a string, for
+		 * example: "bytes", "packets" or "pixels".
 		 */
-		[Bindable(event="positionChange")]
+		[Bindable(event="typeChange")]
 		public function get type():String
 		{
 			return _type;
@@ -126,6 +139,12 @@ package flight.progress
 				percent = _position / _length;
 			}
 			propertyChange("length", oldValue, _length);
+		}
+		
+		private function onProgress(event:ProgressEvent):void
+		{
+			length = event.bytesTotal;
+			position = event.bytesLoaded;
 		}
 		
 	}

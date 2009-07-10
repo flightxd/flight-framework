@@ -66,7 +66,6 @@ package flight.net
 		// lists of event listeners
 		private var completeEvents:Array;
 		private var cancelEvents:Array;
-		private var progressEvents:Array;
 		
 		private var _status:String = ResponseStatus.PROGRESS;
 		private var _progress:IProgress;
@@ -332,43 +331,6 @@ package flight.net
 		}
 		
 		/**
-		 * Adds Response as an event listener to the target event, resulting in
-		 * a response cancelation once the event is triggered. A convenient
-		 * method for tying the response into an asynchronous event flow.
-		 * 
-		 * <p>Example using the Flash Player's URLLoader:
-		 * <pre>
-		 * var urlLoader:URLLoader = new URLLoader();
-		 * var response:Response = new Response();
-		 * response.addCompleteEvent(urlLoader, Event.COMPLETE);
-		 * response.addCancelEvent(urlLoader, SecurityErrorEvent.SECURITY_ERROR);
-		 * response.addCancelEvent(urlLoader, IOErrorEvent.IO_ERROR);
-		 * response.addProgressEvent(urlLoader, ProgressEvent.PROGRESS, "bytesLoaded", "bytesTotal");
-		 * response.progress.type = "Bytes";
-		 * </pre>
-		 * </p>
-		 * 
-		 * @param	target			The event dispatcher object that Response
-		 * 							will listen to.
-		 * @param	eventType		Event type dispatched by the target.
-		 * @param	resultProperty	A property on the event object that will be
-		 * 							used as the data for result handlers.
-		 * 
-		 * @return					A reference to this instance of Response,
-		 * 							useful for method chaining.
-		 */
-		public function addProgressEvent(target:IEventDispatcher, eventType:String,
-										 positionProperty:String = "position", lengthProperty:String = "length"):Response
-		{
-			if (progressEvents == null) {
-				progressEvents = [];
-			}
-			progressEvents.push( [target, eventType, positionProperty, lengthProperty] );
-			target.addEventListener(eventType, onProgress);
-			return this;
-		}
-		
-		/**
 		 * Completes the response with the specified data, triggering the result
 		 * cycle.
 		 * 
@@ -504,25 +466,6 @@ package flight.net
 				cancel(error as Error);
 			} else {
 				cancel( new Error("Exception thrown on event type " + event.type) );
-			}
-		}
-		
-		private function onProgress(event:Event):void
-		{
-			var info:Array = getEventInfo(event, progressEvents);
-			var position:String = info[2];
-			var length:String = info[3];
-			if (position in event) {
-				if (length in event) {
-					progress.length = event[length];
-					progress.position = event[position];
-				} else {
-					var percent:Number = parseFloat(event[position]);
-					if (percent > 1) {
-						percent /= 100;
-					}
-					progress.percent = percent;
-				}
 			}
 		}
 		

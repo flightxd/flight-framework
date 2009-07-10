@@ -31,7 +31,7 @@ package flight.progress
 	{
 		/**
 		 * The type of progression represented by this object as a string, for
-		 * example: "Bytes", "KB" or "pixels".
+		 * example: "bytes", "packets" or "pixels".
 		 */
 		function get type():String;
 		function set type(value:String):void;
