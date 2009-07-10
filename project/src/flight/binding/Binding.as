@@ -35,6 +35,7 @@ package flight.binding
 	import flight.utils.getType;
 	
 	import mx.core.IMXMLObject;
+	import mx.events.PropertyChangeEvent;
 	
 	[Event(name="propertyChange", type="flight.events.PropertyEvent")]
 	
@@ -344,7 +345,7 @@ package flight.binding
 			var source:Object = event.target;
 			var pathIndex:int = indicesIndex[source];
 			var prop:String = _sourcePath[pathIndex];
-			if ("property" in event && event["property"] != prop) {
+			if (event is PropertyChangeEvent && PropertyChangeEvent(event).property != prop) {
 				return;
 			}
 			

@@ -46,7 +46,7 @@ package flight.domain
 		
 		private var currentCommand:ICommand;
 		private var undone:Boolean;
-		private var _commands:ArrayList;
+		private var _commands:ArrayList = new ArrayList();
 		private var _merging:Boolean = false;
 		
 		public function MacroCommand(commands:Array = null)

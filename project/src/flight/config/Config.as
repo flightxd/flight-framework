@@ -86,7 +86,13 @@ package flight.config
 		 */
 		override protected function init():void
 		{
-			introspect();
+			// add every singleton config to the global 'main'
+			if (main != null) {
+				main.configs.push(this);
+				main.updateProperties();
+				addEventListener("propertiesChange", main.onPropertiesChange);
+			}
+			updateProperties();
 		}
 		
 		/**
@@ -197,7 +203,7 @@ package flight.config
 				display = document as DisplayObject;
 			}
 			
-			introspect();
+			updateProperties();
 		}
 		
 		/**
@@ -225,7 +231,7 @@ package flight.config
 		protected function updateProperties():void
 		{
 			// can't just update using data, because of overrides, must do all configs
-			var configProperties:Object = {};
+			var configProperties:Object = this == main ? {} : introspect();
 			
 			for each (var config:Config in _configs) {
 				for (var i:String in config.properties) {
@@ -236,26 +242,18 @@ package flight.config
 			properties = configProperties;
 		}
 		
-		private function introspect():void
+		private function introspect():Object
 		{
 			// initialize the properties object with class-defined properties
-			var properties:Object = {};
+			var configProperties:Object = {};
 			var propList:XMLList = Type.describeProperties(this)
 					.(attribute("declaredBy").toString().indexOf("flight.config::") == -1);
 			
 			for each (var prop:XML in propList) {
 				var i:String = prop.@name;
-				properties[i] = this[i];
+				configProperties[i] = this[i];
 			}
-			_properties = properties;
-			
-			// add every singleton config to the global 'main' - only the
-			// 'main' config will receive a null and won't be added to itself
-			if (main != null) {
-				main.configs.push(this);
-				main.updateProperties();
-				addEventListener("propertiesChange", main.onPropertiesChange);
-			}
+			return configProperties;
 		}
 		
 		private function onPropertiesChange(event:PropertyEvent):void
