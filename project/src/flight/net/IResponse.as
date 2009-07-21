@@ -60,21 +60,21 @@ package flight.net
 		 * Adds a callback handler to be invoked with the successful results of
 		 * the response. Result handlers receive data and have the opportunity
 		 * to format the data for subsequent handlers. They can also trigger the
-		 * response's fault if the data is invalid by throwing a ResponseError.
+		 * response's fault if the data is invalid by returning an Error.
 		 * 
 		 * <p>The method signature should describe a data object as the first
 		 * parameter. Additional parameters may be defined and provided when
 		 * adding the result handler.</p>
 		 * 
 		 * <p>To format data for subsequent handlers the result handler may
-		 * return a new value in its method signature, otherwise the return type
-		 * should be <code>void</code>. Additionally returning another IResponse
-		 * type will link this response to the other's completion.</p>
+		 * return a new value in its method signature. To end the result cycle
+		 * and trigger the fault cycle an Error type should be returned.
+		 * Additionally returning another IResponse type will link this response
+		 * to the other's completion. Otherwise the return type should be
+		 * <code>void</code>.</p>
 		 * 
 		 * <p>
 		 * <pre>
-		 * 	import flight.errors.ResponseError;
-		 * 	
 		 * 	// example of a formatting handler - also showing a possible fault
 		 * 	private function onResult(data:Object):Object
 		 * 	{
@@ -83,7 +83,7 @@ package flight.net
 		 * 			data = amf.readObject();
 		 * 		} catch (error:Error) {
 		 * 			// ejects out of the result handling phase and into fault handling
-		 * 			throw new ResponseError("Invalid AMF response: " + amf.toString());
+		 * 			return new Error("Invalid AMF response: " + amf.toString());
 		 * 		}
 		 * 		return data;
 		 * 	}
@@ -97,8 +97,6 @@ package flight.net
 		 * 
 		 * @return					A reference to this instance of IResponse,
 		 * 							useful for method chaining.
-		 * 
-		 * @see		flight.errors.ResponseError
 		 */
 		function addResultHandler(handler:Function, ... resultParams):IResponse;
 		
@@ -144,8 +142,6 @@ package flight.net
 		 * 
 		 * @return					A reference to this instance of IResponse,
 		 * 							useful for method chaining.
-		 * 
-		 * @see		flight.errors.ResponseError
 		 */
 		function addFaultHandler(handler:Function, ... faultParams):IResponse;
 		
