@@ -63,11 +63,12 @@ package flight.domain
 				_response.removeResultHandler(onResult);
 				_response.removeFaultHandler(onFault);
 				
-				// link old response to the 
+				// link old response to the new response
 				if (value != null) {
+					_response.progress = value.progress;
+					_response.status = value.status;
 					value.addResultHandler(_response.complete);
 					value.addFaultHandler(_response.cancel);
-					_response.progress = value.progress;
 				}
 			}
 			

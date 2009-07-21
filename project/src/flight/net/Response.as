@@ -98,6 +98,16 @@ package flight.net
 		{
 			return _status;
 		}
+		public function set status(value:String):void
+		{
+			if (_status == value) {
+				return;
+			}
+			
+			var oldValue:Object = _status;
+			_status = value;
+			propertyChange("status", oldValue, _status);
+		}
 		
 		/**
 		 * The progress of the response completion. Valuable when measuring
@@ -137,9 +147,10 @@ package flight.net
 		 * parameter. Additional parameters may be defined and provided when
 		 * adding the result handler.</p>
 		 * 
-		 * <p>To pass on formatted data the handler must return the new value in
-		 * its method signature, otherwise the return type should be
-		 * <code>void</code>.</p>
+		 * <p>To format data for subsequent handlers the result handler may
+		 * return a new value in its method signature, otherwise the return type
+		 * should be <code>void</code>. Additionally returning another IResponse
+		 * type will link this response to the other's completion.</p>
 		 * 
 		 * <p>
 		 * <pre>
@@ -209,6 +220,11 @@ package flight.net
 		 * <p>The method signature should describe an error type as the first
 		 * parameter. Additional parameters may be defined and provided when
 		 * adding the fault handler.</p>
+		 * 
+		 * <p>To cancel the fault cycle the handler may return an IResponse in
+		 * its method signature, otherwise the return type should be
+		 * <code>void</code>. Returning another IResponse type will link this
+		 * response to the other's completion.</p>
 		 * 
 		 * <p>
 		 * <pre>
@@ -340,12 +356,10 @@ package flight.net
 		{
 			result = data;
 			
-			var oldValue:Object = _status;
-			_status = ResponseStatus.RESULT;
 			if (_progress != null) {
 				_progress.position = _progress.length;
 			}
-			propertyChange("status", oldValue, _status);
+			status = ResponseStatus.RESULT;
 			
 			release();
 			runHandlers();
@@ -360,12 +374,10 @@ package flight.net
 		{
 			fault = error;
 			
-			var oldValue:Object = _status;
-			_status = ResponseStatus.FAULT;
 			if (_progress != null) {
 				_progress.position = _progress.length;
 			}
-			propertyChange("status", oldValue, _status);
+			status = ResponseStatus.FAULT;
 			
 			release();
 			runHandlers();
@@ -401,9 +413,21 @@ package flight.net
 					var handler:Function = params[0];
 					// reuse the parameters by swapping the function with the data
 					params[0] = this[_status];
+					
 					var formatted:* = handler.apply(null, params);
-					// if the return type was not void then replace 'result' or 'fault'
 					if (formatted !== undefined) {
+						
+						// if the return type is IResponse then link to the new response
+						if (formatted is IResponse) {
+							var response:IResponse = formatted as IResponse;
+							progress = response.progress;
+							status = response.status;
+							response.addResultHandler(complete);
+							response.addFaultHandler(cancel);
+							return;
+						}
+						
+						// if the return type is not void or IResponse then replace 'result' or 'fault'
 						this[_status] = formatted;
 					}
 				}

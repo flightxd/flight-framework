@@ -1,4 +1,6 @@
-* ListSelection indeces add LAST item to the 'index'
+
+* FlightDispatcher could use a more descriptive name
+* ListSelection indices add LAST item to the 'index'
 * possible rename DomainController init (singleton init) to construct?
 
 ** Move bindable metadata tags from interfaces to implementations
@@ -25,7 +27,7 @@
 future features:
 * add flight services as an alternative to flex services
 	- RemotingService
-	_ SOAPService
+	- SOAPService
 	- HTTPService
 	- RESTSerivce with formatters and serialization framework
 		XML to ValueObject serialization/deserialization
@@ -33,10 +35,11 @@ future features:
 		CSV/TAB		"							"
 
 * DataMapper Library
-* Dependency Injection (specifically for View components)
+* Dependency Injection (specifically for View & components)
 * activeRecord and/or database sync
 * JavaScript utilities
 	- browser-captured key combos (ctrl+z, ctrl+y, others)
 	- Mac scroll wheel
 	- Browser History
 	- right-click menu
+* Peer to Peer library
