@@ -31,7 +31,7 @@ package flight.events
 		public static const LIST_CHANGE:String = "listChange";
 		
 		private var _kind:String;
-		private var _items:Array;
+		private var _items:*;
 		private var _location1:int;
 		private var _location2:int;
 		
