@@ -33,7 +33,7 @@ package flight.list
 		/**
 		 * 
 		 */
-		function get numItems():int;
+		function get length():int;
 		
 		/**
 		 * 

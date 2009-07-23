@@ -106,8 +106,8 @@ package flight.commands
 		}
 		public function set currentPosition(value:int):void
 		{
-			if (value > _commands.numItems) {
-				value = _commands.numItems;
+			if (value > _commands.length) {
+				value = _commands.length;
 			} else if (value < 0) {
 				value = 0;
 			}
@@ -134,7 +134,7 @@ package flight.commands
 			}
 			
 			_currentPosition = value;
-			_historyPosition = _historyLength - (_commands.numItems - _currentPosition);
+			_historyPosition = _historyLength - (_commands.length - _currentPosition);
 			_currentCommand = _commands.getItemAt(_currentPosition-1) as IUndoableCommand;
 			updateProperties();
 			
@@ -160,9 +160,9 @@ package flight.commands
 			
 			_undoLimit = value > 0 ? value : int.MAX_VALUE;
 			_commands.removeItems(_currentPosition);
-			if (_commands.numItems > _undoLimit) {
+			if (_commands.length > _undoLimit) {
 				_currentPosition = _undoLimit;
-				_commands.removeItems(0, _commands.numItems - _undoLimit);
+				_commands.removeItems(0, _commands.length - _undoLimit);
 			}
 			updateProperties();
 			
@@ -217,10 +217,10 @@ package flight.commands
 			
 			_commands.removeItems(_currentPosition);
 			_commands.addItem(command);
-			if (_commands.numItems > _undoLimit) {
+			if (_commands.length > _undoLimit) {
 				oldValues.push(_currentPosition - 1);
 				_currentPosition = _undoLimit;
-				_commands.removeItems(0, _commands.numItems - _undoLimit);
+				_commands.removeItems(0, _commands.length - _undoLimit);
 			} else {
 				oldValues.push(_currentPosition);
 				_currentPosition++;
@@ -278,7 +278,7 @@ package flight.commands
 		 */
 		public function clearHistory():Boolean
 		{
-			if (_commands.numItems != 0) {
+			if (_commands.length != 0) {
 				var oldValues:Array = [_currentCommand, _currentPosition, _historyPosition, _historyLength];
 				
 				_commands.source = [];
@@ -302,7 +302,7 @@ package flight.commands
 			var oldValues:Array = [_canUndo, _canRedo];
 			
 			_canUndo = Boolean(_currentPosition > 0);
-			_canRedo = Boolean(_currentPosition < _commands.numItems);
+			_canRedo = Boolean(_currentPosition < _commands.length);
 			
 			PropertyEvent.dispatchChangeList(this, ["canUndo", "canRedo"], oldValues);
 		}

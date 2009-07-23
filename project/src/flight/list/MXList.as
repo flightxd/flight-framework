@@ -46,7 +46,7 @@ package flight.list
 		{
 			this.list = list;
 			
-			list.addEventListener("numItemsChange", onNumItemsChange);
+			list.addEventListener("lengthChange", onNumItemsChange);
 			list.addEventListener(ListEvent.LIST_CHANGE, onListChange);
 		}
 		
@@ -58,7 +58,7 @@ package flight.list
 		[Bindable(event="lengthChange")]
 		public function get length():int
 		{
-			return list.numItems;
+			return list.length;
 		}
 		
 		/**

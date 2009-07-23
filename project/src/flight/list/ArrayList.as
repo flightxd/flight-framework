@@ -50,8 +50,8 @@ package flight.list
 			this.source = source;
 		}
 		
-		[Bindable(event="numItemsChange")]
-		public function get numItems():int
+		[Bindable(event="lengthChange")]
+		public function get length():int
 		{
 			return adapter.length;
 		}
@@ -106,7 +106,7 @@ package flight.list
 			var oldValue:int = adapter.length;
 			adapter.push(item);
 			
-			propertyChange("numItems", oldValue, adapter.length);
+			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD,
 										 adapter.slice(oldValue, oldValue+1), oldValue) );
 			return item;
@@ -120,7 +120,7 @@ package flight.list
 			}
 			adapter.splice(index, 0, item);
 			
-			propertyChange("numItems", oldValue, adapter.length);
+			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD,
 										 adapter.slice(index, index+1), index) );
 			return item;
@@ -141,7 +141,7 @@ package flight.list
 			}
 			adapter.splice.apply(adapter, [index, 0].concat(items));
 			
-			propertyChange("numItems", oldValue, adapter.length);
+			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD, items, index) );
 			return items;
 		}
@@ -197,7 +197,7 @@ package flight.list
 			var items:* = adapter.splice(index, 1);
 			// empty list
 			if (items[0] !== undefined) {
-				propertyChange("numItems", oldValue, adapter.length);
+				propertyChange("length", oldValue, adapter.length);
 				dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
 			}
 			return items[0];
@@ -212,7 +212,7 @@ package flight.list
 			var items:* = adapter.splice(index, length);
 			// empty list
 			if (items[0] !== undefined) {
-				propertyChange("numItems", oldValue, adapter.length);
+				propertyChange("length", oldValue, adapter.length);
 				dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
 			}
 			return items;

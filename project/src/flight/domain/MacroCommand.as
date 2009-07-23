@@ -104,8 +104,8 @@ package flight.domain
 		public function undo():void
 		{
 			var i:int = (currentCommand != null) ? _commands.getItemIndex(currentCommand) :
-												_commands.numItems - 1;
-			if (i == _commands.numItems - 1) {
+												_commands.length - 1;
+			if (i == _commands.length - 1) {
 				
 				for (i; i >= 0; i--) {
 					var command:ICommand = _commands.getItemAt(i) as ICommand;
@@ -122,7 +122,7 @@ package flight.domain
 		{
 			if (undone) {
 				
-				for (var i:int = 0; i < _commands.numItems; i++) {
+				for (var i:int = 0; i < _commands.length; i++) {
 					var command:ICommand = _commands.getItemAt(i) as ICommand;
 					if (command is IUndoableCommand) {
 						IUndoableCommand(command).redo();
@@ -137,7 +137,7 @@ package flight.domain
 		{
 			if (source is MacroCommand) {
 				var sourceCommands:ArrayList = MacroCommand(source)._commands;
-				var num:int = sourceCommands.numItems;
+				var num:int = sourceCommands.length;
 				for (var i:int = 0; i < num; i++) {
 					var command:ICommand = sourceCommands.getItemAt(i) as ICommand;
 					_commands.addItem(command);
@@ -167,7 +167,7 @@ package flight.domain
 			}
 			
 			
-			if (i < _commands.numItems) {
+			if (i < _commands.length) {
 				
 				currentCommand = _commands.getItemAt(i) as ICommand;
 				

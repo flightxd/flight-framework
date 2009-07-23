@@ -57,7 +57,7 @@ package flight.list
 		}
 		public function set index(value:int):void
 		{
-			value = Math.max(-1, Math.min(list.numItems-1, value));
+			value = Math.max(-1, Math.min(list.length-1, value));
 			if (_index == value) {
 				return;
 			}
@@ -137,7 +137,7 @@ package flight.list
 		private function onListChange(event:ListEvent):void
 		{
 			var tmpItems:Array = [];
-			for (var i:int = 0; i < _items.numItems; i++) {
+			for (var i:int = 0; i < _items.length; i++) {
 				var item:Object = _items.getItemAt(i);
 				var index:int = list.getItemIndex(item);
 				
@@ -156,7 +156,7 @@ package flight.list
 			}
 			
 			var list1:ArrayList = event.target as ArrayList;
-			if (!_multiselect && list1.numItems > 1) {
+			if (!_multiselect && list1.length > 1) {
 				list1.source = event.items != null ? event.items[0] : list1.getItemAt(0);
 				event.stopImmediatePropagation();
 				return;
@@ -193,7 +193,7 @@ package flight.list
 					break;
 				case ListEventKind.RESET :
 					tmpArray = [];
-					for (var i:int = 0; i < list1.numItems; i++) {
+					for (var i:int = 0; i < list1.length; i++) {
 						tmpObject = list1.getItemAt(i);
 						tmpArray.push( getData(tmpObject) );
 					}
@@ -204,7 +204,7 @@ package flight.list
 			
 			var oldIndex:int = _index;
 			var oldItem:Object = _item;
-			_index = _indices.numItems > 0 ? _indices.getItemAt(0) as Number : -1;
+			_index = _indices.length > 0 ? _indices.getItemAt(0) as Number : -1;
 			_item = _items.getItemAt(0);
 			
 			propertyChange("index", oldIndex, _index);

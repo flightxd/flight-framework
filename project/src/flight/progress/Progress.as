@@ -41,12 +41,19 @@ package flight.progress
 		private var _percent:Number = 0;
 		private var _length:Number = 1;
 		
-		public function Progress(loader:IEventDispatcher = null)
+		/**
+		 * Constructs a Progress object, optionally allowing the instance to be
+		 * tied to an IEventDispatcher dispatching a <code>ProgressEvent</code>.
+		 * 
+		 * @param	progressor			An IEventDispatcher object that
+		 * 								dispatches a <code>ProgressEvent</code>.
+		 */
+		public function Progress(progressor:IEventDispatcher = null)
 		{
-			this.loader = loader;
-			if (loader != null) {
+			this.loader = progressor;
+			if (progressor != null) {
 				_type = "bytes";
-				loader.addEventListener(ProgressEvent.PROGRESS, onProgress, false, 0, true);
+				progressor.addEventListener(ProgressEvent.PROGRESS, onProgress, false, 0, true);
 			}
 		}
 		
@@ -141,6 +148,9 @@ package flight.progress
 			propertyChange("length", oldValue, _length);
 		}
 		
+		/**
+		 * Listener to an IEventDispatcher on the "progress" event.
+		 */
 		private function onProgress(event:ProgressEvent):void
 		{
 			length = event.bytesTotal;
