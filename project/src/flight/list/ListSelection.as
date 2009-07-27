@@ -24,7 +24,7 @@
 
 package flight.list
 {
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.events.ListEvent;
 	import flight.events.ListEventKind;
 	import flight.events.PropertyEvent;
@@ -32,7 +32,7 @@ package flight.list
 	/**
 	 * 
 	 */
-	public class ListSelection extends FlightDispatcher implements IListSelection
+	public class ListSelection extends Dispatcher implements IListSelection
 	{
 		private var list:IList;
 		private var updatingLists:Boolean;

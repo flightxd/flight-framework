@@ -1,5 +1,5 @@
 
-* FlightDispatcher could use a more descriptive name
+* Dispatcher could use a more descriptive name
 * ListSelection indices add LAST item to the 'index'
 * possible rename DomainController init (singleton init) to construct?
 

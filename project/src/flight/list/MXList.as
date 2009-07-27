@@ -24,7 +24,7 @@
 
 package flight.list
 {
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.events.ListEvent;
 	import flight.events.PropertyEvent;
 	
@@ -33,7 +33,7 @@ package flight.list
 	
 	[Event(name="collectionChange", type="mx.events.CollectionEvent")]
 	
-	public class MXList extends FlightDispatcher implements mx.collections.IList
+	public class MXList extends Dispatcher implements mx.collections.IList
 	{
 		private var list:flight.list.IList;
 		

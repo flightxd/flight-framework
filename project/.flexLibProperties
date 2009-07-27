@@ -27,7 +27,7 @@
 <classEntry path="flight.errors.InstantiationError"/>
 <classEntry path="flight.errors.InvalidConstructorError"/>
 <classEntry path="flight.events.DomainEvent"/>
-<classEntry path="flight.events.FlightDispatcher"/>
+<classEntry path="flight.events.Dispatcher"/>
 <classEntry path="flight.events.ListEvent"/>
 <classEntry path="flight.events.ListEventKind"/>
 <classEntry path="flight.events.MessageLogEvent"/>

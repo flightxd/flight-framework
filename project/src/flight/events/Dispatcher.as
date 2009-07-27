@@ -29,21 +29,24 @@ package flight.events
 	import flash.events.IEventDispatcher;
 	
 	/**
-	 * The FlightDispatcher class is a base event dispatcher that optimizes the
+	 * The Dispatcher class is a base event dispatcher that optimizes the
 	 * event flow.
 	 * 
-	 * <p>FlightDispatcher is an on-demand implementation of the
+	 * <p>Dispatcher is an on-demand implementation of the
 	 * IEventDispatcher interface. This means that the underlying
 	 * EventDispatcher is not created until it is needed, conserving memory.
-	 * Through FlightDispatcher events are not dispatched (or even created)
+	 * Through Dispatcher events are not dispatched (or even created)
 	 * unless htere are active listeners for the event.</p>
 	 * 
-	 * <p>FlightDispatcher also exposes property-change support.</p>
+	 * <p>Dispatcher also exposes property-change support.</p>
 	 * 
 	 * @see		flash.events.IEventDispatcher
 	 */
-	public class FlightDispatcher implements IEventDispatcher
+	public class Dispatcher implements IEventDispatcher
 	{
+		/**
+		 * Reference to the wrapped IEventDispatcher.
+		 */
 		protected var dispatcher:IEventDispatcher;
 		
 		/**
@@ -75,8 +78,8 @@ package flight.events
 		}
 		
 		/**
-		 * Removes a listener from the FlightDispatcher object. If there is no
-		 * matching listener registered with the FlightDispatcher object, a call
+		 * Removes a listener from the Dispatcher object. If there is no
+		 * matching listener registered with the Dispatcher object, a call
 		 * to this method has no effect.
 		 * 
 		 * @param	type				The type of event.
@@ -106,7 +109,7 @@ package flight.events
 		 * 								successfully dispatched.
 		 *  
 		 * @see		flash.events.EventDispatcher#dispatchEvent
-		 * @see		flight.events.FlightDispatcher#dispatch
+		 * @see		flight.events.Dispatcher#dispatch
 		 */
 		public function dispatchEvent(event:Event):Boolean
 		{
@@ -117,7 +120,7 @@ package flight.events
 		}
 		
 		/**
-		 * Checks whether the FlightDispatcher object has any listeners
+		 * Checks whether the Dispatcher object has any listeners
 		 * registered for a specific type of event. This check is made before
 		 * any events are dispatched.
 		 * 
@@ -139,7 +142,7 @@ package flight.events
 		
 		/**
 		 * Checks whether an event listener is registered with this
-		 * FlightDispatcher object or any of its ancestors for the specified
+		 * Dispatcher object or any of its ancestors for the specified
 		 * event type. Because ancesry is only available through the display
 		 * list, this method behaves identically to hasEventListener().
 		 * 
@@ -171,7 +174,7 @@ package flight.events
 		 * @return						A value of true if the event was
 		 * 								successfully dispatched.
 		 *  
-		 * @see		flight.events.FlightDispatcher#dispatchEvent
+		 * @see		flight.events.Dispatcher#dispatchEvent
 		 */
 		protected function dispatch(type:String):Boolean
 		{

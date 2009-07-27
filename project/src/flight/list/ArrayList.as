@@ -26,7 +26,7 @@ package flight.list
 {
 	import flash.utils.flash_proxy;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.events.ListEvent;
 	import flight.events.ListEventKind;
 	import flight.vo.IValueObject;
@@ -35,7 +35,7 @@ package flight.list
 	
 	[Event(name="listChange", type="flight.events.ListEvent")]
 	
-	public class ArrayList extends FlightDispatcher implements IList, IValueObject
+	public class ArrayList extends Dispatcher implements IList, IValueObject
 	{
 		public var idField:String = "id";	// TODO: replace with dataMap
 		
@@ -298,7 +298,7 @@ package flight.list
 
 import flash.utils.flash_proxy;
 
-import flight.events.FlightDispatcher;
+import flight.events.Dispatcher;
 import flight.list.ArrayList;
 import flight.list.IList;
 import flight.list.ListSelection;

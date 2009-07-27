@@ -28,7 +28,7 @@ package flight.binding
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.events.PropertyEvent;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
@@ -42,7 +42,7 @@ package flight.binding
 	/**
 	 * 
 	 */
-	public class Binding extends FlightDispatcher implements IMXMLObject
+	public class Binding extends Dispatcher implements IMXMLObject
 	{
 		public var applyOnly:Boolean = false;
 		

@@ -24,7 +24,7 @@
 
 package flight.utils
 {
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	
 	import mx.core.IMXMLObject;
 	
@@ -41,7 +41,7 @@ package flight.utils
 	 * 
 	 * @see		#getInstance
 	 */
-	public class Singleton extends FlightDispatcher implements IMXMLObject
+	public class Singleton extends Dispatcher implements IMXMLObject
 	{
 		/**
 		 * Singleton should only be instantiated internally or via MXML where

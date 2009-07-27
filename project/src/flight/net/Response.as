@@ -28,7 +28,7 @@ package flight.net
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.progress.IProgress;
 	import flight.progress.Progress;
 	
@@ -43,7 +43,7 @@ package flight.net
 	 * the case for synchronous actions) it is immediately invoked. The effect
 	 * is the same as if the handler were added before response completion.</p>
 	 */
-	public class Response extends FlightDispatcher implements IResponse
+	public class Response extends Dispatcher implements IResponse
 	{
 		/**
 		 * The stored result of the response upon completion and subsequent

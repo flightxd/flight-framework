@@ -27,13 +27,13 @@ package flight.progress
 	import flash.events.IEventDispatcher;
 	import flash.events.ProgressEvent;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.events.PropertyEvent;
 	
 	/**
 	 * Data object representing a progression of any type.
 	 */
-	public class Progress extends FlightDispatcher implements IProgress
+	public class Progress extends Dispatcher implements IProgress
 	{
 		private var loader:IEventDispatcher;
 		private var _type:String = "";

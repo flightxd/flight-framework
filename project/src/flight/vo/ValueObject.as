@@ -26,7 +26,7 @@ package flight.vo
 {
 	import flash.utils.ByteArray;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.utils.Type;
 	
 	/**
@@ -35,7 +35,7 @@ package flight.vo
 	 * implementation of the methods equals() and clone() for use throughout
 	 * the system.
 	 */
-	public class ValueObject extends FlightDispatcher implements IValueObject
+	public class ValueObject extends Dispatcher implements IValueObject
 	{
 		public function ValueObject()
 		{

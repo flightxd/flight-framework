@@ -26,7 +26,7 @@ package flight.utils
 {
 	import flash.events.IEventDispatcher;
 	
-	import flight.events.FlightDispatcher;
+	import flight.events.Dispatcher;
 	import flight.events.PropertyEvent;
 	import flight.vo.IValueObject;
 	import flight.vo.ValueObject;
@@ -46,7 +46,7 @@ package flight.utils
 	 * 
 	 * @see		#edit
 	 */
-	public class ObjectEditor extends FlightDispatcher implements IMXMLObject
+	public class ObjectEditor extends Dispatcher implements IMXMLObject
 	{
 		private var _target:Object;
 		private var _source:Object;
