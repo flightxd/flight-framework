@@ -115,6 +115,8 @@ package flight.utils
 					} else {
 						scope = scope["parent"];
 					}
+				} else {
+					break;
 				}
 			}
 			
