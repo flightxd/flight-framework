@@ -24,8 +24,8 @@
 
 package flight.domain
 {
+	import flight.commands.CommandController;
 	import flight.commands.ICommand;
-	import flight.utils.Type;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
 	
@@ -40,8 +40,8 @@ package flight.domain
 		
 		public function initialized(document:Object, id:String):void
 		{
-			if (document is DomainController) {
-				DomainController(document).addCommand(id, getType(this));
+			if (document is CommandController) {
+				CommandController(document).addCommand(id, getType(this));
 			}
 		}
 		

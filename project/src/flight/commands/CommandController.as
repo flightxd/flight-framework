@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.domain
+package flight.commands
 {
 	import flash.events.Event;
 	import flash.utils.Dictionary;
@@ -44,7 +44,7 @@ package flight.domain
 	 * Domain acts as an interface to a CommandHistory.
 	 * It exposes methods such as undo/redo and routes IUndoableCommands to the current history.  
 	 */
-	public class DomainController extends Singleton implements ICommandInvoker, ICommandFactory
+	public class CommandController extends Singleton implements ICommandInvoker, ICommandFactory
 	{
 		protected var invoker:ICommandInvoker;
 		

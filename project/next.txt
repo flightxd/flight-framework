@@ -1,5 +1,5 @@
 
-* Dispatcher could use a more descriptive name
+* Dispatcher to implement binding and bindEvents
 * ListSelection indices add LAST item to the 'index'
 * possible rename DomainController init (singleton init) to construct?
 

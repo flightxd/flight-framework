@@ -2,7 +2,7 @@
 <componentPackage>
 	
 	<!-- framework -->
-	<component id="DomainController"		class="flight.domain.DomainController"/>
+	<component id="CommandController"		class="flight.commands.CommandController"/>
 	<component id="HistoryController"		class="flight.domain.HistoryController"/>
 	<component id="MacroCommand"			class="flight.domain.MacroCommand"/>
 	<component id="ScriptCommand"			class="flight.domain.ScriptCommand"/>
