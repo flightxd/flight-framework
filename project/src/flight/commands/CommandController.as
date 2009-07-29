@@ -27,24 +27,18 @@ package flight.commands
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
-	import flight.commands.IAsyncCommand;
-	import flight.commands.ICommand;
-	import flight.commands.ICommandFactory;
-	import flight.commands.ICommandInvoker;
 	import flight.errors.CommandError;
 	import flight.events.DomainEvent;
 	import flight.net.IResponse;
 	import flight.net.Response;
-	import flight.utils.Singleton;
-	import flight.utils.Type;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
+	import flight.vo.ValueObject;
 	
 	/**
-	 * Domain acts as an interface to a CommandHistory.
-	 * It exposes methods such as undo/redo and routes IUndoableCommands to the current history.  
+	 *   
 	 */
-	public class CommandController extends Singleton implements ICommandInvoker, ICommandFactory
+	public class CommandController extends ValueObject implements ICommandInvoker, ICommandFactory
 	{
 		protected var invoker:ICommandInvoker;
 		
@@ -138,7 +132,7 @@ package flight.commands
 		}
 		
 		/**
-		 * Primary method for invoking commands in the Domain class.
+		 * Primary method for invoking commands in the CommandController class.
 		 */
 		public function execute(type:String, properties:Object = null):IResponse
 		{
