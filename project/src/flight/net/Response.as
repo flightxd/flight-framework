@@ -395,9 +395,9 @@ package flight.net
 		 * Handles the fault coming from a responder and turns it into an error
 		 * object.
 		 */
-		protected function handleResponderFault(data:Object):Error
+		protected function handleResponderFault(data:Object):void
 		{
-			return new ResponderError(data);
+			cancel(new ResponderError(data));
 		}
 		
 		/**
