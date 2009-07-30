@@ -30,7 +30,7 @@ package flight.errors
 	{
 		private var _command:ICommand;
 		
-		public function CommandError(command:ICommand, message:String="", id:int=0)
+		public function CommandError(command:ICommand, message:String="", id:int = 0)
 		{
 			_command = command;
 			super(message, id);

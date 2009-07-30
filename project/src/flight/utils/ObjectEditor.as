@@ -52,6 +52,16 @@ package flight.utils
 		private var _source:Object;
 		
 		/**
+		 * Construct a new ObjectEditor specific to the supplied data source.
+		 * 
+		 * @param	source			Optional data source to initialize with.
+		 */
+		public function ObjectEditor(source:Object = null)
+		{
+			this.source = source;
+		}
+		
+		/**
 		 * Indicator of whether the editor's target has been modified from its
 		 * original source.
 		 */
@@ -105,6 +115,7 @@ package flight.utils
 				if (registered == this) {
 					registered = null;
 					Registry.unregister(_source, ObjectEditor);
+					Registry.unregister(_target, ObjectEditor);
 				}
 			}
 			
@@ -116,6 +127,7 @@ package flight.utils
 					_target = registered._target;
 				} else {
 					Registry.register(_source, this, ObjectEditor);
+					Registry.register(_target, this, ObjectEditor);
 					// create the new target
 					_target = (_source is IValueObject) ? IValueObject(_source).clone()
 													   : ValueObject.clone(_source);
@@ -128,16 +140,6 @@ package flight.utils
 			}
 			
 			PropertyEvent.dispatchChangeList(this, ["modified", "target", "source"], oldValues);
-		}
-		
-		/**
-		 * Construct a new ObjectEditor specific to the supplied data source.
-		 * 
-		 * @param	source			Optional data source to initialize with.
-		 */
-		public function ObjectEditor(source:Object = null)
-		{
-			this.source = source;
 		}
 		
 		/**
@@ -218,6 +220,62 @@ package flight.utils
 				registered = new ObjectEditor(source);
 			}
 			return registered;
+		}
+		
+		/**
+		 * Merges all changes from the target to the source when editing is
+		 * complete.
+		 * 
+		 * @param	target			Editor's target or its data source.
+		 * 
+		 * @return					Success committing a valid ObjectEditor.
+		 */
+		public static function commit(target:Object):Boolean
+		{
+			var registered:ObjectEditor = Registry.lookup(target, ObjectEditor) as ObjectEditor;
+			if (registered == null) {
+				return false;
+			}
+			
+			registered.commit();
+			return true;
+		}
+		
+		/**
+		 * Merges the data source onto the target, reverting any changes made.
+		 * 
+		 * @param	target			Editor's target or its data source.
+		 * 
+		 * @return					Success reverting a valid ObjectEditor.
+		 */
+		public static function revert(target:Object):Boolean
+		{
+			var registered:ObjectEditor = Registry.lookup(target, ObjectEditor) as ObjectEditor;
+			if (registered == null) {
+				return false;
+			}
+			
+			registered.revert();
+			return true;
+		}
+		
+		/**
+		 * Discard both source and target objects, canceling changes and
+		 * all editing.
+		 * 
+		 * @param	target			Editor's target or its data source.
+		 * 
+		 * @return					Success canceling a valid ObjectEditor.
+		 */
+		public static function cancel(target:Object):Boolean
+		{
+			var registered:ObjectEditor = Registry.lookup(target, ObjectEditor) as ObjectEditor;
+			if (registered == null) {
+				return false;
+			}
+			
+			registered.cancel();
+			return true;
 		}
 		
 		/**

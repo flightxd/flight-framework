@@ -1,6 +1,5 @@
 package flight.domain
 {
-	import flight.commands.CommandController;
 	import flight.utils.Registry;
 	import flight.utils.Singleton;
 	import flight.utils.getType;

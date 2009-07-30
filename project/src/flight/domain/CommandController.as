@@ -22,15 +22,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.commands
+package flight.domain
 {
 	import flash.events.Event;
 	import flash.utils.Dictionary;
 	
+	import flight.commands.IAsyncCommand;
+	import flight.commands.ICommand;
+	import flight.commands.ICommandFactory;
+	import flight.commands.ICommandInvoker;
 	import flight.errors.CommandError;
-	import flight.events.DomainEvent;
+	import flight.events.ControllerEvent;
 	import flight.net.IResponse;
 	import flight.net.Response;
+	import flight.utils.ObjectEditor;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
@@ -114,16 +119,12 @@ package flight.commands
 				throw new Error("Command " + getClassName(commandClass) + " is not of type ICommand.");
 			}
 			
-			for (var property:String in properties) {
-				if (property in command) {
-					command[property] = properties[property];
-				}
-			}
+			ObjectEditor.merge(properties, command);
 			
 			var propertyList:Array = propertyIndex[type];
 			if (properties is Array && propertyList != null) {
 				for (var i:int = 0; i < properties.length; i++) {
-					property = propertyList[i];
+					var property:String = propertyList[i];
 					command[property] = properties[i];
 				}
 			}
@@ -140,7 +141,9 @@ package flight.commands
 				executing[type] = true;
 				response = null;
 				
-				var command:ICommand = createCommand(type, properties);
+				var command:ICommand = (properties == null && this[type] is ICommand) ?
+										createCommand(type, this[type]) :
+										createCommand(type, properties);
 				
 				if (command != null) {
 					executeCommand(command);
@@ -228,7 +231,7 @@ package flight.commands
 			this.response = response;
 			
 			if (hasEventListener(type)) {
-				dispatchEvent( new DomainEvent(type, response) );
+				dispatchEvent( new ControllerEvent(type, response) );
 			}
 			return response;
 		}

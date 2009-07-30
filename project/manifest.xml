@@ -4,7 +4,7 @@
 	<!-- framework -->
 	<component id="DomainController"		class="flight.domain.DomainController"/>
 	<component id="HistoryController"		class="flight.domain.HistoryController"/>
-	<component id="CommandController"		class="flight.commands.CommandController"/>
+	<component id="CommandController"		class="flight.domain.CommandController"/>
 	<component id="MacroCommand"			class="flight.domain.MacroCommand"/>
 	<component id="ScriptCommand"			class="flight.domain.ScriptCommand"/>
 	<component id="CommandHistory"			class="flight.commands.CommandHistory"/>

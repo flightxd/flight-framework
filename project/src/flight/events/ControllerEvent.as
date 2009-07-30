@@ -29,18 +29,18 @@ package flight.events
 	import flight.net.IResponse;
 	import flight.net.Response;
 	
-	public class DomainEvent extends Event
+	public class ControllerEvent extends Event
 	{
 		private var _response:IResponse;
 		
-		public function DomainEvent(type:String, response:IResponse)
+		public function ControllerEvent(type:String, response:IResponse)
 		{
 			super(type);
 			_response = response;
 		}
 		
 		/**
-		 * The IResponse class associated with the DomainEvent as a read-only.
+		 * The IResponse class associated with the ControllerEvent as a read-only.
 		 */
 		public function get response():IResponse
 		{
@@ -49,7 +49,7 @@ package flight.events
 		
 		override public function clone():Event
 		{
-			return new DomainEvent(type, response);
+			return new ControllerEvent(type, response);
 		}
 	}
 }

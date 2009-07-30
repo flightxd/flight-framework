@@ -24,7 +24,6 @@
 
 package flight.domain
 {
-	import flight.commands.CommandController;
 	import flight.commands.ICommand;
 	import flight.utils.getType;
 	import flight.vo.ValueObject;
