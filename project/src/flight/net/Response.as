@@ -28,6 +28,7 @@ package flight.net
 	import flash.events.IEventDispatcher;
 	import flash.net.Responder;
 	
+	import flight.errors.ResponderError;
 	import flight.events.Dispatcher;
 	import flight.progress.IProgress;
 	import flight.progress.Progress;
@@ -387,7 +388,16 @@ package flight.net
 		 */
 		public function createResponder():Responder
 		{
-			return new Responder(complete, cancel);
+			return new Responder(complete, handleResponderFault);
+		}
+		
+		/**
+		 * Handles the fault coming from a responder and turns it into an error
+		 * object.
+		 */
+		protected function handleResponderFault(data:Object):Error
+		{
+			return new ResponderError(data);
 		}
 		
 		/**
