@@ -1,10 +1,13 @@
 
+* static flight dispatching model (any object can be a dispatcher)
+	weak-reference & performance, property change and listeners (stored on prototype object)
+
 * Dispatcher to implement binding and bindEvents
 * ListSelection indices add LAST item to the 'index'
 * possible rename DomainController init (singleton init) to construct?
 
-** Move bindable metadata tags from interfaces to implementations
-** MXML-required classes for AS3-only MXML
+* Move bindable metadata tags from interfaces to implementations
+* MXML-required classes for AS3-only MXML
 
 
 

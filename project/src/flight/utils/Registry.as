@@ -100,11 +100,14 @@ package flight.utils
 		 */
 		public static function lookup(index:Object, scope:Object = null):*
 		{
+			if (scope == null) {
+				return scopeIndex[scope][index];
+			}
+			
 			while (scope != null) {
 				
-				// if 
 				if (scopeIndex[scope] != null && index in scopeIndex[scope]) {
-					break;
+					return scopeIndex[scope][index];
 				}
 				
 				if ("owner" in scope && scope["owner"] != null) {
@@ -116,11 +119,10 @@ package flight.utils
 						scope = scope["parent"];
 					}
 				} else {
-					break;
+					return;
 				}
 			}
 			
-			return scopeIndex[scope][index];
 		}
 		
 		/**
