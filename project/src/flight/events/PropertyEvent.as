@@ -27,22 +27,13 @@ package flight.events
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	
-	import mx.binding.BindingManager;
-	import mx.core.IPropertyChangeNotifier;
 	import mx.events.PropertyChangeEvent;
 	import mx.events.PropertyChangeEventKind;
-	import mx.utils.ObjectProxy;
-	import mx.utils.UIDUtil;
 	
 	/**
-	 * The PropertyChangeEvent class represents the event object
-	 * passed to the event listener when one of the properties of
-	 * an object has changed, and provides information about the change.
-	 * This event is used by collection classes, and is the only way for
-	 * collections to know that the data they represent has changed.
-	 * This event is also used by the Flex data binding mechanism.
+	 * The PropertyEvent class handles the event flow of property changes and
+	 * provides information about the change. This event is 
 	 * 
-	 * @see PropertyChangeEventKind
 	 */
 	public class PropertyEvent extends PropertyChangeEvent
 	{
@@ -74,8 +65,10 @@ package flight.events
 	     *  @eventType propertyChange
 	     *
 	     */
-		public static const _CHANGE:String = "Change";
 		public static const PROPERTY_CHANGE:String = "propertyChange";
+		
+		
+		public static const CHANGE:String = "Change";
 		
 	    /**
 	     *  Returns a new PropertyChangeEvent of kind
@@ -99,8 +92,8 @@ package flight.events
 		{
 			var event:PropertyEvent;
 			
-			if ( source.hasEventListener(property + _CHANGE) ) {
-				event = new PropertyEvent(property + _CHANGE, property, oldValue, newValue);
+			if ( source.hasEventListener(property + CHANGE) ) {
+				event = new PropertyEvent(property + CHANGE, property, oldValue, newValue);
 				source.dispatchEvent(event);
 			}
 			
@@ -152,15 +145,6 @@ package flight.events
 		public function PropertyEvent(type:String, property:Object, oldValue:Object, newValue:Object)
 		{
 			super(type, false, false, PropertyChangeEventKind.UPDATE, property, oldValue, newValue);
-			return;
-			
-			// Compiler-required references to Flex classes for use of the
-			// [Bindable] metadata tag in AS3-only projects - these classes are
-			// never actually used, not even in the auto-generated code.
-			BindingManager;
-			IPropertyChangeNotifier;
-			ObjectProxy;
-			UIDUtil;
 		}
 		
 		/**

@@ -24,8 +24,6 @@
 
 package flight.list
 {
-	import flash.utils.flash_proxy;
-	
 	import flight.events.Dispatcher;
 	import flight.events.ListEvent;
 	import flight.events.ListEventKind;
@@ -98,6 +96,7 @@ package flight.list
 			}
 			
 			propertyChange("source", oldValue, _source);
+			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent(new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.RESET));
 		}
 		
@@ -295,8 +294,6 @@ package flight.list
 		
 	}
 }
-
-import flash.utils.flash_proxy;
 
 import flight.events.Dispatcher;
 import flight.list.ArrayList;
