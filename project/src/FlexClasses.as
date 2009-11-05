@@ -24,25 +24,6 @@
 
 package
 {
-	import mx.binding.BindingManager;
-	import mx.core.ClassFactory;
-	import mx.core.DeferredInstanceFromClass;
-	import mx.core.DeferredInstanceFromFunction;
-	import mx.core.IPropertyChangeNotifier;
-	import mx.styles.StyleManager;
-	import mx.utils.ObjectProxy;
-	import mx.utils.UIDUtil;
-	
-	import mx.binding.IWatcherSetupUtil;
-	import mx.binding.IWatcherSetupUtil2;
-	import mx.binding.ArrayElementWatcher;
-	import mx.binding.FunctionReturnWatcher;
-	import mx.binding.PropertyWatcher;
-	import mx.binding.RepeaterComponentWatcher;
-	import mx.binding.RepeaterItemWatcher;
-	import mx.binding.StaticPropertyWatcher;
-	import mx.binding.XMLWatcher;
-		
 	/**
 	 * @private
 	 * This class is used to link additional classes into flight-framework.swc
@@ -55,27 +36,28 @@ package
 	internal class FlexClasses
 	{
 		// binding references for use of the [Bindable] metadata tag
-		BindingManager;
-		IPropertyChangeNotifier;
-		ObjectProxy;
-		UIDUtil;
+		import mx.binding.BindingManager;				BindingManager;
+		import mx.core.IPropertyChangeNotifier;			IPropertyChangeNotifier;
+		import mx.utils.ObjectProxy;					ObjectProxy;
+		import mx.utils.UIDUtil;						UIDUtil;
 		
 		// mx core references for use of MXML
-		StyleManager;
-		ClassFactory;
-		DeferredInstanceFromClass;
-		DeferredInstanceFromFunction;
+		import mx.styles.StyleManager;					StyleManager;
+		import mx.core.ClassFactory;					ClassFactory;
+		import mx.core.DeferredInstanceFromClass;		DeferredInstanceFromClass;
+		import mx.core.DeferredInstanceFromFunction;	DeferredInstanceFromFunction;
 		
 		// binding references for use of the curly-brace binding in MXML
-		IWatcherSetupUtil;
-		IWatcherSetupUtil2;
-		ArrayElementWatcher;
-		FunctionReturnWatcher;
-		PropertyWatcher;
-		RepeaterComponentWatcher;
-		RepeaterItemWatcher;
-		StaticPropertyWatcher;
-		XMLWatcher;
+		import mx.binding.IWatcherSetupUtil;			IWatcherSetupUtil;
+		// Required class for Flash Buider 4 binding in AS3 projects
+		//import mx.binding.IWatcherSetupUtil2;			IWatcherSetupUtil2;
+		import mx.binding.ArrayElementWatcher;			ArrayElementWatcher;
+		import mx.binding.FunctionReturnWatcher;		FunctionReturnWatcher;
+		import mx.binding.PropertyWatcher;				PropertyWatcher;
+		import mx.binding.RepeaterComponentWatcher;		RepeaterComponentWatcher;
+		import mx.binding.RepeaterItemWatcher;			RepeaterItemWatcher;
+		import mx.binding.StaticPropertyWatcher;		StaticPropertyWatcher;
+		import mx.binding.XMLWatcher;					XMLWatcher;
 	}
 
 }

@@ -29,6 +29,7 @@ package flight.net
 	import flash.net.Responder;
 	
 	import flight.errors.ResponderError;
+	import flight.errors.ResponseError;
 	import flight.events.Dispatcher;
 	import flight.progress.IProgress;
 	import flight.progress.Progress;
@@ -132,7 +133,7 @@ package flight.net
 			var oldValue:Object = _progress;
 			_progress = value;
 			if (_progress != null && _status != ResponseStatus.PROGRESS) {
-				_progress.position = _progress.length;
+				_progress.position = _progress.size;
 			}
 			propertyChange("progress", oldValue, _progress);
 		}
@@ -141,18 +142,19 @@ package flight.net
 		 * Adds a callback handler to be invoked with the successful results of
 		 * the response. Result handlers receive data and have the opportunity
 		 * to format the data for subsequent handlers. They can also trigger the
-		 * response's fault if the data is invalid by returning an Error.
+		 * response's fault if the data is invalid by throwing a ResponseError.
 		 * 
 		 * <p>The method signature should describe a data object as the first
 		 * parameter. Additional parameters may be defined and provided when
 		 * adding the result handler.</p>
 		 * 
 		 * <p>To format data for subsequent handlers the result handler may
-		 * return a new value in its method signature. To end the result cycle
-		 * and trigger the fault cycle an Error type should be returned.
-		 * Additionally returning another IResponse type will link this response
-		 * to the other's completion. Otherwise the return type should be
-		 * <code>void</code>.</p>
+		 * return a new value in its method signature. Also, returning another
+		 * IResponse type will link this response to the other's completion.
+		 * Otherwise the return type should be <code>void</code>. To end the
+		 * result cycle and trigger a fault cycle a ResponseError should be
+		 * thrown. The ResponseError's <code>faultError</code> or, if null, the
+		 * ResponseError itself will cancel the Response.</p>
 		 * 
 		 * <p>
 		 * <pre>
@@ -164,7 +166,7 @@ package flight.net
 		 * 			data = amf.readObject();
 		 * 		} catch (error:Error) {
 		 * 			// ejects out of the result handling phase and into fault handling
-		 * 			return new Error("Invalid AMF response: " + amf.toString());
+		 * 			throw new ResponseError("Invalid AMF response: " + amf.toString());
 		 * 		}
 		 * 		return data;
 		 * 	}
@@ -353,7 +355,7 @@ package flight.net
 			result = data;
 			
 			if (_progress != null) {
-				_progress.position = _progress.length;
+				_progress.position = _progress.size;
 			}
 			status = ResponseStatus.RESULT;
 			
@@ -371,7 +373,7 @@ package flight.net
 			fault = error;
 			
 			if (_progress != null) {
-				_progress.position = _progress.length;
+				_progress.position = _progress.size;
 			}
 			status = ResponseStatus.FAULT;
 			
@@ -419,7 +421,11 @@ package flight.net
 				// reuse the parameters by swapping the function with the data
 				params[0] = this[_status];
 				
-				var formatted:* = handler.apply(null, params);
+				try {
+					var formatted:* = handler.apply(null, params);
+				} catch (error:ResponseError) {
+					formatted = (error.faultError != null) ? error.faultError : error;
+				}
 				if (formatted !== undefined) {
 					
 					// if the return type is IResponse then link to the new response

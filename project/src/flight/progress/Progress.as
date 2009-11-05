@@ -127,11 +127,11 @@ package flight.progress
 		 * The total length of the progression.
 		 */
 		[Bindable(event="lengthChange")]
-		public function get length():Number
+		public function get size():Number
 		{
 			return _length;
 		}
-		public function set length(value:Number):void
+		public function set size(value:Number):void
 		{
 			value = Math.max(0, value);
 			if (_length == value) {
@@ -153,7 +153,7 @@ package flight.progress
 		 */
 		private function onProgress(event:ProgressEvent):void
 		{
-			length = event.bytesTotal;
+			size = event.bytesTotal;
 			position = event.bytesLoaded;
 		}
 		

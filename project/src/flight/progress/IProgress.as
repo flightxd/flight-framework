@@ -51,10 +51,10 @@ package flight.progress
 		function set percent(value:Number):void;
 		
 		/**
-		 * The total length of the progression.
+		 * The total size of the progression.
 		 */
-		function get length():Number;
-		function set length(value:Number):void;
+		function get size():Number;
+		function set size(value:Number):void;
 		
 	}
 }
