@@ -141,9 +141,7 @@ package flight.domain
 				executing[type] = true;
 				response = null;
 				
-				var command:ICommand = (properties == null && this[type] is ICommand) ?
-										createCommand(type, this[type]) :
-										createCommand(type, properties);
+				var command:ICommand = createCommand(type, properties);
 				
 				if (command != null) {
 					executeCommand(command);
