@@ -292,6 +292,10 @@ package flight.utils
 		 */
 		public static function merge(source:Object, target:Object):void
 		{
+			if (source == null || target == null) {
+				return;
+			}
+			
 			if (target is IMerging) {
 				IMerging(target).merge(source);
 				return;

@@ -119,13 +119,15 @@ package flight.domain
 				throw new Error("Command " + getClassName(commandClass) + " is not of type ICommand.");
 			}
 			
-			ObjectEditor.merge(properties, command);
-			
-			var propertyList:Array = propertyIndex[type];
-			if (properties is Array && propertyList != null) {
-				for (var i:int = 0; i < properties.length; i++) {
-					var property:String = propertyList[i];
-					command[property] = properties[i];
+			if (properties != null) {
+				ObjectEditor.merge(properties, command);
+				
+				var propertyList:Array = propertyIndex[type];
+				if (properties is Array && propertyList != null) {
+					for (var i:int = 0; i < properties.length; i++) {
+						var property:String = propertyList[i];
+						command[property] = properties[i];
+					}
 				}
 			}
 			
