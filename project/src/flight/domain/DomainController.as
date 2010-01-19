@@ -3,11 +3,12 @@ package flight.domain
 	import flash.display.DisplayObject;
 	
 	import flight.commands.ICommand;
+	import flight.injection.IInjectorSubject;
 	import flight.injection.Injector;
 	
 	import mx.core.IMXMLObject;
 	
-	public class DomainController extends CommandController implements IMXMLObject
+	public class DomainController extends CommandController implements IMXMLObject, IInjectorSubject
 	{
 		public var context:DisplayObject;
 		
@@ -17,7 +18,6 @@ package flight.domain
 		public function DomainController(context:DisplayObject = null)
 		{
 			if (context) initialized(context, null);
-			init();
 		}
 		
 		/**
@@ -37,6 +37,12 @@ package flight.domain
 				Injector.provideInjection(this, context);
 				Injector.inject(this, context);
 			}
+		}
+		
+		
+		public function injected():void
+		{
+			init();
 		}
 		
 		

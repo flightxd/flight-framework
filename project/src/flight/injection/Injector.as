@@ -25,7 +25,7 @@ package flight.injection
 	 * To "inject" a subject is to provide that subject with instances of objects
 	 * that it is expecting of a certain type, belonging to its context.
 	 * 
-	 * An "injection" is an object that can be provided to other objects.
+	 * An "injection" is an object that can be provided to subjects through inject.
 	 * They are simply objects that have been registered in a certain context
 	 * using the <code>provideInjection</code> method.
 	 * 
