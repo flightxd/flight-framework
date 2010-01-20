@@ -5,6 +5,7 @@ package flight.injection
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	
 	import flight.utils.Type;
 	
@@ -145,7 +146,10 @@ package flight.injection
 		protected function onViewAdded(event:Event):void
 		{
 			var view:DisplayObject = event.target as DisplayObject;
-			inject(view, view);
+			var basePackage:String = getQualifiedClassName(view).split('.').shift();
+			if (basePackage != "mx" && basePackage != "flash") {
+				inject(view, view);
+			}
 		}
 	}
 }
