@@ -80,10 +80,10 @@ package flight.view
 		 * mediators created don't create them again. Once the mediators are
 		 * created inject them.
 		 */
-		protected function createMediator(view:DisplayObject):void
+		protected function createMediator(view:DisplayObject):Object
 		{
 			var type:Class = view["constructor"];
-			if (view in initializedViews || !(type in mapping)) return;
+			if (!(type in mapping) || view in initializedViews) return null;
 			var mediatorType:Class = mapping[type];
 			var mediator:Object = new mediatorType();
 			initializedViews[view] = mediator;
@@ -91,6 +91,7 @@ package flight.view
 			// allow the view to be injected into the mediator
 			Injector.provideInjection(view, view);
 			Injector.inject(mediator, view);
+			return mediator;
 		}
 	}
 }
