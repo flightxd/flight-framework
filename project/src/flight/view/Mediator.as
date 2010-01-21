@@ -34,9 +34,9 @@ package flight.view
 			Bind.addBinding(this, target, this, source, twoWay);
 		}
 		
-		protected function bindPropertyListener(target:String, listener:Function):void
+		protected function bindPropertyListener(source:String, listener:Function):void
 		{
-			Bind.addListener(listener, this, target);
+			Bind.addListener(listener, this, source);
 		}
 		
 		protected function bindEventListener(type:String, target:String, listener:Function,
@@ -47,7 +47,7 @@ package flight.view
 		
 		
 		
-		// parses [Binding(target="target.path")] metadata
+		// parses [Binding(source="source.path")] metadata
 		public static function describeBindings(mediator:Mediator):void
 		{
 			var desc:XMLList = Type.describeProperties(mediator, "Binding");
@@ -66,7 +66,7 @@ package flight.view
 			}
 		}
 		
-		// parses [PropertyListener(target="target.path)] metadata
+		// parses [PropertyListener(source="source.path)] metadata
 		public static function describePropertyListeners(mediator:Mediator):void
 		{
 			var desc:XMLList = Type.describeMethods(mediator, "PropertyListener");
@@ -99,7 +99,6 @@ package flight.view
 										tag.arg.(@key == "type").@value :
 										tag.arg.@value;
 					var targ:String = tag.arg.(@key == "target").@value;
-					trace("Methods", mediator[meth.@name], ":", mediator[String(meth.@name)]);
 					Bind.bindEventListener(type, mediator[meth.@name], mediator, targ);
 				}
 			}

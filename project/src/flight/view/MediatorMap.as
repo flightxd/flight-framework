@@ -18,7 +18,13 @@ package flight.view
 	public class MediatorMap implements IMXMLObject
 	{
 		protected var mapping:Dictionary = new Dictionary();
-		protected var initializedViews:Dictionary = new Dictionary(true);
+		protected static var initializedViews:Dictionary = new Dictionary(true);
+		
+		
+		public static function releaseView(view:DisplayObject):void
+		{
+			delete initializedViews[view];
+		}
 		
 		
 		/**
@@ -91,6 +97,7 @@ package flight.view
 			// allow the view to be injected into the mediator
 			Injector.provideInjection(view, view);
 			Injector.inject(mediator, view);
+			Injector.removeInjection(view, view);
 			return mediator;
 		}
 	}
