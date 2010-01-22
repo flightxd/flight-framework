@@ -56,8 +56,8 @@ package flight.binding
 		
 		
 		protected static var items:Dictionary = new Dictionary(true);
-		protected static var eventListeners:Dictionary = new Dictionary(true);
 		protected static var listeners:Dictionary = new Dictionary(true);
+		protected static var eventListeners:Dictionary = new Dictionary(true);
 		protected static var pool:Array = [];
 		protected static var holdInMemory:Function = updateListener;
 		
@@ -127,16 +127,24 @@ package flight.binding
 			return false;
 		}
 		
-		public static function removeAllBindings(sourceOrTarget:Object):void
+		/**
+		 * Removes all bindings, listeners, and bind event listeners that
+		 * reference target object.
+		 */
+		public static function removeAllBindings(target:Object):void
 		{
-			var bindings:Array = items[sourceOrTarget];
+			// bindings and listeners
+			var bindings:Array = items[target];
 			if (!bindings) {
 				return;
 			}
 			for each (var binding:Binding in bindings) {
 				releaseBinding(binding);
 			}
-			delete items[sourceOrTarget];
+			delete items[target];
+			
+			// event listeners
+			delete eventListeners[target];
 		}
 		
 		/**
@@ -177,13 +185,15 @@ package flight.binding
 		// TODO: refactor to allow the listener to be weakReference
 		public static function bindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = true):Binding
 		{
-			var binding:Binding = newBinding(updateListener, null, source, sourcePath);
+			var binding:Binding = addBinding(updateListener, null, source, sourcePath);
+			
+			// store the listener and other properties in a dictionary
 			var sourceListeners:Dictionary = eventListeners[source];
 			if (!sourceListeners) {
 				eventListeners[source] = sourceListeners = new Dictionary();
 			}
 			
-			sourceListeners[binding] = arguments;
+			sourceListeners[binding] = [type, listener, useCapture, priority, useWeakReference];
 			
 			// force update now since the first time couldn't register
 			if (binding.value) {
@@ -241,12 +251,12 @@ package flight.binding
 			
 			dispatcher = oldValue as IEventDispatcher;
 			if (dispatcher != null) {
-				dispatcher.removeEventListener(args[0], args[1], args[4]);
+				dispatcher.removeEventListener(args[0], args[1], args[2]);
 			}
 			
 			dispatcher = newValue as IEventDispatcher;
 			if (dispatcher != null) {
-				dispatcher.addEventListener(args[0], args[1], args[4], args[5], args[6]);
+				dispatcher.addEventListener(args[0], args[1], args[2], args[3], args[4]);
 			}
 		}
 		

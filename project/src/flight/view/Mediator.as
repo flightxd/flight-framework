@@ -46,6 +46,11 @@ package flight.view
 			Bind.bindEventListener(type, listener, this, target, useCapture, priority, useWeakReference);
 		}
 		
+		public function dispose():void
+		{
+			Bind.removeAllBindings(this);
+		}
+		
 		
 		
 		// parses [Binding(source="source.path")] metadata
