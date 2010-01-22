@@ -1,12 +1,13 @@
 package flight.view
 {
 	import flash.display.DisplayObject;
+	import flash.events.EventDispatcher;
 	
 	import flight.binding.Bind;
 	import flight.injection.IInjectorSubject;
 	import flight.utils.Type;
 	
-	public class Mediator implements IInjectorSubject
+	public class Mediator extends EventDispatcher implements IInjectorSubject
 	{
 		[Inject]
 		[Bindable]
@@ -36,7 +37,7 @@ package flight.view
 		
 		protected function bindPropertyListener(source:String, listener:Function):void
 		{
-			Bind.addListener(listener, this, source);
+			Bind.addListener(this, listener, this, source);
 		}
 		
 		protected function bindEventListener(type:String, target:String, listener:Function,
@@ -80,7 +81,7 @@ package flight.view
 										tag.arg.(@key == "target").@value :
 										tag.arg.@value;
 					
-					Bind.addListener(mediator[meth.@name], mediator, targ);
+					Bind.addListener(mediator, mediator[meth.@name], mediator, targ);
 				}
 			}
 		}

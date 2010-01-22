@@ -44,9 +44,9 @@ package flight.domain
 		public function HistoryController()
 		{
 			commandHistory = new CommandHistory();
-			Bind.addListener(onHistoryChange, this, "commandHistory.canUndo");
-			Bind.addListener(onHistoryChange, this, "commandHistory.canRedo");
-			Bind.addListener(onHistoryChange, this, "commandHistory.undoLimit");
+			Bind.addListener(this, onHistoryChange, this, "commandHistory.canUndo");
+			Bind.addListener(this, onHistoryChange, this, "commandHistory.canRedo");
+			Bind.addListener(this, onHistoryChange, this, "commandHistory.undoLimit");
 		}
 		
 		/**

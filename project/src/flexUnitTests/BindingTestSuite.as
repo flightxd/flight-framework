@@ -1,5 +1,6 @@
 package flexUnitTests
 {
+	import flexUnitTests.binding.BindTest;
 	import flexUnitTests.binding.BindingTest;
 
 	[Suite]
@@ -7,5 +8,6 @@ package flexUnitTests
 	public class BindingTestSuite
 	{
 		public var bindingTest:BindingTest;
+		public var bindTest:BindTest;
 	}
 }

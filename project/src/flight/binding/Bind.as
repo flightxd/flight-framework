@@ -25,8 +25,11 @@
 package flight.binding
 {
 	import flash.events.IEventDispatcher;
+	import flash.events.TimerEvent;
 	import flash.utils.Dictionary;
+	import flash.utils.Timer;
 	
+	import flight.binding.Binding;
 	import flight.events.PropertyEvent;
 	import flight.vo.ValueObject;
 	
@@ -38,213 +41,25 @@ package flight.binding
 	 * that allow global binding access. Bind's can be instantiated via ActionScript or MXML and
 	 * simplify management of a single binding, allowing target and source to be changed anytime.
 	 */
-	public class Bind extends ValueObject implements IMXMLObject
+	public class Bind implements IMXMLObject
 	{
-		private var _isBound:Boolean = false;
-		private var _disabled:Boolean = false;
-		private var _twoWay:Boolean = false;
-		private var _source:Object;
-		private var _sourcePath:String;
-		private var _target:Object;
-		private var _targetPath:String;
+		public var twoWay:Boolean;
+		public var target:String;
+		public var source:String;
 		
-		public function Bind(target:Object = null, targetPath:String = null,
-							 source:Object = null, sourcePath:String = null, twoWay:Boolean = false)
-		{
-			_target = target;
-			_targetPath = targetPath;
-			_source = source;
-			_sourcePath = sourcePath;
-			_twoWay = twoWay;
-			updateBind([]);
-		}
-		
-		/**
-		 * The isBound flag represents whether a target and source have been fully defined (are
-		 * not null), and whether the Bind is not disabled. isBound does <em>not</em> reflect the
-		 * current state of the binding's resolution, whether or not its paths can be resolved.
-		 */
-		[Transient]
-		[Bindable(event="isBoundChange")]
-		public function get isBound():Boolean
-		{
-			return _isBound;
-		}
-		
-		/**
-		 * Allows the binding to be disabled temporarily. By disabling a binding it will no longer
-		 * update the target or source end points, though their values at the time of disabling will
-		 * remain unchanged.
-		 */
-		[Bindable(event="disabledChange")]
-		public function get disabled():Boolean
-		{
-			return _disabled;
-		}
-		public function set disabled(value:Boolean):void
-		{
-			if (_disabled == value) {
-				return;
-			}
-			
-			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-			var oldValue:Object = _disabled;
-			_disabled = value;
-			updateBind(oldValues);
-			PropertyEvent.dispatchChange(this, "disabled", oldValue, _disabled);
-		}
-		
-		/**
-		 * Two-way bindings are useful for easily syncing data between two end points. When two-way
-		 * binding is enabled, changes to either the source <em>or</em> the target updates the other.
-		 */
-		[Bindable(event="twoWayChange")]
-		public function get twoWay():Boolean
-		{
-			return _twoWay;
-		}
-		public function set twoWay(value:Boolean):void
-		{
-			if (_twoWay == value) {
-				return;
-			}
-			
-			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-			var oldValue:Object = _twoWay;
-			_twoWay = value;
-			updateBind(oldValues);
-			PropertyEvent.dispatchChange(this, "twoWay", oldValue, _twoWay);
-		}
-		
-		/**
-		 * The target end point receives value updates from the data source every time the source
-		 * changes. The target object is the first object in a resolution chain defined by targetPath.
-		 */
-		[Bindable(event="targetChange")]
-		public function get target():Object
-		{
-			return _target;
-		}
-		public function set target(value:Object):void
-		{
-			if (_target == value) {
-				return;
-			}
-			
-			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-			var oldValue:Object = _target;
-			_target = value;
-			updateBind(oldValues);
-			PropertyEvent.dispatchChange(this, "target", oldValue, _target);
-		}
-		
-		/**
-		 * The targetPath is a property or property chain to be resolved starting with the target.
-		 * The path is a string of one or more dot-separated property names, with the first name
-		 * representing a property defined on the target. For example:
-		 * <code>targetPath = "button.label.text";</code>
-		 */
-		[Bindable(event="targetPathChange")]
-		public function get targetPath():String
-		{
-			return _targetPath;
-		}
-		public function set targetPath(value:String):void
-		{
-			if (_targetPath == value) {
-				return;
-			}
-			
-			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-			var oldValue:Object = _targetPath;
-			_targetPath = value;
-			updateBind(oldValues);
-			PropertyEvent.dispatchChange(this, "targetPath", oldValue, _targetPath);
-		}
-		
-		/**
-		 * The source end point updates values on the target every time the source changes.
-		 * The source object is the first object in a resolution chain defined by sourcePath.
-		 */
-		[Bindable(event="sourceChange")]
-		public function get source():Object
-		{
-			return _source;
-		}
-		public function set source(value:Object):void
-		{
-			if (_source == value) {
-				return;
-			}
-			
-			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-			var oldValue:Object = _source;
-			_source = value;
-			updateBind(oldValues);
-			PropertyEvent.dispatchChange(this, "source", oldValue, _source);
-		}
-		
-		/**
-		 * The sourcePath is a property or property chain to be resolved starting with the source.
-		 * The path is a string of one or more dot-separated property names, with the first name
-		 * representing a property defined on the source. For example:
-		 * <code>sourcePath = "document.user.name";</code>
-		 */
-		[Bindable(event="sourcePathChange")]
-		public function get sourcePath():String
-		{
-			return _sourcePath;
-		}
-		public function set sourcePath(value:String):void
-		{
-			if (_sourcePath == value) {
-				return;
-			}
-			
-			var oldValues:Array = [_target, _targetPath, _source, _sourcePath];
-			var oldValue:Object = _sourcePath;
-			_sourcePath = value;
-			updateBind(oldValues);
-			PropertyEvent.dispatchChange(this, "sourcePath", oldValue, _sourcePath);
-		}
-		
-		/**
-		 * Allows Bind to automatically set target and source to the host MXML component. This
-		 * method is reserved for internal use by MXML instantiated components.
-		 * 
-		 * @param	document		The MXML component where the Bind is defined.
-		 * @param	id				The id of the Bind isn't used internally.
-		 */
 		public function initialized(document:Object, id:String):void
 		{
-			target = document;
-			source = document;
+			if (target && source) {
+				Bind.addBinding(document, target, document, source, twoWay);
+			}
 		}
 		
-		/**
-		 * Removes and adds binding appropriately, depending on changes to target and source, or
-		 * to twoWay and disabled. Updates the isBound property accordingly.
-		 * 
-		 * @param	oldValues		An array of the target, targetPath, source, and sourcePath
-		 * 							values prior to the most recent change that triggered the update.
-		 */
-		private function updateBind(oldValues:Array):void
-		{
-			var oldValue:Object = _isBound;
-			if (_isBound) {
-				removeBinding(oldValues[0], oldValues[1], oldValues[2], oldValues[3]);
-				_isBound = false;
-			}
-			
-			if (!_disabled && _target != null && _targetPath != null &&
-							 _source != null && _sourcePath != null) {
-				_isBound = addBinding(_target, _targetPath, _source, _sourcePath, _twoWay);
-			}
-			
-			if (oldValue != _isBound) {
-				PropertyEvent.dispatchChange(this, "isBound", oldValue, _isBound);
-			}
-		}
+		
+		protected static var items:Dictionary = new Dictionary(true);
+		protected static var eventListeners:Dictionary = new Dictionary(true);
+		protected static var listeners:Dictionary = new Dictionary(true);
+		protected static var pool:Array = [];
+		protected static var holdInMemory:Function = updateListener;
 		
 		/**
 		 * Global utility method binding a target end point to a data source. Once a target is bound
@@ -264,24 +79,26 @@ package flight.binding
 		 * 
 		 * @return					Considered successful if the binding has not already been established.
 		 */
-		public static function addBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Boolean
+		public static function addBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
 		{
-			var binding:Binding = Binding.getBinding(source, sourcePath);
+			var binding:Binding = newBinding(target, targetPath, source, sourcePath, twoWay);
 			
-			var success:Boolean;
-			if (twoWay || targetPath.split(".").length > 1) {
-				var binding2:Binding = Binding.getBinding(target, targetPath);
-				
-				success = binding.bind(binding2, "value");
-				if (twoWay) {
-					binding2.bind(binding, "value");
-				} else {
-					binding2.applyOnly = true;
-				}
-			} else {
-				success = binding.bind(target, targetPath);
+			// store the binding in relation to the source and target so that
+			// they can be manually released.
+			var bindings:Array = items[target];
+			if (!bindings) {
+				items[target] = bindings = [];
 			}
-			return success;
+			bindings.push(binding);
+			
+			// if target and source are the same no need to store it twice
+			if (target != source) {
+				bindings = items[source];
+				if (!bindings) {
+					items[source] = bindings = [];
+				}
+			}
+			return binding;
 		}
 		
 		/**
@@ -300,25 +117,26 @@ package flight.binding
 		 * 
 		 * @return					Considered successful if the specified binding was available.
 		 */
-		public static function removeBinding(target:Object, targetPath:String, source:Object, sourcePath:String):Boolean
+		public static function removeBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Boolean
 		{
-			var binding:Binding = Binding.getBinding(source, sourcePath);
-			var success:Boolean = binding.unbind(target, targetPath);
-			
-			if (!success) {
-				var binding2:Binding = Binding.getBinding(target, targetPath);
-				
-				success = binding.unbind(binding2, "value");
-				binding2.unbind(binding, "value");
-				if ( !binding2.hasBinds() ) {
-					Binding.releaseBinding(binding2);
-				}
+			var binding:Binding = getBinding(target, targetPath, source, sourcePath, twoWay);
+			if (binding) {
+				releaseBinding(binding);
+				return true;
 			}
-			
-			if ( !binding.hasBinds() ) {
-				Binding.releaseBinding(binding);
+			return false;
+		}
+		
+		public static function removeAllBindings(sourceOrTarget:Object):void
+		{
+			var bindings:Array = items[sourceOrTarget];
+			if (!bindings) {
+				return;
 			}
-			return success;
+			for each (var binding:Binding in bindings) {
+				releaseBinding(binding);
+			}
+			delete items[sourceOrTarget];
 		}
 		
 		/**
@@ -334,10 +152,10 @@ package flight.binding
 		 * 								A weak reference (the default) allows your listener to be garbage-
 		 * 								collected. A strong reference does not.
 		 */
-		public static function addListener(listener:Function, source:Object, sourcePath:String, useWeakReference:Boolean = true):Boolean
+		public static function addListener(target:IEventDispatcher, listener:Function, source:Object, sourcePath:String):void
 		{
-			var binding:Binding = Binding.getBinding(source, sourcePath);
-			return binding.bindListener(listener, useWeakReference);
+			target.addEventListener("_", listener);
+			var binding:Binding = addBinding(listener, "", source, sourcePath);
 		}
 		
 		/**
@@ -352,88 +170,129 @@ package flight.binding
 		 */
 		public static function removeListener(listener:Function, source:Object, sourcePath:String):Boolean
 		{
-			var binding:Binding = Binding.getBinding(source, sourcePath);
-			var success:Boolean = binding.unbindListener(listener);
-			if ( !binding.hasBinds() ) {
-				Binding.releaseBinding(binding);
-			}
-			return success;
+			return removeBinding(listener, "", source, sourcePath);
 		}
 		
 		// NOTE: weakReference specifies how the listener is added to the endpoint dispatcher, but the listener is held in memory by the binding
 		// TODO: refactor to allow the listener to be weakReference
-		public static function bindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = true):Boolean
+		public static function bindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = true):Binding
 		{
-			var binding:Binding = Binding.getBinding(source, sourcePath);
-			
-			var listenerList:Array = listenerIndex[binding];
-			if (listenerList == null) {
-				listenerList = listenerIndex[binding] = [];
+			var binding:Binding = newBinding(updateListener, null, source, sourcePath);
+			var sourceListeners:Dictionary = eventListeners[source];
+			if (!sourceListeners) {
+				eventListeners[source] = sourceListeners = new Dictionary();
 			}
 			
-			for each (var args:Array in listenerList) {
-				if (args[0] == type &&
-					args[1] == listener &&
-					args[4] == useCapture) {
-					return false;
-				}
+			sourceListeners[binding] = arguments;
+			
+			// force update now since the first time couldn't register
+			if (binding.value) {
+				updateListener(binding, null, binding.value);
 			}
-			
-			listenerList.push(arguments);
-			
-			return binding.bindListener(onDispatcherChange, false);
+			return binding;
 		}
 		
 		public static function unbindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false):Boolean
 		{
-			var binding:Binding = Binding.getBinding(source, sourcePath);
+			var binding:Binding = getBinding(updateListener, null, source, sourcePath);
 			
-			var listenerList:Array = listenerIndex[binding];
-			if (listenerList == null) {
+			if (!binding) {
 				return false;
 			}
 			
-			for (var i:int = 0; i < listenerList.length; i++) {
-				var args:Array = listenerList[i];
-				if (args[0] == type &&
-					args[1] == listener &&
-					args[4] == useCapture) {
-					
-					listenerList.splice(i, 1);
-					
-					if (listenerList.length == 0) {
-						binding.unbindListener(onDispatcherChange);
-						if ( !binding.hasBinds() ) {
-							Binding.releaseBinding(binding);
-						}
-					}
-					return true;
-				}
+			var sourceListeners:Dictionary = eventListeners[source];
+			if (!sourceListeners) {
+				return false;
 			}
 			
-			return false;
+			var args:Array = sourceListeners[binding];
+			if (!args) {
+				return false;
+			}
+			
+			updateListener(binding, binding.value, null);
+			delete sourceListeners[binding];
+			return true;
 		}
 		
-		private static var listenerIndex:Dictionary = new Dictionary();
-		private static function onDispatcherChange(event:PropertyEvent):void
+		protected static function getBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
 		{
-			var binding:Binding = event.target as Binding;
-			var listenerList:Array = listenerIndex[binding];
-			var dispatcher:IEventDispatcher;
-			var args:Array;
+			var bindings:Array = items[target] || items[source];
+			if (bindings) {
+				for each (var binding:Binding in bindings) {
+					if (binding.target == target && binding.source == source
+						&& binding.targetPath == targetPath && binding.sourcePath == sourcePath
+						&& binding.twoWay == twoWay) {
+						return binding;
+					}
+				}
+			}
+			return null;
+		}
+		
+		protected static function updateListener(binding:Binding, oldValue:*, newValue:*):void
+		{
+			if (!(binding.source in eventListeners && binding in eventListeners[binding.source])) {
+				return; // the first update happens before storing in listeners dict
+			}
 			
-			dispatcher = event.oldValue as IEventDispatcher;
+			var args:Array = eventListeners[binding.source][binding];
+			var dispatcher:IEventDispatcher;
+			
+			dispatcher = oldValue as IEventDispatcher;
 			if (dispatcher != null) {
-				for each (args in listenerList) {
-					dispatcher.removeEventListener(args[0], args[1], args[4]);
+				dispatcher.removeEventListener(args[0], args[1], args[4]);
+			}
+			
+			dispatcher = newValue as IEventDispatcher;
+			if (dispatcher != null) {
+				dispatcher.addEventListener(args[0], args[1], args[4], args[5], args[6]);
+			}
+		}
+		
+		
+		protected static function releaseBinding(binding:Binding):void
+		{
+			var index:int;
+			var bindings:Array;
+			var source:Object, target:Object;
+			source = binding.source;
+			target = binding.target;
+			
+			// remove from source
+			if (source) {
+				bindings = items[source];
+				if (bindings) {
+					index = bindings.indexOf(binding);
+					if (index != -1) {
+						bindings.splice(index, 1);
+					}
 				}
 			}
 			
-			dispatcher = event.newValue as IEventDispatcher;
-			if (dispatcher != null) {
-				for each (args in listenerList) {
-					dispatcher.addEventListener(args[0], args[1], args[4], args[5], args[6]);
+			// remove from target
+			if (target && target != source) {
+				bindings = items[target];
+				if (bindings) {
+					index = bindings.indexOf(binding);
+					if (index != -1) {
+						bindings.splice(index, 1);
+					}
 				}
+			}
+			
+			binding.release();
+			pool.push(binding);
+		}
+		
+		protected static function newBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
+		{
+			if (pool.length) {
+				var binding:Binding = pool.pop();
+				binding.reset(target, targetPath, source, sourcePath, twoWay);
+				return binding;
+			} else {
+				return new Binding(target, targetPath, source, sourcePath, twoWay);
 			}
 		}
 		
