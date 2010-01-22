@@ -174,11 +174,11 @@ package flight.utils
 		 * 
 		 * @return					A list of XML property descriptions.
 		 */
-		public static function describeProperties(value:Object, metadata:String = null):XMLList
+		public static function describeProperties(value:Object, metadataType:String = null):XMLList
 		{
 			var properties:XMLList = describeType(value).factory.*.(localName() == "accessor" || localName() == "variable");
 			
-			return (metadata == null) ? properties : properties.(child("metadata").(@name == metadata).length() > 0);
+			return (metadataType == null) ? properties : properties.(child("metadata").(@name == metadataType).length() > 0);
 		}
 		
 		
