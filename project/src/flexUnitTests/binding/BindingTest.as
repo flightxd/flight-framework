@@ -168,9 +168,26 @@ package flexUnitTests.binding
 		}
 		
 		[Test]
+		public function testMixedPath():void
+		{
+			var binding:Binding = new Binding(this, setter, obj1, "str");
+			
+			assertEquals("Listener not called or called incorrectly", "TestStr1", setterValue);
+			
+			obj1.str = "TestChange";
+			assertEquals("Listener not called or called incorrectly", "TestChange", setterValue);
+		}
+		
+		protected var setterValue:Object;
+		protected function setter(value:Object):void
+		{
+			setterValue = value;
+		}
+		
+		[Test]
 		public function testListener():void
 		{
-			var binding:Binding = new Binding(valueChange, null, obj1, "str");
+			var binding:Binding = new Binding(this, valueChange, obj1, "str");
 			
 			assertEquals("Listener not called or called incorrectly", "TestStr1", newValue);
 			

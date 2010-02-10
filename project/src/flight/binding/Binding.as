@@ -5,6 +5,7 @@ package flight.binding
 	import flash.utils.Dictionary;
 	
 	import flight.events.PropertyEvent;
+	import flight.observers.Observe;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
@@ -35,13 +36,14 @@ package flight.binding
 		protected var targetResolved:Boolean;
 		protected var updating:Boolean;
 		
+		protected var changeFunction:Function = propertyChange;
 		
 		/**
 		 * 
 		 */
-		public function Binding(target:Object = null, targetPath:String = null, source:Object = null, sourcePath:String = null, twoWay:Boolean = false)
+		public function Binding(target:Object = null, targetPath:Object = null, source:Object = null, sourcePath:Object = null, twoWay:Boolean = false)
 		{
-			if (target && source && sourcePath) {
+			if (target && targetPath && source && sourcePath) {
 				reset(target, targetPath, source, sourcePath, twoWay);
 			}
 		}
@@ -111,13 +113,13 @@ package flight.binding
 			_value = undefined;
 		}
 		
-		public function reset(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean):void
+		public function reset(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean):void
 		{
 			release();
 			_twoWay = twoWay;
 			
-			_sourcePath = sourcePath.split(".");
-			_targetPath = targetPath ? targetPath.split(".") : [];
+			_sourcePath = makePath(sourcePath);
+			_targetPath = makePath(targetPath);
 			
 			bindPath(TARGET, target, 0);
 			update(SOURCE, source, 0);
@@ -133,25 +135,18 @@ package flight.binding
 			
 			if (oldValue === _value) return;
 			
-			var listener:Function = target as Function;
-			if (listener != null) {
-				var params:Array = [_value, oldValue, this];
-				params.length = listener.length;
-				listener.apply(null, params.reverse());
-			} else {
-				updating = true;
-				var otherType:String = (type == SOURCE ? TARGET : SOURCE);
-				var resolved:Boolean = this[otherType + "Resolved"];
-				if (resolved) {
-					var otherPath:Array = this["_" + otherType + "Path"];
-					var otherItem:Object = getItem(otherType, otherPath.length - 1); // item + path.length
-					if (otherItem) {
-						var prop:String = otherPath[otherPath.length - 1];
-						setProp(otherItem, prop, oldValue, _value);
-					}
+			updating = true;
+			var otherType:String = (type == SOURCE ? TARGET : SOURCE);
+			var resolved:Boolean = this[otherType + "Resolved"];
+			if (resolved) {
+				var otherPath:Array = this["_" + otherType + "Path"];
+				var otherItem:Object = getItem(otherType, otherPath.length - 1); // item + path.length
+				if (otherItem) {
+					var prop:Object = otherPath[otherPath.length - 1];
+					setProp(otherItem, prop, oldValue, _value);
 				}
-				updating = false;
 			}
+			updating = false;
 		}
 		
 		/**
@@ -166,8 +161,8 @@ package flight.binding
 			unbindPath(type, pathIndex);
 			
 			var resolved:Boolean;
-			var prop:String;
-			var len:int = path.length || 1;
+			var prop:Object;
+			var len:int = path.length;
 			for (pathIndex; pathIndex < len; pathIndex++) {
 				
 				if (item == null) {
@@ -176,17 +171,19 @@ package flight.binding
 				
 				indices[item] = pathIndex;
 				
-				if (pathIndex == path.length) break;
 				prop = path[pathIndex];
+				var propName:String = getPropName(prop);
 				
-				if (_twoWay || type == SOURCE || pathIndex < len-1) {
-					if (item is IEventDispatcher) {
-						var changeEvents:Array = getBindingEvents(item, prop);
+				if (propName && _twoWay || type == SOURCE || pathIndex < len-1) {
+					var changeEvents:Array = getBindingEvents(item, propName);
+					if (changeEvents[0] == "observable") {
+						Observe.watch(item, propName, null, propertyChange);
+					} else if (item is IEventDispatcher) {
 						for each (var changeEvent:String in changeEvents) {
 							IEventDispatcher(item).addEventListener(changeEvent, onPropertyChange, false, 100, true);
 						}
 					} else {
-						trace("Warning: Property '" + prop + "' is not bindable in " + getClassName(item) + ".");
+						trace("Warning: Property '" + propName + "' is not bindable in " + getClassName(item) + ".");
 					}
 				}
 				
@@ -222,8 +219,11 @@ package flight.binding
 					continue;
 				}
 				
-				if (item is IEventDispatcher) {
-					var changeEvents:Array = getBindingEvents(item, path[index]);
+				var propName:String = getPropName(path[index]);
+				var changeEvents:Array = getBindingEvents(item, propName);
+				if (changeEvents[0] == "observable") {
+					Observe.unwatch(item, propName, propertyChange);
+				} else if (item is IEventDispatcher) {
 					for each (var changeEvent:String in changeEvents) {
 						IEventDispatcher(item).removeEventListener(changeEvent, onPropertyChange);
 					}
@@ -247,13 +247,38 @@ package flight.binding
 			return null;
 		}
 		
-		protected function getProp(item:Object, prop:String):*
+		protected function makePath(value:Object):Array
 		{
-			if (prop in item && item[prop] is Function) {
-				var params:Array = [item];
-				params.length = item[prop].length;
-				return item[prop].apply(null, params);
+			if (value is String) {
+				return String(value).split(".");
+			} else if (value is Array) {
+				return value as Array;
+			} else if (value != null) {
+				return [value];
 			}
+			return [];
+		}
+		
+		protected function getPropName(prop:Object):String
+		{
+			if (prop is String) return prop as String;
+			if ("name" in prop) return prop.name;
+			return null;
+		}
+		
+		protected function getProp(item:Object, prop:Object):*
+		{
+			var func:Function;
+			
+			if ((func = prop as Function)
+				|| ("getter" in prop && (func = prop.getter as Function))
+				|| (prop in item && (func = item[prop] as Function)))
+			{
+				var params:Array = [item];
+				params.length = Math.min(func.length, 1);
+				return func.apply(null, params);
+			}
+			
 			try {
 				return item[prop];
 			} catch (e:Error){}
@@ -261,17 +286,58 @@ package flight.binding
 			return null;
 		}
 		
-		protected function setProp(item:Object, prop:String, oldValue:*, value:*):void
+		protected function setProp(item:Object, prop:Object, oldValue:*, value:*):void
 		{
-			if (prop in item && item[prop] is Function) {
-				var getter:Function = item[prop] as Function;
+			var func:Function;
+			
+			if ((func = prop as Function)
+				|| ("getter" in prop && (func = prop.getter as Function))
+				|| (prop in item && (func = item[prop] as Function)))
+			{
 				var params:Array = [_value, oldValue, item, this];
-				params.length = getter.length;
-				getter.apply(null, params.reverse());
+				params.length = Math.min(func.length, 4);
+				func.apply(null, params.reverse());
+				return;
 			}
+			
 			try {
 				item[prop] = value;
 			} catch (e:Error){}
+		}
+		
+		public function propertyChange(target:Object, name:String, oldValue:*, newValue:*):void
+		{
+			if (updating) return;
+			var pathIndex:int, prop:String;
+			
+			if (target in sourceIndices) {
+				pathIndex = sourceIndices[target];
+				prop = _sourcePath[pathIndex];
+				if (prop == name) {
+					update(SOURCE, target[prop], pathIndex + 1);
+					return; // done
+				}
+			}
+			
+			if (target in targetIndices) {
+				pathIndex = targetIndices[target];
+				prop = _targetPath[pathIndex];
+				
+				if (prop == name) {
+					if (_twoWay) {
+						update(TARGET, target[prop], pathIndex + 1);
+					} else {
+						bindPath(TARGET, target[prop], pathIndex + 1);
+						if (sourceResolved && targetResolved) {
+							target = getItem(TARGET, _targetPath.length - 1);
+							prop = _targetPath[_targetPath.length - 1];
+							try {
+								target[prop] = _value;
+							} catch (e:Error) {}
+						}
+					}
+				}
+			}
 		}
 		
 		protected function sourceChangeHandler(event:Event):void
@@ -312,7 +378,6 @@ package flight.binding
 		}
 		
 		
-		
 		protected static var descCache:Dictionary = new Dictionary();
 		
 		protected static function getBindingEvents(target:Object, property:String):Array
@@ -340,11 +405,17 @@ package flight.binding
 					var bindable:XMLList = prop.metadata.(@name == "Bindable");
 					
 					for each (var bind:XML in bindable) {
-						var changeEvent:String = (bind.arg.(@key == "event").length() != 0) ?
-							bind.arg.(@key == "event").@value :
-							changeEvent = bind.arg.@value;
-						
-						changeEvents.push(changeEvent);
+						if (bind.arg.(@value == "observable").length()) {
+							changeEvents.length = 0;
+							changeEvents.push("observable");
+							break;
+						} else {
+							var changeEvent:String = (bind.arg.(@key == "event").length() != 0) ?
+								bind.arg.(@key == "event").@value :
+								changeEvent = bind.arg.@value;
+							
+							changeEvents.push(changeEvent);
+						}
 					}
 					
 					bindings[property] = changeEvents;
@@ -353,5 +424,6 @@ package flight.binding
 			
 			return descCache[value];
 		}
+		
 	}
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<actionScriptProperties mainApplicationPath="flightaf.as" projectUUID="3d4a815f-db06-4a5e-b5be-cb87fd729505" version="6">
+<actionScriptProperties mainApplicationPath="flightaf.as" projectUUID="b11add20-5251-452f-b2cb-b0937091803b" version="6">
   <compiler additionalCompilerArguments="-keep-as3-metadata+=Argument,Inject,Binding,PropertyListener,EventListener -compute-digest=false" autoRSLOrdering="true" copyDependentFiles="false" flex3CompatMode="true" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="false" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
     <compilerSourcePath/>
     <libraryPath defaultLinkType="1">

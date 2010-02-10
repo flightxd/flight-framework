@@ -14,11 +14,10 @@ package flexUnitTests.binding
 	import org.flexunit.asserts.*;
 	import org.flexunit.async.Async;
 	
-	public class BindTest extends EventDispatcher
+	public class ObservingBindTest extends EventDispatcher
 	{
 		public var obj1:TestObject;
 		public var obj2:TestObject;
-		public var noMetaObj:NoMetaObject;
 		public var dummyEvent:Event = new Event("_");
 		
 		[Before]
@@ -35,19 +34,12 @@ package flexUnitTests.binding
 			obj2.num = 2;
 			obj2.bool = false;
 			obj2.obj = obj2.clone();
-			
-			noMetaObj = new NoMetaObject();
-			noMetaObj.str = "TestStr";
-			noMetaObj.num = 10;
-			noMetaObj.bool = true;
-			noMetaObj.obj = noMetaObj.clone();
 		}
 		
 		[After]
 		public function tearDown():void
 		{
 			obj1 = obj2 = null;
-			noMetaObj = null;
 		}
 		
 		
@@ -211,50 +203,12 @@ package flexUnitTests.binding
 			setTimeout(Async.asyncHandler(this, checkEmptyDict, 500, params), 10, dummyEvent);
 		}
 		
-		[Test(async)]
-		public function testMemoryReleaseEventListener():void
-		{
-			var dict:Dictionary = new Dictionary(true);
-			var temp:TestObject = obj1.clone();
-			temp.obj = temp.clone();
-			dict[temp] = true;
-			
-			eventTriggered = 0;
-			var binding:Binding = Bind.bindEventListener("customChange", onChange, temp, "obj");
-			temp.obj.custom = "test";
-			assertEquals("The event was not bound correctly or triggered.", 1, eventTriggered);
-			temp.obj = new TestObject();
-			temp.obj.custom = "test2";
-			assertEquals("The event was not triggered when the new dispatcher dispatched.", 2, eventTriggered);
-			
-			System.gc();
-			
-			var params:Object = {dict: dict, msg: "Object was not removed from memory after there were no references to it"};
-			setTimeout(Async.asyncHandler(this, checkEmptyDict, 500, params), 10, dummyEvent);
-		}
-		
 		private function checkEmptyDict(event:Event, params:Object):void
 		{
 			for (var i:Object in params.dict) {}
 			assertNull(params.msg, i);
 		}
 		
-		[Test]
-		public function testEventListener():void
-		{
-			var binding:Binding = Bind.bindEventListener("customChange", onChange, obj1, "obj");
-			obj1.obj.custom = "test";
-			assertEquals("The event was not bound correctly or triggered.", 1, eventTriggered);
-			obj1.obj = new TestObject();
-			obj1.obj.custom = "test2";
-			assertEquals("The event was not triggered when the new dispatcher dispatched.", 2, eventTriggered);
-		}
-		
-		private var eventTriggered:int;
-		public function onChange(event:Event):void
-		{
-			eventTriggered++;
-		}
 	}
 }
 
@@ -264,22 +218,76 @@ import flash.events.EventDispatcher;
 import flash.utils.Dictionary;
 
 import flight.binding.Binding;
+import flight.observers.Observe;
 
-[Bindable]
-internal class TestObject extends EventDispatcher
+
+internal class TestObject
 {
-	public var str:String;
-	public var num:Number;
-	public var bool:Boolean;
-	public var obj:TestObject;
+	private var _str:String;
+	private var _num:Number;
+	private var _bool:Boolean;
+	private var _obj:TestObject;
 	
 	private var _custom:String;
-	[Bindable("customChange")]
-	public function get custom():String {return _custom;}
-	public function set custom(value:String):void {
+	
+	[Bindable(observable)]
+	public function get obj():TestObject
+	{
+		return _obj;
+	}
+	
+	public function set obj(value:TestObject):void
+	{
+		if (_obj == value) return;
+		Observe.notifyChange(this, "obj", _obj, _obj = value);
+	}
+	
+	[Bindable(observable)]
+	public function get bool():Boolean
+	{
+		return _bool;
+	}
+	
+	public function set bool(value:Boolean):void
+	{
+		if (_bool == value) return;
+		Observe.notifyChange(this, "bool", _bool, _bool = value);
+	}
+	
+	[Bindable(observable)]
+	public function get num():Number
+	{
+		return _num;
+	}
+	
+	public function set num(value:Number):void
+	{
+		if (_num == value) return;
+		Observe.notifyChange(this, "num", _num, _num = value);
+	}
+	
+	[Bindable(observable)]
+	public function get str():String
+	{
+		return _str;
+	}
+	
+	public function set str(value:String):void
+	{
+		if (_str == value) return;
+		Observe.notifyChange(this, "str", _str, _str = value);
+	}
+	
+	[Bindable(observable)]
+	public function get custom():String
+	{
+		return _custom;
+	}
+	
+	public function set custom(value:String):void
+	{
 		if (_custom == value) return;
-		_custom = value;
-		dispatchEvent(new Event("customChange"));
+		Observe.notifyChange(this, "custom", _custom, _custom = value);
 	}
 	
 	public function clone():TestObject
@@ -289,50 +297,6 @@ internal class TestObject extends EventDispatcher
 		obj.num = num;
 		obj.bool = bool;
 		obj.custom = custom;
-		return obj;
-	}
-}
-
-internal class NoMetaObject extends EventDispatcher
-{
-	private var _str:String;
-	public function get str():String {return _str;}
-	public function set str(value:String):void {
-		if (_str == value) return;
-		_str = value;
-		dispatchEvent(new Event("strChange"));
-	}
-	
-	private var _num:Number;
-	public function get num():Number {return _num;}
-	public function set num(value:Number):void {
-		if (_num == value) return;
-		_num = value;
-		dispatchEvent(new Event("numChange"));
-	}
-	
-	private var _bool:Boolean;
-	public function get bool():Boolean {return _bool;}
-	public function set bool(value:Boolean):void {
-		if (_bool == value) return;
-		_bool = value;
-		dispatchEvent(new Event("boolChange"));
-	}
-	
-	private var _obj:NoMetaObject;
-	public function get obj():NoMetaObject {return _obj;}
-	public function set obj(value:NoMetaObject):void {
-		if (_obj == value) return;
-		_obj = value;
-		dispatchEvent(new Event("objChange"));
-	}
-	
-	public function clone():NoMetaObject
-	{
-		var obj:NoMetaObject = new NoMetaObject();
-		obj.str = str;
-		obj.num = num;
-		obj.bool = bool;
 		return obj;
 	}
 }

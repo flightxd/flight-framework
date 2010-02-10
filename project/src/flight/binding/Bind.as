@@ -79,7 +79,7 @@ package flight.binding
 		 * 
 		 * @return					Considered successful if the binding has not already been established.
 		 */
-		public static function addBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
+		public static function addBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Binding
 		{
 			var binding:Binding = newBinding(target, targetPath, source, sourcePath, twoWay);
 			
@@ -117,7 +117,7 @@ package flight.binding
 		 * 
 		 * @return					Considered successful if the specified binding was available.
 		 */
-		public static function removeBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Boolean
+		public static function removeBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Boolean
 		{
 			var binding:Binding = getBinding(target, targetPath, source, sourcePath, twoWay);
 			if (binding) {
@@ -160,10 +160,10 @@ package flight.binding
 		 * 								A weak reference (the default) allows your listener to be garbage-
 		 * 								collected. A strong reference does not.
 		 */
-		public static function addListener(target:IEventDispatcher, listener:Function, source:Object, sourcePath:String):void
+		public static function addListener(target:IEventDispatcher, listener:Function, source:Object, sourcePath:String):Binding
 		{
 			target.addEventListener("_", listener);
-			var binding:Binding = addBinding(listener, "", source, sourcePath);
+			return addBinding(target, listener, source, sourcePath);
 		}
 		
 		/**
@@ -176,35 +176,35 @@ package flight.binding
 		 * @param	sourcePath			A property or dot-separated property chain to be resolved in the
 		 * 								source end point.
 		 */
-		public static function removeListener(listener:Function, source:Object, sourcePath:String):Boolean
+		public static function removeListener(target:IEventDispatcher, listener:Function, source:Object, sourcePath:String):Boolean
 		{
-			return removeBinding(listener, "", source, sourcePath);
+			return removeBinding(target, listener, source, sourcePath);
 		}
 		
 		// NOTE: weakReference specifies how the listener is added to the endpoint dispatcher, but the listener is held in memory by the binding
 		// TODO: refactor to allow the listener to be weakReference
 		public static function bindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = true):Binding
 		{
-			var binding:Binding = addBinding(updateListener, null, source, sourcePath);
+			var binding:Binding = addBinding(source, updateListener, source, sourcePath);
 			
 			// store the listener and other properties in a dictionary
 			var sourceListeners:Dictionary = eventListeners[source];
 			if (!sourceListeners) {
-				eventListeners[source] = sourceListeners = new Dictionary();
+				eventListeners[source] = sourceListeners = new Dictionary(true);
 			}
 			
 			sourceListeners[binding] = [type, listener, useCapture, priority, useWeakReference];
 			
 			// force update now since the first time couldn't register
 			if (binding.value) {
-				updateListener(binding, null, binding.value);
+				updateListener(binding, null, null, binding.value);
 			}
 			return binding;
 		}
 		
 		public static function unbindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false):Boolean
 		{
-			var binding:Binding = getBinding(updateListener, null, source, sourcePath);
+			var binding:Binding = getBinding(source, updateListener, source, sourcePath);
 			
 			if (!binding) {
 				return false;
@@ -220,18 +220,19 @@ package flight.binding
 				return false;
 			}
 			
-			updateListener(binding, binding.value, null);
+			updateListener(binding, null, binding.value, null);
 			delete sourceListeners[binding];
+			releaseBinding(binding);
 			return true;
 		}
 		
-		protected static function getBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
+		protected static function getBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Binding
 		{
 			var bindings:Array = items[target] || items[source];
 			if (bindings) {
 				for each (var binding:Binding in bindings) {
 					if (binding.target == target && binding.source == source
-						&& binding.targetPath == targetPath && binding.sourcePath == sourcePath
+						&& pathEquals(binding.targetPath, targetPath) && pathEquals(binding.sourcePath, sourcePath)
 						&& binding.twoWay == twoWay) {
 						return binding;
 					}
@@ -240,7 +241,7 @@ package flight.binding
 			return null;
 		}
 		
-		protected static function updateListener(binding:Binding, oldValue:*, newValue:*):void
+		protected static function updateListener(binding:Binding, item:Object, oldValue:*, newValue:*):void
 		{
 			if (!(binding.source in eventListeners && binding in eventListeners[binding.source])) {
 				return; // the first update happens before storing in listeners dict
@@ -295,7 +296,7 @@ package flight.binding
 			pool.push(binding);
 		}
 		
-		protected static function newBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
+		protected static function newBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Binding
 		{
 			if (pool.length) {
 				var binding:Binding = pool.pop();
@@ -306,5 +307,29 @@ package flight.binding
 			}
 		}
 		
+		protected static function pathEquals(path1:Object, path2:Object):Boolean
+		{
+			// if they are not the same type
+			if (path1.constructor != path2.constructor) return false;
+			
+			if (path1 is Array) {
+				var arr1:Array = path1 as Array, arr2:Array = path2 as Array;
+				if (arr1.length != arr2.length) return false;
+				var len:int = arr1.length;
+				for (var i:int = 0; i < len; i++) {
+					if (!pathEquals(arr1[i], arr2[i])) return false;
+				}
+				return true;
+			} else if (path1 is String) {
+				return path1 == path2;
+			} else if (path1 is Function) {
+				return path1 == path2;
+			} else {
+				for (var j:String in path1) {
+					if (path1[j] != path2[j]) return false;
+				}
+				return true;
+			}
+		}
 	}
 }

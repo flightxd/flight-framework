@@ -49,6 +49,7 @@ package flight.view
 		public function dispose():void
 		{
 			Bind.removeAllBindings(this);
+			MediatorMap.releaseView(target);
 		}
 		
 		
@@ -67,7 +68,7 @@ package flight.view
 										tag.arg.(@key == "target").@value :
 										tag.arg.@value;
 					
-					Bind.addBinding(mediator, targ, mediator, prop.@name, true);
+					Bind.addBinding(mediator, prop.@name, mediator, targ, true);
 				}
 			}
 		}
