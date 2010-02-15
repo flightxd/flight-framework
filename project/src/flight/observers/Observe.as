@@ -5,70 +5,40 @@ package flight.observers
 
 	public class Observe
 	{
-		private static const CHECK:String = "check";
-		private static const HOOK:String = "hook";
-		private static const OBSERVE:String = "observe";
+		public static const CHECK:String = "check";
+		public static const HOOK:String = "hook";
+		public static const OBSERVE:String = "observe";
 		private static var targets:Dictionary = new Dictionary(true);
 		private static var types:Dictionary = new Dictionary(true);
 		
-		public static function check(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
+		public static function addCheck(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
 		{
 			addFunction(CHECK, target, property, observerHost, observer);
 		}
 		
-		public static function stopChecking(target:Object, property:String, observer:Function):void
+		public static function removeCheck(target:Object, property:String, observer:Function):void
 		{
 			removeFunction(target, property, observer);
 		}
 		
-		public static function checkAll(target:Object, observerHost:IEventDispatcher, observer:Function):void
-		{
-			addFunction(CHECK, target, "*", observerHost, observer);
-		}
-		
-		public static function stopCheckingAll(target:Object, observer:Function):void
-		{
-			removeFunction(target, "*", observer);
-		}
-		
-		public static function hook(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
+		public static function addHook(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
 		{
 			addFunction(OBSERVE, target, property, observerHost, observer);
 		}
 		
-		public static function stopHooking(target:Object, property:String, observer:Function):void
+		public static function removeHook(target:Object, property:String, observer:Function):void
 		{
 			removeFunction(target, property, observer);
 		}
 		
-		public static function hookAll(target:Object, observerHost:IEventDispatcher, observer:Function):void
-		{
-			addFunction(OBSERVE, target, "*", observerHost, observer);
-		}
-		
-		public static function stopHookinAll(target:Object, observer:Function):void
-		{
-			removeFunction(target, "*", observer);
-		}
-		
-		public static function observe(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
+		public static function addObserver(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
 		{
 			addFunction(OBSERVE, target, property, observerHost, observer);
 		}
 		
-		public static function stopObserving(target:Object, property:String, observer:Function):void
+		public static function removeObserver(target:Object, property:String, observer:Function):void
 		{
 			removeFunction(target, property, observer);
-		}
-		
-		public static function observeAll(target:Object, observerHost:IEventDispatcher, observer:Function):void
-		{
-			addFunction(OBSERVE, target, "*", observerHost, observer);
-		}
-		
-		public static function stopObservingAll(target:Object, observer:Function):void
-		{
-			removeFunction(target, "*", observer);
 		}
 		
 		public static function release(target:Object):void
@@ -211,7 +181,7 @@ package flight.observers
 			return newValue;
 		}
 		
-		private static function findTypeObservers(target:Object, property:String):Array
+		public static function findTypeObservers(target:Object, property:String):Array
 		{
 			var observers:Array = [];
 			for (var i:Object in types) {
