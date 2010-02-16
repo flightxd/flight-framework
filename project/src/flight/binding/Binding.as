@@ -4,7 +4,6 @@ package flight.binding
 	import flash.events.IEventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import flight.events.PropertyEvent;
 	import flight.observers.IPropertyObservable;
 	import flight.observers.Observe;
 	import flight.utils.Type;
@@ -387,7 +386,7 @@ package flight.binding
 		{
 			var bindings:Object = describeBindings(target);
 			if (bindings[property] == null) {
-				bindings[property] = [property + PropertyEvent.CHANGE];
+				bindings[property] = [property + "Change"];
 			}
 			return bindings[property];
 		}

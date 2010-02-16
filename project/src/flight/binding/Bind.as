@@ -25,13 +25,7 @@
 package flight.binding
 {
 	import flash.events.IEventDispatcher;
-	import flash.events.TimerEvent;
 	import flash.utils.Dictionary;
-	import flash.utils.Timer;
-	
-	import flight.binding.Binding;
-	import flight.events.PropertyEvent;
-	import flight.vo.ValueObject;
 	
 	import mx.core.IMXMLObject;
 	
