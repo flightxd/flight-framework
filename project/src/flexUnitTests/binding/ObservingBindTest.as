@@ -218,11 +218,11 @@ import flash.events.EventDispatcher;
 import flash.utils.Dictionary;
 
 import flight.binding.Binding;
-import flight.observers.Observable;
+import flight.observers.PropertyObservable;
 import flight.observers.Observe;
 
 
-internal class TestObject extends Observable
+internal class TestObject extends PropertyObservable
 {
 	private var _str:String;
 	private var _num:Number;

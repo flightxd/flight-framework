@@ -5,7 +5,7 @@ package flight.binding
 	import flash.utils.Dictionary;
 	
 	import flight.events.PropertyEvent;
-	import flight.observers.IObservable;
+	import flight.observers.IPropertyObservable;
 	import flight.observers.Observe;
 	import flight.utils.Type;
 	import flight.utils.getClassName;
@@ -178,7 +178,7 @@ package flight.binding
 				if (propName && _twoWay || type == SOURCE || pathIndex < len-1) {
 					var changeEvents:Array = getBindingEvents(item, propName);
 					if (changeEvents[0] == "observable") {
-						if (item is IObservable) IObservable(item).addObserver(propName, null, propertyChange);
+						if (item is IPropertyObservable) IPropertyObservable(item).addObserver(propName, null, propertyChange);
 						else Observe.addObserver(item, propName, null, propertyChange);
 					} else if (item is IEventDispatcher) {
 						for each (var changeEvent:String in changeEvents) {
@@ -224,7 +224,7 @@ package flight.binding
 				var propName:String = getPropName(path[index]);
 				var changeEvents:Array = getBindingEvents(item, propName);
 				if (changeEvents[0] == "observable") {
-					if (item is IObservable) IObservable(item).removeObserver(propName, propertyChange);
+					if (item is IPropertyObservable) IPropertyObservable(item).removeObserver(propName, propertyChange);
 					else Observe.removeObserver(item, propName, propertyChange);
 				} else if (item is IEventDispatcher) {
 					for each (var changeEvent:String in changeEvents) {

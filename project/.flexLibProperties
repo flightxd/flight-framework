@@ -69,8 +69,8 @@
     <classEntry path="flight.view.MediatorMap"/>
     <classEntry path="flight.vo.IValueObject"/>
     <classEntry path="flight.vo.ValueObject"/>
-    <classEntry path="flight.observers.IObservable"/>
-    <classEntry path="flight.observers.Observable"/>
+    <classEntry path="flight.observers.IPropertyObservable"/>
+    <classEntry path="flight.observers.PropertyObservable"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>
