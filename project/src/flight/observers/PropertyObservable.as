@@ -88,6 +88,8 @@ package flight.observers
 			for each (hooks in typeHooks) {
 				newValue = runFunctions(Observe.HOOK, hooks, property, oldValue, newValue);
 			}
+			
+			return newValue;
 		}
 		
 		public function notifyChange(property:String, oldValue:*, newValue:*):void

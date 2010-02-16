@@ -102,6 +102,8 @@ package flight.observers
 			for each (hooks in typeObservers) {
 				newValue = runFunctions(HOOK, hooks, target, property, oldValue, newValue);
 			}
+			
+			return newValue;
 		}
 		
 		public static function notifyChange(target:Object, property:String, oldValue:*, newValue:*):void
