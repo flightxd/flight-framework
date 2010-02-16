@@ -23,7 +23,7 @@ package flight.observers
 		
 		public static function addHook(target:Object, property:String, observerHost:IEventDispatcher, observer:Function):void
 		{
-			addFunction(OBSERVE, target, property, observerHost, observer);
+			addFunction(HOOK, target, property, observerHost, observer);
 		}
 		
 		public static function removeHook(target:Object, property:String, observer:Function):void
@@ -85,7 +85,7 @@ package flight.observers
 		{
 			var properties:Object = targets[target];
 			if (!properties) {
-				return;
+				return newValue;
 			}
 			
 			var hooks:Dictionary = properties[property];

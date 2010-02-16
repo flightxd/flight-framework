@@ -218,11 +218,10 @@ import flash.events.EventDispatcher;
 import flash.utils.Dictionary;
 
 import flight.binding.Binding;
-import flight.observers.PropertyObservable;
 import flight.observers.Observe;
 
 
-internal class TestObject extends PropertyObservable
+internal class TestObject
 {
 	private var _str:String;
 	private var _num:Number;
@@ -239,8 +238,9 @@ internal class TestObject extends PropertyObservable
 	
 	public function set obj(value:TestObject):void
 	{
-		if (_obj == value) return;
-		notifyChange("obj", _obj, _obj = value);
+		if (_obj == value || !Observe.canChange(this, "obj", _obj, value)) return;
+		value = Observe.modifyChange(this, "obj", _obj, value);
+		Observe.notifyChange(this, "obj", _obj, _obj = value);
 	}
 	
 	[Bindable(observable)]
@@ -252,7 +252,7 @@ internal class TestObject extends PropertyObservable
 	public function set bool(value:Boolean):void
 	{
 		if (_bool == value) return;
-		notifyChange("bool", _bool, _bool = value);
+		Observe.notifyChange(this, "bool", _bool, _bool = value);
 	}
 	
 	[Bindable(observable)]
@@ -264,7 +264,7 @@ internal class TestObject extends PropertyObservable
 	public function set num(value:Number):void
 	{
 		if (_num == value) return;
-		notifyChange("num", _num, _num = value);
+		Observe.notifyChange(this, "num", _num, _num = value);
 	}
 	
 	[Bindable(observable)]
@@ -276,7 +276,7 @@ internal class TestObject extends PropertyObservable
 	public function set str(value:String):void
 	{
 		if (_str == value) return;
-		notifyChange("str", _str, _str = value);
+		Observe.notifyChange(this, "str", _str, _str = value);
 	}
 	
 	[Bindable(observable)]
@@ -288,7 +288,7 @@ internal class TestObject extends PropertyObservable
 	public function set custom(value:String):void
 	{
 		if (_custom == value) return;
-		notifyChange("custom", _custom, _custom = value);
+		Observe.notifyChange(this, "custom", _custom, _custom = value);
 	}
 	
 	public function clone():TestObject
