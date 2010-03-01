@@ -238,9 +238,8 @@ internal class TestObject
 	
 	public function set obj(value:TestObject):void
 	{
-		if (_obj == value || !Observe.canChange(this, "obj", _obj, value)) return;
-		value = Observe.modifyChange(this, "obj", _obj, value);
-		Observe.notifyChange(this, "obj", _obj, _obj = value);
+		_obj = Observe.change(this, "obj", _obj, value);
+		Observe.notify();
 	}
 	
 	[Bindable(observable)]
@@ -251,8 +250,8 @@ internal class TestObject
 	
 	public function set bool(value:Boolean):void
 	{
-		if (_bool == value) return;
-		Observe.notifyChange(this, "bool", _bool, _bool = value);
+		_bool = Observe.change(this, "bool", _bool, value);
+		Observe.notify();
 	}
 	
 	[Bindable(observable)]
@@ -263,8 +262,8 @@ internal class TestObject
 	
 	public function set num(value:Number):void
 	{
-		if (_num == value) return;
-		Observe.notifyChange(this, "num", _num, _num = value);
+		_num = Observe.change(this, "num", _num, value);
+		Observe.notify();
 	}
 	
 	[Bindable(observable)]
@@ -275,8 +274,8 @@ internal class TestObject
 	
 	public function set str(value:String):void
 	{
-		if (_str == value) return;
-		Observe.notifyChange(this, "str", _str, _str = value);
+		_str = Observe.change(this, "str", _str, value);
+		Observe.notify();
 	}
 	
 	[Bindable(observable)]
@@ -287,8 +286,8 @@ internal class TestObject
 	
 	public function set custom(value:String):void
 	{
-		if (_custom == value) return;
-		Observe.notifyChange(this, "custom", _custom, _custom = value);
+		_custom = Observe.change(this, "custom", _custom, value);
+		Observe.notify();
 	}
 	
 	public function clone():TestObject
