@@ -73,26 +73,9 @@ package flight.binding
 		 * 
 		 * @return					Considered successful if the binding has not already been established.
 		 */
-		public static function addBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Binding
+		public static function addBinding(target:Object, targetPath:String, source:Object, sourcePath:String, twoWay:Boolean = false):Binding
 		{
-			var binding:Binding = newBinding(target, targetPath, source, sourcePath, twoWay);
-			
-			// store the binding in relation to the source and target so that
-			// they can be manually released.
-			var bindings:Array = items[target];
-			if (!bindings) {
-				items[target] = bindings = [];
-			}
-			bindings.push(binding);
-			
-			// if target and source are the same no need to store it twice
-			if (target != source) {
-				bindings = items[source];
-				if (!bindings) {
-					items[source] = bindings = [];
-				}
-			}
-			return binding;
+			return createBinding(target, targetPath, source, sourcePath, twoWay);
 		}
 		
 		/**
@@ -157,7 +140,7 @@ package flight.binding
 		public static function addListener(target:IEventDispatcher, listener:Function, source:Object, sourcePath:String):Binding
 		{
 			target.addEventListener("_", listener);
-			return addBinding(target, listener, source, sourcePath);
+			return createBinding(target, listener, source, sourcePath);
 		}
 		
 		/**
@@ -179,7 +162,7 @@ package flight.binding
 		// TODO: refactor to allow the listener to be weakReference
 		public static function bindEventListener(type:String, listener:Function, source:Object, sourcePath:String, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = true):Binding
 		{
-			var binding:Binding = addBinding(source, updateListener, source, sourcePath);
+			var binding:Binding = createBinding(source, updateListener, source, sourcePath);
 			
 			// store the listener and other properties in a dictionary
 			var sourceListeners:Dictionary = eventListeners[source];
@@ -218,6 +201,28 @@ package flight.binding
 			delete sourceListeners[binding];
 			releaseBinding(binding);
 			return true;
+		}
+		
+		protected static function createBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Binding
+		{
+			var binding:Binding = newBinding(target, targetPath, source, sourcePath, twoWay);
+			
+			// store the binding in relation to the source and target so that
+			// they can be manually released.
+			var bindings:Array = items[target];
+			if (!bindings) {
+				items[target] = bindings = [];
+			}
+			bindings.push(binding);
+			
+			// if target and source are the same no need to store it twice
+			if (target != source) {
+				bindings = items[source];
+				if (!bindings) {
+					items[source] = bindings = [];
+				}
+			}
+			return binding;
 		}
 		
 		protected static function getBinding(target:Object, targetPath:Object, source:Object, sourcePath:Object, twoWay:Boolean = false):Binding

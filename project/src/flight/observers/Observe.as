@@ -22,6 +22,7 @@ package flight.observers
 	{
 		private static var hooks:Dictionary = new Dictionary(true);
 		private static var observers:Dictionary = new Dictionary(true);
+		private static var classes:Array = [];
 		private static var pendingChanges:Change;
 		private static var currentPriority:uint;
 		
@@ -76,14 +77,7 @@ package flight.observers
 		 */
 		public static function addHook(target:Object, property:String, hookHost:IEventDispatcher, hook:Function):void
 		{
-			if (property.indexOf(",") != -1) {
-				var properties:Array = property.split(/\s*,\s*/);
-				for each (property in properties) {
-					addMethod(hooks, target, property, hookHost, hook);
-				}
-			} else {
-				addMethod(hooks, target, property, hookHost, hook);
-			}
+			addMethod(hooks, target, property, hookHost, hook);
 		}
 		
 		/**
@@ -285,6 +279,10 @@ package flight.observers
 				type[target] = properties = {};
 			}
 			
+			if (target is Class && classes.indexOf(target) == -1) {
+				classes.push(target);
+			}
+			
 			var props:Array = property.split(/\s*,\s*/);
 			
 			for each (property in props) {
@@ -293,7 +291,9 @@ package flight.observers
 					properties[property] = observers = new Dictionary(true);
 				}
 				
-				observers[observer] = currentPriority++;
+				if ( !(observer in observers) ) {
+					observers[observer] = currentPriority++;
+				}
 			}
 			
 			if (observerHost != null) {
@@ -346,33 +346,30 @@ package flight.observers
 		
 		private static function getMethods(type:Dictionary, target:Object, property:String):Array
 		{
-			var properties:Object, observers:Dictionary;
+			var properties:Object, method:Dictionary;
 			var dicts:Array = [];
-			var name:String = getQualifiedClassName(target);
 			
 			// add the dictionaries for the instance
 			properties = type[target];
 			if (properties) {
-				observers = properties[property];
-				if (observers) dicts.push(observers);
+				method = properties[property];
+				if (method) dicts.push(method);
 				
-				observers = properties["*"];
-				if (observers) dicts.push(observers);
+				method = properties["*"];
+				if (method) dicts.push(method);
 			}
 			
-			// add the dictionaries for the types
-			while (name != null) {
-				var theClass:Class = getDefinitionByName(name) as Class;
-				properties = type[theClass];
-				if (properties) {
-					observers = properties[property];
-					if (observers) dicts.push(observers);
-					
-					observers = properties["*"];
-					if (observers) dicts.push(observers);
+			for each (var superClass:Class in classes) {
+				if (superClass != null && target is superClass) {
+					properties = type[superClass];
+					if (properties) {
+						method = properties[property];
+						if (method) dicts.push(method);
+						
+						method = properties["*"];
+						if (method) dicts.push(method);
+					}
 				}
-				
-				name = getQualifiedSuperclassName(theClass);
 			}
 			
 			return mergeDictionaries(dicts);

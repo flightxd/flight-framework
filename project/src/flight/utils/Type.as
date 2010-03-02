@@ -192,11 +192,11 @@ package flight.utils
 		 * 
 		 * @return					A list of XML method descriptions.
 		 */
-		public static function describeMethods(value:Object, metadata:String = null):XMLList
+		public static function describeMethods(value:Object, metadataType:String = null):XMLList
 		{
 			var methods:XMLList = describeType(value).factory.method;
 			
-			return (metadata == null) ? methods : methods.(child("metadata").(@name == metadata).length() > 0);
+			return (metadataType == null) ? methods : methods.(child("metadata").(@name == metadataType).length() > 0);
 		}
 		
 	}

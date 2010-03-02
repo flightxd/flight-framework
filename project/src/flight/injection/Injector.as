@@ -7,6 +7,7 @@ package flight.injection
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
+	import flight.observers.Observe;
 	import flight.utils.Type;
 	
 	import mx.core.IMXMLObject;
@@ -44,23 +45,35 @@ package flight.injection
 		 */
 		protected static var registeredInjections:Dictionary = new Dictionary(true);
 		
+		protected static var registeredContexts:Dictionary = new Dictionary(true);
+		
 		/**
 		 * Inject a subject with previously provided injections in its given
 		 * context.
 		 */
 		public static function inject(subject:Object, context:DisplayObject):void
 		{
+			if (subject == null || context == null) {
+				throw new ArgumentError("Injection subject and context cannot be null");
+			}
+			
+			Observe.change(subject, "injections", null, context);
+			
 			var props:XMLList = Type.describeProperties(subject, "Inject");
 			for each (var prop:XML in props) {
 				var type:Class = getDefinitionByName(prop.@type) as Class;
 				subject[prop.@name] = findInjection(type, context);
 			}
+			
 			if (subject is IInjectorSubject) {
 				IInjectorSubject(subject).injected();
 			}
+			
 			if (subject is IEventDispatcher && IEventDispatcher(subject).hasEventListener("injected")) {
 				IEventDispatcher(subject).dispatchEvent(new Event("injected"));
 			}
+			
+			Observe.notify();
 		}
 		
 		/**
@@ -115,6 +128,66 @@ package flight.injection
 			return null;
 		}
 		
+		/**
+		 * Sets the context for a display object before it is added to the
+		 * stage. By default the context is itself.
+		 */
+		public static function setContext(displayObject:DisplayObject, context:DisplayObject):void
+		{
+			registeredContexts[displayObject] = context;
+		}
+		
+		/**
+		 * Add a base display object to listen to the ADDED_TO_STAGE event. This
+		 * will allow display objects to be injected as they come onto the
+		 * display list. This only needs to be added once to a stage or to each
+		 * window of an AIR application.
+		 */
+		public static function addBase(view:DisplayObject):void
+		{
+			if (view.stage) {
+				view.stage.addEventListener(Event.ADDED_TO_STAGE, onViewAdded, true);
+				injectView(view);
+			} else {
+				view.addEventListener(Event.ADDED_TO_STAGE, onViewFirstAdded);
+				view.addEventListener(Event.ADDED_TO_STAGE, onViewAdded, true);
+			}
+		}
+		
+		/**
+		 * Injects the views. Note that a view may be reused in several
+		 * contexts and can be reinjected each time it is placed back onto the
+		 * display list. This allows for views to be resused at runtime and
+		 * still work correctly within the context they are placed.
+		 */
+		protected static function onViewFirstAdded(event:Event):void
+		{
+			var view:DisplayObject = event.target as DisplayObject;
+			view.removeEventListener(Event.ADDED_TO_STAGE, onViewFirstAdded);
+			view.removeEventListener(Event.ADDED_TO_STAGE, onViewAdded, true);
+			view.stage.addEventListener(Event.ADDED_TO_STAGE, onViewAdded, true);
+			injectView(view);
+		}
+		
+		protected static function onViewAdded(event:Event):void
+		{
+			injectView(event.target as DisplayObject);
+		}
+		
+		/**
+		 * Injects the views. Note that a view may be reused in several
+		 * contexts and can be reinjected each time it is placed back onto the
+		 * display list. This allows for views to be resused at runtime and
+		 * still work correctly within the context they are placed.
+		 */
+		protected static function injectView(view:DisplayObject):void
+		{
+			var basePackage:String = getQualifiedClassName(view).split('.').shift();
+			if (basePackage != "mx" && basePackage != "flash" && basePackage != "spark") {
+				inject(view, registeredContexts[view] || view);
+			}
+		}
+		
 		
 		/**
 		 * Allows for injection on display objects added to the display list.
@@ -133,22 +206,7 @@ package flight.injection
 			// attach to the displayobject and listen for views being attached to the stage
 			var view:DisplayObject = document as DisplayObject;
 			if (view) {
-				view.addEventListener(Event.ADDED_TO_STAGE, onViewAdded, true);
-			}
-		}
-		
-		/**
-		 * Injects the views. Note that a view may be reused in several
-		 * contexts and can be reinjected each time it is placed back onto the
-		 * display list. This allows for views to be resused at runtime and
-		 * still work correctly within the context they are placed.
-		 */
-		protected function onViewAdded(event:Event):void
-		{
-			var view:DisplayObject = event.target as DisplayObject;
-			var basePackage:String = getQualifiedClassName(view).split('.').shift();
-			if (basePackage != "mx" && basePackage != "flash") {
-				inject(view, view);
+				addBase(view);
 			}
 		}
 	}

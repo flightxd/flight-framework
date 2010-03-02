@@ -1,10 +1,13 @@
 package flight.view
 {
 	import flash.display.DisplayObject;
+	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
 	import flight.injection.Injector;
+	import flight.observers.Observe;
 	
 	import mx.core.IMXMLObject;
 	
@@ -15,10 +18,12 @@ package flight.view
 	 * class is added to the stage MediatorMap will create the correct mediator
 	 * and inject the view and any other injections needed into the mediator. 
 	 */
-	public class MediatorMap implements IMXMLObject
+	public class MediatorMap extends EventDispatcher implements IMXMLObject
 	{
-		protected var mapping:Dictionary = new Dictionary();
+		protected static var mediatorContexts:Dictionary = new Dictionary(true);
 		protected static var initializedViews:Dictionary = new Dictionary(true);
+		
+		protected var mapping:Dictionary = new Dictionary();
 		
 		
 		public static function releaseView(view:DisplayObject):void
@@ -35,6 +40,7 @@ package flight.view
 		public function MediatorMap(context:DisplayObject = null)
 		{
 			if (context) initialized(context, null);
+			Observe.addHook(DisplayObject, "injections", this, prepInjection);
 		}
 		
 		/**
@@ -64,21 +70,11 @@ package flight.view
 			var view:DisplayObject = document as DisplayObject;
 			if (!view) return;
 			
-			// attach to the displayobject and listen for views being attached to the stage
-			view.addEventListener(Event.ADDED_TO_STAGE, onViewAdded); // added for self
-			view.addEventListener(Event.ADDED_TO_STAGE, onViewAdded, true); // added for children
-			if (view.stage) {
-				// root, already on stage.
-				createMediator(view);
+			var maps:Array = mediatorContexts[view];
+			if (!maps) {
+				mediatorContexts[view] = maps = [];
 			}
-		}
-		
-		/**
-		 * When a view is added to the stage, create its mediator.
-		 */
-		protected function onViewAdded(event:Event):void
-		{
-			createMediator(event.target as DisplayObject);
+			maps.push(this);
 		}
 		
 		/**
@@ -86,19 +82,42 @@ package flight.view
 		 * mediators created don't create them again. Once the mediators are
 		 * created inject them.
 		 */
-		protected function createMediator(view:DisplayObject):Object
+		protected function match(view:DisplayObject, context:DisplayObject):Boolean
 		{
 			var type:Class = view["constructor"];
-			if (!(type in mapping) || view in initializedViews) return null;
+			
+			if ( !(type in mapping) ) {
+				return false;
+			}
+			
 			var mediatorType:Class = mapping[type];
 			var mediator:Object = new mediatorType();
 			initializedViews[view] = mediator;
+			Injector.provideInjection(view, context);
+			Injector.inject(mediator, context);
+			Injector.removeInjection(view, context);
+			return true;
+		}
+		
+		/**
+		 * Before injection happens on a view, look for a mediator for it.
+		 */
+		protected static function prepInjection(view:DisplayObject, prop:String, oldValue:*, context:DisplayObject):void
+		{
+			if (view in initializedViews) return;
 			
-			// allow the view to be injected into the mediator
-			Injector.provideInjection(view, view);
-			Injector.inject(mediator, view);
-			Injector.removeInjection(view, view);
-			return mediator;
+			var currentContext:DisplayObject = context;
+			while (currentContext != null) {
+				var maps:Array = mediatorContexts[currentContext];
+				if (maps) {
+					for each (var map:MediatorMap in maps) {
+						if (map.match(view, context)) {
+							return;
+						}
+					}
+				}
+				currentContext = currentContext.parent;
+			}
 		}
 	}
 }
