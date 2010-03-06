@@ -1,26 +1,23 @@
 package flight.domain
 {
-	import flight.utils.Registry;
-	import flight.utils.Singleton;
-	import flight.utils.getType;
+	import flash.display.DisplayObject;
+	
+	import flight.commands.ICommand;
+	import flight.injection.IInjectorSubject;
+	import flight.injection.Injector;
 	
 	import mx.core.IMXMLObject;
 	
-	public class DomainController extends CommandController implements IMXMLObject
+	public class DomainController extends CommandController implements IMXMLObject, IInjectorSubject
 	{
+		public var context:DisplayObject;
 		
 		/**
-		 * DomainController should only be instantiated internally or via MXML where
-		 * it will be replaced (and only if it is assigned an 'id').
-		 * ActionScript access should be through a static getIntance().
+		 * 
 		 */
-		public function DomainController()
+		public function DomainController(context:DisplayObject = null)
 		{
-			var type:Class = getType(this);
-			if (Registry.lookup(type) == null) {
-				Registry.register(type, this);
-				init();
-			}
+			if (context) initialized(context, null);
 		}
 		
 		/**
@@ -34,13 +31,31 @@ package flight.domain
 		 */
 		public function initialized(document:Object, id:String):void
 		{
-			if (id == null) {
-//				trace("Warning: DomainController " + getClassName(this) + " 'id' is undefined in " +
-//								getClassName(document) + ". MXML-instantiated singletons require an id.");
-			} else {
-				var type:Class = getType(this);
-				document[id] = Singleton.getInstance(type);
+			context = document as DisplayObject;
+			if (context) {
+				// register this domain controller as an injection
+				Injector.provideInjection(this, context);
+				Injector.inject(this, context);
 			}
+		}
+		
+		
+		public function injected():void
+		{
+			init();
+		}
+		
+		
+		override public function createCommand(type:String, properties:Object=null):ICommand
+		{
+			var command:ICommand = super.createCommand(type, properties);
+			
+			if (context) {
+				// inject into commands anything needed
+				Injector.inject(command, context);
+			}
+			
+			return command;
 		}
 		
 		/**

@@ -26,9 +26,12 @@ package flight.config
 {
 	import flash.display.DisplayObject;
 	
+	import flight.events.Dispatcher;
 	import flight.events.PropertyEvent;
-	import flight.utils.Singleton;
+	import flight.injection.Injector;
 	import flight.utils.Type;
+	
+	import mx.core.IMXMLObject;
 	
 	/**
 	 * Config is the base class for all configurations, an easy way to popluate
@@ -54,7 +57,7 @@ package flight.config
 	 * @see		#configs
 	 */
 	[DefaultProperty("configs")]
-	dynamic public class Config extends Singleton
+	dynamic public class Config extends Dispatcher implements IMXMLObject
 	{
 		/**
 		 * Global configuration with access to all config properties within the
@@ -78,13 +81,20 @@ package flight.config
 		private var _configs:Array = [];
 		private var _properties:Object = {};
 		
+		
+		public function Config(context:DisplayObject = null)
+		{
+			if (context != null) initialized(context, null);
+			init();
+		}
+		
 		/**
 		 * Singleton initialization, establishing hierarchy with the global
 		 * <code>main</code> config. Unlike the constructor this method is
 		 * invoked only once for this type, despite the number of instances
 		 * created.
 		 */
-		override protected function init():void
+		protected function init():void
 		{
 			// add every singleton config to the global 'main'
 			if (main != null) {
@@ -196,9 +206,12 @@ package flight.config
 			propertyChange("display", oldValue, _display);
 		}
 		
-		override public function initialized(document:Object, id:String):void
+		public function initialized(document:Object, id:String):void
 		{
-			super.initialized(document, id);
+			if (document is DisplayObject) {
+				Injector.provideInjection(this, document as DisplayObject);
+			}
+			
 			if (display != null && document is DisplayObject) {
 				display = document as DisplayObject;
 			}
