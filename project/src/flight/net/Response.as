@@ -88,6 +88,17 @@ package flight.net
 			}
 		}
 		
+		public function destory():void
+		{
+			release();
+			while(resultHandlers.length) resultHandlers.pop();
+			while(faultHandlers.length) faultHandlers.pop();
+			status = ResponseStatus.PROGRESS;
+			progress = null;
+			fault = null;
+			result = null;
+		}
+		
 		/**
 		 * Indication of whether the response is in progress, has been completed
 		 * or has faulted. Valid values of status are 'progress', 'result' and
