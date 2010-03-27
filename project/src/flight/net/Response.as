@@ -31,8 +31,8 @@ package flight.net
 	import flight.errors.ResponderError;
 	import flight.errors.ResponseError;
 	import flight.events.Dispatcher;
-	import flight.progress.IProgress;
-	import flight.progress.Progress;
+	import flight.position.IProgress;
+	import flight.position.Progress;
 	
 	/**
 	 * An Response object represents a response to some action, replacing a
@@ -144,7 +144,7 @@ package flight.net
 			var oldValue:Object = _progress;
 			_progress = value;
 			if (_progress != null && _status != ResponseStatus.PROGRESS) {
-				_progress.position = _progress.size;
+				_progress.value = _progress.size;
 			}
 			propertyChange("progress", oldValue, _progress);
 		}
@@ -366,7 +366,7 @@ package flight.net
 			result = data;
 			
 			if (_progress != null) {
-				_progress.position = _progress.size;
+				_progress.value = _progress.size;
 			}
 			status = ResponseStatus.RESULT;
 			
@@ -384,7 +384,7 @@ package flight.net
 			fault = error;
 			
 			if (_progress != null) {
-				_progress.position = _progress.size;
+				_progress.value = _progress.size;
 			}
 			status = ResponseStatus.FAULT;
 			

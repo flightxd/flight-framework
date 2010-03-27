@@ -28,8 +28,6 @@ package flight.utils
 	
 	import flight.events.Dispatcher;
 	import flight.events.PropertyEvent;
-	import flight.vo.IValueObject;
-	import flight.vo.ValueObject;
 	
 	import mx.core.IMXMLObject;
 	import mx.events.PropertyChangeEvent;

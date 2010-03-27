@@ -1,39 +1,17 @@
-////////////////////////////////////////////////////////////////////////////////
-//
-// Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-////////////////////////////////////////////////////////////////////////////////
-
 package flight.list
 {
-	import flight.events.Dispatcher;
+	import flash.events.EventDispatcher;
+	
+	import flight.binding.Bind;
 	import flight.events.ListEvent;
-	import flight.events.PropertyEvent;
 	
 	import mx.collections.IList;
 	import mx.events.CollectionEvent;
 	
 	[Event(name="collectionChange", type="mx.events.CollectionEvent")]
 	
-	public class MXList extends Dispatcher implements mx.collections.IList
+	[Bindable]
+	public class MXList extends EventDispatcher implements mx.collections.IList
 	{
 		private var list:flight.list.IList;
 		
@@ -46,7 +24,7 @@ package flight.list
 		{
 			this.list = list;
 			
-			list.addEventListener("lengthChange", onNumItemsChange);
+			Bind.addBinding(this, "length", list, "length");
 			list.addEventListener(ListEvent.LIST_CHANGE, onListChange);
 		}
 		
@@ -55,7 +33,6 @@ package flight.list
 		 * 
 		 * @return	int			representing the length of the source.
 		 */
-		[Bindable(event="lengthChange")]
 		public function get length():int
 		{
 			return list.length;
@@ -171,12 +148,6 @@ package flight.list
 		public function toArray():Array
 		{
 			return list.getItems() as Array;
-		}
-		
-		
-		private function onNumItemsChange(event:PropertyEvent):void
-		{
-			propertyChange("length", event.oldValue, event.newValue);
 		}
 		
 		private function onListChange(event:ListEvent):void

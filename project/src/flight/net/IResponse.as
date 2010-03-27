@@ -24,7 +24,7 @@
 
 package flight.net
 {
-	import flight.progress.IProgress;
+	import flight.position.IProgress;
 	import flight.utils.IMerging;
 	
 	/**

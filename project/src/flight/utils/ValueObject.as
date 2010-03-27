@@ -22,12 +22,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-package flight.vo
+package flight.utils
 {
 	import flash.utils.ByteArray;
 	
 	import flight.events.Dispatcher;
-	import flight.utils.Type;
 	
 	/**
 	 * ValueObject is a convenient base class for data-rich objects that can be

@@ -218,7 +218,7 @@ import flash.events.EventDispatcher;
 import flash.utils.Dictionary;
 
 import flight.binding.Binding;
-import flight.observers.Observe;
+import flight.observers.PropertyChange;
 
 
 internal class TestObject
@@ -238,8 +238,9 @@ internal class TestObject
 	
 	public function set obj(value:TestObject):void
 	{
-		_obj = Observe.change(this, "obj", _obj, value);
-		Observe.notify();
+		var change:PropertyChange = PropertyChange.begin();
+		_obj = change.add(this, "obj", _obj, value);
+		change.commit();
 	}
 	
 	[Bindable(observable)]
@@ -250,8 +251,9 @@ internal class TestObject
 	
 	public function set bool(value:Boolean):void
 	{
-		_bool = Observe.change(this, "bool", _bool, value);
-		Observe.notify();
+		var change:PropertyChange = PropertyChange.begin();
+		_bool = change.add(this, "bool", _bool, value);
+		change.commit();
 	}
 	
 	[Bindable(observable)]
@@ -262,8 +264,9 @@ internal class TestObject
 	
 	public function set num(value:Number):void
 	{
-		_num = Observe.change(this, "num", _num, value);
-		Observe.notify();
+		var change:PropertyChange = PropertyChange.begin();
+		_num = change.add(this, "num", _num, value);
+		change.commit();
 	}
 	
 	[Bindable(observable)]
@@ -274,8 +277,9 @@ internal class TestObject
 	
 	public function set str(value:String):void
 	{
-		_str = Observe.change(this, "str", _str, value);
-		Observe.notify();
+		var change:PropertyChange = PropertyChange.begin();
+		_str = change.add(this, "str", _str, value);
+		change.commit();
 	}
 	
 	[Bindable(observable)]
@@ -286,8 +290,9 @@ internal class TestObject
 	
 	public function set custom(value:String):void
 	{
-		_custom = Observe.change(this, "custom", _custom, value);
-		Observe.notify();
+		var change:PropertyChange = PropertyChange.begin();
+		_custom = change.add(this, "custom", _custom, value);
+		change.commit();
 	}
 	
 	public function clone():TestObject
@@ -308,7 +313,7 @@ internal class IntrospectBinding extends Binding
 		return Binding.describeBindings(value);
 	}
 	
-	public static function getBindingEvents(target:Object, property:String):Array
+	public static function getBindingEvents(target:Object, property:String):Object
 	{
 		return Binding.getBindingEvents(target, property);
 	}

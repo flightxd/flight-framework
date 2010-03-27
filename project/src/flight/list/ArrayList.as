@@ -1,43 +1,22 @@
-////////////////////////////////////////////////////////////////////////////////
-//
-// Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-////////////////////////////////////////////////////////////////////////////////
-
 package flight.list
 {
-	import flight.events.Dispatcher;
+	import flash.events.EventDispatcher;
+	
 	import flight.events.ListEvent;
 	import flight.events.ListEventKind;
-	import flight.vo.IValueObject;
+	import flight.selection.IListSelection;
+	import flight.selection.ListSelection;
 	
 	use namespace list_internal;
 	
 	[Event(name="listChange", type="flight.events.ListEvent")]
 	
-	public class ArrayList extends Dispatcher implements IList, IValueObject
+	[Bindable]
+	public class ArrayList extends EventDispatcher implements flight.list.IList
 	{
 		public var idField:String = "id";	// TODO: replace with dataMap
 		
-		list_internal var _source:*;	// internally available to XMLListAdapter
+		list_internal var _source:*;		// internally available to XMLListAdapter
 		
 		private var adapter:*;
 		private var _selection:ListSelection;
@@ -45,16 +24,15 @@ package flight.list
 		
 		public function ArrayList(source:* = null)
 		{
-			this.source = source;
+			this.source = source || [];
 		}
 		
-		[Bindable(event="lengthChange")]
+		[Bindable(event="listChange")]
 		public function get length():int
 		{
 			return adapter.length;
 		}
 		
-		[Bindable(event="mxlist")]
 		public function get mxlist():MXList
 		{
 			if (_mxlist == null) {
@@ -63,8 +41,7 @@ package flight.list
 			return _mxlist;
 		}
 		
-		[Bindable(event="selectionChange")]
-		public function get selection():ListSelection
+		public function get selection():IListSelection
 		{
 			if (_selection == null) {
 				_selection = new ListSelection(this);
@@ -72,7 +49,6 @@ package flight.list
 			return _selection;
 		}
 		
-		[Bindable(event="sourceChange")]
 		public function get source():*
 		{
 			return _source;
@@ -85,8 +61,6 @@ package flight.list
 				return;
 			}
 			
-			var oldValue:Object = _source;
-			
 			if (value is XMLList) {
 				_source = value;
 				adapter = new XMLListAdapter(this);
@@ -94,9 +68,6 @@ package flight.list
 				_source = ("splice" in value) ? value : [value];
 				adapter = _source;
 			}
-			
-			propertyChange("source", oldValue, _source);
-			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent(new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.RESET));
 		}
 		
@@ -104,8 +75,6 @@ package flight.list
 		{
 			var oldValue:int = adapter.length;
 			adapter.push(item);
-			
-			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD,
 										 adapter.slice(oldValue, oldValue+1), oldValue) );
 			return item;
@@ -113,13 +82,10 @@ package flight.list
 		
 		public function addItemAt(item:Object, index:int):Object
 		{
-			var oldValue:int = adapter.length;
 			if (index < 0) {
 				index = Math.max(adapter.length + index, 0);
 			}
 			adapter.splice(index, 0, item);
-			
-			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD,
 										 adapter.slice(index, index+1), index) );
 			return item;
@@ -139,8 +105,6 @@ package flight.list
 				index = oldValue;
 			}
 			adapter.splice.apply(adapter, [index, 0].concat(items));
-			
-			propertyChange("length", oldValue, adapter.length);
 			dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.ADD, items, index) );
 			return items;
 		}
@@ -189,14 +153,12 @@ package flight.list
 		
 		public function removeItemAt(index:int):Object
 		{
-			var oldValue:int = adapter.length;
 			if (index < 0) {
 				index = Math.max(adapter.length + index, 0);
 			}
 			var items:* = adapter.splice(index, 1);
 			// empty list
 			if (items[0] !== undefined) {
-				propertyChange("length", oldValue, adapter.length);
 				dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
 			}
 			return items[0];
@@ -204,14 +166,12 @@ package flight.list
 		
 		public function removeItems(index:int=0, length:int = 0x7FFFFFFF):*
 		{
-			var oldValue:int = adapter.length;
 			if (index < 0) {
 				index = Math.max(adapter.length + index, 0);
 			}
 			var items:* = adapter.splice(index, length);
 			// empty list
 			if (items[0] !== undefined) {
-				propertyChange("length", oldValue, adapter.length);
 				dispatchEvent( new ListEvent(ListEvent.LIST_CHANGE, ListEventKind.REMOVE, items, index) );
 			}
 			return items;
@@ -295,10 +255,9 @@ package flight.list
 	}
 }
 
-import flight.events.Dispatcher;
 import flight.list.ArrayList;
 import flight.list.IList;
-import flight.list.ListSelection;
+import flight.selection.ListSelection;
 
 namespace list_internal;
 

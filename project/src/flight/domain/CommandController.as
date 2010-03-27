@@ -38,7 +38,7 @@ package flight.domain
 	import flight.utils.ObjectEditor;
 	import flight.utils.getClassName;
 	import flight.utils.getType;
-	import flight.vo.ValueObject;
+	import flight.utils.ValueObject;
 	
 	/**
 	 *   

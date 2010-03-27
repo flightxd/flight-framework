@@ -71,7 +71,7 @@ package flexUnitTests.binding
 		[Test]
 		public function testGetBindingEvents():void
 		{
-			var events:Array = IntrospectBinding.getBindingEvents(obj1, "str");
+			var events:Object = IntrospectBinding.getBindingEvents(obj1, "str");
 			assertEquals(events.length, 1);
 			assertEquals(events[0], "propertyChange");
 			
@@ -319,7 +319,7 @@ internal class IntrospectBinding extends Binding
 		return Binding.describeBindings(value);
 	}
 	
-	public static function getBindingEvents(target:Object, property:String):Array
+	public static function getBindingEvents(target:Object, property:String):Object
 	{
 		return Binding.getBindingEvents(target, property);
 	}

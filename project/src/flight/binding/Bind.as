@@ -139,7 +139,9 @@ package flight.binding
 		 */
 		public static function addListener(target:IEventDispatcher, listener:Function, source:Object, sourcePath:String):Binding
 		{
-			target.addEventListener("_", listener);
+			if (target) {
+				target.addEventListener("_", listener);
+			}
 			return createBinding(target, listener, source, sourcePath);
 		}
 		

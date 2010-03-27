@@ -1,44 +1,21 @@
-////////////////////////////////////////////////////////////////////////////////
-//
-// Copyright (c) 2009 Tyler Wright, Robert Taylor, Jacob Wright
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-package flight.list
+package flight.selection
 {
-	import flight.events.Dispatcher;
+	import flash.events.EventDispatcher;
+	
 	import flight.events.ListEvent;
 	import flight.events.ListEventKind;
-	import flight.events.PropertyEvent;
+	import flight.list.ArrayList;
+	import flight.list.IList;
 	
-	/**
-	 * 
-	 */
-	public class ListSelection extends Dispatcher implements IListSelection
+	[Bindable]
+	public class ListSelection extends EventDispatcher implements IListSelection
 	{
+		public var multiselect:Boolean = false;
+		
 		private var list:IList;
 		private var updatingLists:Boolean;
 		private var _index:int = -1;
 		private var _item:Object = null;
-		private var _multiselect:Boolean = false;
 		private var _indices:ArrayList = new ArrayList();
 		private var _items:ArrayList = new ArrayList();
 		
@@ -50,7 +27,6 @@ package flight.list
 			_items.addEventListener(ListEvent.LIST_CHANGE, onSelectionChange, false, 0xF);
 		}
 		
-		[Bindable(event="indexChange")]
 		public function get index():int
 		{
 			return _index;
@@ -61,20 +37,15 @@ package flight.list
 			if (_index == value) {
 				return;
 			}
-			
-			var oldValues:Array = [_index, _item];
 			_index = value;
-			_item = list.getItemAt(_index);
+			item = list.getItemAt(_index);
 			
 			updatingLists = true;
 			_indices.source = [_index];
 			_items.source = [_item];
 			updatingLists = false;
-			
-			PropertyEvent.dispatchChangeList(this, ["index", "item"], oldValues);
 		}
 		
-		[Bindable(event="itemChange")]
 		public function get item():Object
 		{
 			return _item;
@@ -88,42 +59,20 @@ package flight.list
 			if (_item == value) {
 				return;
 			}
-			
-			var oldValues:Array = [_item, _index];
 			_item = value;
-			_index = i;
+			index = i;
 			
 			updatingLists = true;
 			_items.source = [_item];
 			_indices.source = [_index];
 			updatingLists = false;
-			
-			PropertyEvent.dispatchChangeList(this, ["item", "index"], oldValues);
 		}
 		
-		[Bindable(event="multiselectChange")]
-		public function get multiselect():Boolean
-		{
-			return _multiselect;
-		}
-		public function set multiselect(value:Boolean):void
-		{
-			if (_multiselect == value) {
-				return;
-			}
-			
-			var oldValue:Object = _multiselect;
-			_multiselect = value;
-			propertyChange("multiselect", oldValue, _multiselect);
-		}
-		
-		[Bindable(event="indicesChange")]
 		public function get indices():IList
 		{
 			return _indices;
 		}
 		
-		[Bindable(event="itemsChange")]
 		public function get items():IList
 		{
 			return _items;
@@ -156,7 +105,7 @@ package flight.list
 			}
 			
 			var list1:ArrayList = event.target as ArrayList;
-			if (!_multiselect && list1.length > 1) {
+			if (!multiselect && list1.length > 1) {
 				list1.source = event.items != null ? event.items[0] : list1.getItemAt(0);
 				event.stopImmediatePropagation();
 				return;
@@ -204,11 +153,8 @@ package flight.list
 			
 			var oldIndex:int = _index;
 			var oldItem:Object = _item;
-			_index = _indices.length > 0 ? _indices.getItemAt(0) as Number : -1;
-			_item = _items.getItemAt(0);
-			
-			propertyChange("index", oldIndex, _index);
-			propertyChange("item", oldItem, _item); 
+			index = _indices.length > 0 ? _indices.getItemAt(0) as Number : -1;
+			item = _items.getItemAt(0);
 		}
 		
 	}

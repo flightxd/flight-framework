@@ -28,7 +28,7 @@ package flight.commands
 	import flight.list.ArrayList;
 	import flight.net.ResponseStatus;
 	import flight.utils.getType;
-	import flight.vo.ValueObject;
+	import flight.utils.ValueObject;
 	
 	/**
 	 * The CommandHistory executes and stores undoable commands as a history,

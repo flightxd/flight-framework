@@ -344,7 +344,7 @@ internal class IntrospectBinding extends Binding
 		return Binding.describeBindings(value);
 	}
 	
-	public static function getBindingEvents(target:Object, property:String):Array
+	public static function getBindingEvents(target:Object, property:String):Object
 	{
 		return Binding.getBindingEvents(target, property);
 	}

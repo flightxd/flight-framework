@@ -7,7 +7,7 @@ package flight.injection
 	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 	
-	import flight.observers.Observe;
+	import flight.observers.PropertyChange;
 	import flight.utils.Type;
 	
 	import mx.core.IMXMLObject;
@@ -57,7 +57,8 @@ package flight.injection
 				throw new ArgumentError("Injection subject and context cannot be null");
 			}
 			
-			Observe.change(subject, "injections", null, context);
+			var change:PropertyChange = PropertyChange.begin();
+			change.add(subject, "injections", null, context);
 			
 			var props:XMLList = Type.describeProperties(subject, "Inject");
 			for each (var prop:XML in props) {
@@ -73,7 +74,7 @@ package flight.injection
 				IEventDispatcher(subject).dispatchEvent(new Event("injected"));
 			}
 			
-			Observe.notify();
+			change.commit();
 		}
 		
 		/**

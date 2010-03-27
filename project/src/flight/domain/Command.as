@@ -26,7 +26,7 @@ package flight.domain
 {
 	import flight.commands.ICommand;
 	import flight.utils.getType;
-	import flight.vo.ValueObject;
+	import flight.utils.ValueObject;
 	
 	import mx.core.IMXMLObject;
 	

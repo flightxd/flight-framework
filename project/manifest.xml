@@ -8,7 +8,7 @@
 	<component id="MacroCommand"			class="flight.domain.MacroCommand"/>
 	<component id="ScriptCommand"			class="flight.domain.ScriptCommand"/>
 	<component id="CommandHistory"			class="flight.commands.CommandHistory"/>
-	<component id="ValueObject"				class="flight.vo.ValueObject"/>
+	<component id="ValueObject"				class="flight.utils.ValueObject"/>
 	<component id="ObjectEditor"			class="flight.utils.ObjectEditor"/>
 	<component id="ArrayList"				class="flight.list.ArrayList"/>
 	<component id="Collection"				class="flight.list.Collection"/>

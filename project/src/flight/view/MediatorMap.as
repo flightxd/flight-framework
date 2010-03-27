@@ -7,7 +7,7 @@ package flight.view
 	import flash.utils.Dictionary;
 	
 	import flight.injection.Injector;
-	import flight.observers.Observe;
+	import flight.observers.PropertyChange;
 	
 	import mx.core.IMXMLObject;
 	
@@ -40,7 +40,7 @@ package flight.view
 		public function MediatorMap(context:DisplayObject = null)
 		{
 			if (context) initialized(context, null);
-			Observe.addHook(DisplayObject, "injections", this, prepInjection);
+			PropertyChange.addHook(DisplayObject, "injections", this, prepInjection);
 		}
 		
 		/**
