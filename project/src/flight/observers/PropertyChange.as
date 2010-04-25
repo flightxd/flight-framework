@@ -24,6 +24,7 @@ package flight.observers
 		
 		private static var hooks:Dictionary = new Dictionary(true);
 		private static var observers:Dictionary = new Dictionary(true);
+		private static var proxies:Dictionary = new Dictionary(true);
 		private static var classes:Array = [];
 		private static var currentPriority:uint;
 		private static var pool:PropertyChange;
@@ -197,6 +198,64 @@ package flight.observers
 		}
 		
 		/**
+		 * Adds a proxy for a given source's property changes. This allows
+		 * objects acting as proxies to automatically dispatch their observers
+		 * when the source's property changes.
+		 * 
+		 * @param The source object which is being proxied.
+		 * 
+		 * @param The proxy object which is forwarding property getters/setters
+		 * on to the source.
+		 * 
+		 * @param The name of the property which the proxy will be notified
+		 * about. "*" may be used to indicate any property. A comma
+		 * delimited string of properties may be used to add a proxy to
+		 * multiple properties in one call.
+		 */
+		public static function addProxy(source:Object, proxy:Object, property:String = "*"):void
+		{
+			var sourceProxies:Dictionary = proxies[source];
+			if (!sourceProxies) {
+				proxies[source] = sourceProxies = new Dictionary(true);
+			}
+			var proxyProps:Object = sourceProxies[proxy];
+			if (!proxyProps) {
+				sourceProxies[proxy] = proxyProps = {};
+			}
+			var props:Array = property.split(/\s*,\s*/);
+			for each (var i:String in props) {
+				proxyProps[i] = true;
+			}
+		}
+		
+		
+		
+		/**
+		 * Removes a proxy for a given source's property changes.
+		 * 
+		 * @param The source object which is being proxied.
+		 * 
+		 * @param The proxy object which is forwarding property getters/setters
+		 * on to the source.
+		 * 
+		 * @param The name of the property which the proxy will be notified
+		 * about. "*" may be used to indicate any property. A comma
+		 * delimited string of properties may be used to remove a proxy to
+		 * multiple properties in one call.
+		 */
+		public static function removeProxy(source:Object, proxy:Object, property:String = "*"):void
+		{
+			var sourceProxies:Dictionary = proxies[source];
+			if (!sourceProxies) return;
+			var proxyProps:Object = sourceProxies[proxy];
+			if (!proxyProps) return;
+			var props:Array = property.split(/\s*,\s*/);
+			for each (var i:String in props) {
+				delete proxyProps[i];
+			}
+		}
+		
+		/**
 		 * Start a new property change transaction. A transaction allows you to
 		 * dispatch one or more changes at a time, giving the system a chance to
 		 * set all the necessary properties before the observers respond. No
@@ -270,7 +329,22 @@ package flight.observers
 			}
 			
 			var hooks:Array = getMethods(PropertyChange.hooks, target, property);
-			return runMethods(hooks, change, true);
+			newValue = runMethods(hooks, change, true);
+			
+			// handle proxies
+			var targetProxies:Dictionary = proxies[target];
+			if (targetProxies) {
+				for (var proxy:Object in targetProxies) {
+					var props:Object = targetProxies[proxy];
+					if (property in props || "*" in props) {
+						change.target = proxy;
+						hooks = getMethods(PropertyChange.hooks, proxy, property);
+						newValue = runMethods(hooks, change, true);
+					}
+				}
+				// put the target back to where it should be
+				change.target = target;
+			}
 		}
 		
 		/**
@@ -384,6 +458,20 @@ package flight.observers
 				if (change.oldValue !== change.newValue) {
 					var observers:Array = getMethods(PropertyChange.observers, change.target, change.property);
 					runMethods(observers, change);
+					
+					// handle proxies
+					var targetProxies:Dictionary = proxies[change.target];
+					if (targetProxies) {
+						for (var proxy:Object in targetProxies) {
+							var props:Object = targetProxies[proxy];
+							if (change.property in props || "*" in props) {
+								change.target = proxy;
+								observers = getMethods(PropertyChange.observers, proxy, change.property);
+								runMethods(observers, change);
+							}
+						}
+					}
+					
 				}
 				
 				// put change back into its pool
