@@ -211,8 +211,12 @@ package flight.observers
 		 * about. "*" may be used to indicate any property. A comma
 		 * delimited string of properties may be used to add a proxy to
 		 * multiple properties in one call.
+		 * 
+		 * @param (Optional) The new name of the proxy's property if different
+		 * than the original. May also be a comma delimited string if there is
+		 * a comma delimited string in the property argument.
 		 */
-		public static function addProxy(source:Object, proxy:Object, property:String = "*"):void
+		public static function addProxy(source:Object, property:String, proxy:Object, proxyName:String = null):void
 		{
 			var sourceProxies:Dictionary = proxies[source];
 			if (!sourceProxies) {
@@ -223,8 +227,10 @@ package flight.observers
 				sourceProxies[proxy] = proxyProps = {};
 			}
 			var props:Array = property.split(/\s*,\s*/);
-			for each (var i:String in props) {
-				proxyProps[i] = true;
+			var newProps:Array = proxyName ? proxyName.split(/\s*,\s*/) : [];
+			for (var i:int = 0, l:int = props.length, l2:int = newProps.length; i < l; i++) {
+				var prop:String = props[i];
+				proxyProps[prop] = i < l2 ? newProps[i] : prop;
 			}
 		}
 		
@@ -338,12 +344,14 @@ package flight.observers
 					var props:Object = targetProxies[proxy];
 					if (property in props || "*" in props) {
 						change.target = proxy;
+						change.property = (property in props) ? props[property] : property;
 						hooks = getMethods(PropertyChange.hooks, proxy, property);
 						newValue = runMethods(hooks, change, true);
 					}
 				}
 				// put the target back to where it should be
 				change.target = target;
+				change.property = property;
 			}
 		}
 		
@@ -462,11 +470,13 @@ package flight.observers
 					// handle proxies
 					var targetProxies:Dictionary = proxies[change.target];
 					if (targetProxies) {
+						var property:String = change.property;
 						for (var proxy:Object in targetProxies) {
 							var props:Object = targetProxies[proxy];
 							if (change.property in props || "*" in props) {
 								change.target = proxy;
-								observers = getMethods(PropertyChange.observers, proxy, change.property);
+								change.property = (property in props) ? props[property] : property;
+								observers = getMethods(PropertyChange.observers, change.target, change.property);
 								runMethods(observers, change);
 							}
 						}
