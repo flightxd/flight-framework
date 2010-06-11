@@ -1,5 +1,6 @@
 .*
-bin*
+bin
+bin-*
 doc*
 report*
 html-template
