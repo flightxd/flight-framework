@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2009-2010 the original author or authors
+ * 
+ * Permission is hereby granted to use, modify, and distribute this file 
+ * in accordance with the terms of the license agreement accompanying it.
+ */
+
 package flight.services
 {
 	import flash.display.DisplayObject;
@@ -6,7 +13,7 @@ package flight.services
 	import flight.injection.Injector;
 	
 	import mx.core.IMXMLObject;
-
+	
 	public class Service extends EventDispatcher implements IMXMLObject
 	{
 		protected var context:DisplayObject;

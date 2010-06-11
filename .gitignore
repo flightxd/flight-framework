@@ -1,2 +1,12 @@
+.*
+bin*
+doc*
+report*
+html-template
+build.properties
+FlexUnitApplication.mxml
 Thumbs.db
-.DS_Store
+*.iml
+*.ipr
+*.iws
+*.swf
