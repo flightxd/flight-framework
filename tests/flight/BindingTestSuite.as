@@ -1,8 +1,8 @@
-package flexUnitTests
+package flight
 {
-	import flexUnitTests.binding.BindTest;
-	import flexUnitTests.binding.BindingTest;
-	import flexUnitTests.binding.ObservingBindTest;
+	import flight.binding.BindTest;
+	import flight.binding.BindingTest;
+	import flight.binding.ObservingBindTest;
 
 	[Suite]
 	[RunWith("org.flexunit.runners.Suite")]

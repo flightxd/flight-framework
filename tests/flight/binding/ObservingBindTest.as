@@ -1,4 +1,4 @@
-package flexUnitTests.binding
+package flight.binding
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -7,9 +7,6 @@ package flexUnitTests.binding
 	import flash.utils.setTimeout;
 	
 	import flexunit.framework.Assert;
-	
-	import flight.binding.Bind;
-	import flight.binding.Binding;
 	
 	import org.flexunit.asserts.*;
 	import org.flexunit.async.Async;

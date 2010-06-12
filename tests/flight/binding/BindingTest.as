@@ -1,20 +1,16 @@
-package flexUnitTests.binding
+package flight.binding
 {
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.system.System;
 	import flash.utils.Dictionary;
 	import flash.utils.setTimeout;
 	
 	import flexunit.framework.Assert;
 	
-	import flight.binding.Bind;
-	import flight.binding.Binding;
-	
 	import org.flexunit.asserts.*;
 	import org.flexunit.async.Async;
 	
-	public class BindTest extends EventDispatcher
+	public class BindingTest
 	{
 		public var obj1:TestObject;
 		public var obj2:TestObject;
@@ -50,11 +46,45 @@ package flexUnitTests.binding
 			noMetaObj = null;
 		}
 		
+		[Test]
+		public function testDescribeBindings():void
+		{
+			var bindings:Object = IntrospectBinding.describeBindings(obj1);
+			assertTrue("Binding metadata doesn't exist for \"str\"", "str" in bindings);
+			assertTrue("Binding metadata doesn't exist for \"custom\"", "custom" in bindings);
+			
+			assertEquals("More than one binding metadata exists for \"str\"", bindings.str.length, 1);
+			assertEquals("More than one binding metadata exists for \"custom\"", bindings.custom.length, 1);
+			
+			assertEquals(bindings.str[0], "propertyChange");
+			assertEquals(bindings.custom[0], "customChange");
+			
+			IntrospectBinding.clearCache();
+			bindings = IntrospectBinding.describeBindings(noMetaObj);
+			for (var i:String in bindings) {}
+			assertNull("Binding metadata exists and shouldn't with no binding tags", i);
+		}
+		
+		[Test]
+		public function testGetBindingEvents():void
+		{
+			var events:Object = IntrospectBinding.getBindingEvents(obj1, "str");
+			assertEquals(events.length, 1);
+			assertEquals(events[0], "propertyChange");
+			
+			events = IntrospectBinding.getBindingEvents(obj1, "custom");
+			assertEquals(events.length, 1);
+			assertEquals(events[0], "customChange");
+			
+			events = IntrospectBinding.getBindingEvents(noMetaObj, "str");
+			assertEquals(events.length, 1);
+			assertEquals(events[0], "strChange");
+		}
 		
 		[Test]
 		public function testSimpleOneWay():void
 		{
-			Bind.addBinding(obj2, "str", obj1, "str");
+			var binding:Binding = new Binding(obj2, "str", obj1, "str");
 			assertEquals("TestStr1", obj2.str);
 			
 			obj2.str = "noAffect";
@@ -68,7 +98,7 @@ package flexUnitTests.binding
 		[Test]
 		public function testDeepOneWay():void
 		{
-			Bind.addBinding(obj2, "obj.str", obj1, "obj.str");
+			var binding:Binding = new Binding(obj2, "obj.str", obj1, "obj.str");
 			assertEquals("TestStr1", obj2.obj.str);
 			
 			obj2.obj.str = "noAffect";
@@ -82,7 +112,7 @@ package flexUnitTests.binding
 		[Test]
 		public function testSimpleTwoWay():void
 		{
-			Bind.addBinding(obj2, "str", obj1, "str", true);
+			var binding:Binding = new Binding(obj2, "str", obj1, "str", true);
 			assertEquals("TestStr1", obj2.str);
 			
 			obj2.str = "TestChangeFrom2";
@@ -97,7 +127,7 @@ package flexUnitTests.binding
 		[Test]
 		public function testDeepTwoWay():void
 		{
-			Bind.addBinding(obj2, "obj.str", obj1, "obj.str", true);
+			var binding:Binding = new Binding(obj2, "obj.str", obj1, "obj.str", true);
 			assertEquals("TestStr1", obj2.obj.str);
 			
 			obj2.obj.str = "TestChangeFrom2";
@@ -112,7 +142,7 @@ package flexUnitTests.binding
 		public function testDeepScenarios():void
 		{
 			obj2.obj = null;
-			Bind.addBinding(obj2, "obj.str", obj1, "obj.str");
+			var binding:Binding = new Binding(obj2, "obj.str", obj1, "obj.str");
 			obj2.obj = obj2.clone();
 			assertEquals("TestStr1", obj2.obj.str);
 		}
@@ -121,7 +151,7 @@ package flexUnitTests.binding
 		public function testDeepScenarios2():void
 		{
 			obj2.obj = null;
-			Bind.addBinding(obj2, "obj.str", obj1, "obj.str", true);
+			var binding:Binding = new Binding(obj2, "obj.str", obj1, "obj.str", true);
 			obj2.obj = obj2.clone();
 			assertEquals("TestStr2", obj1.obj.str);
 		}
@@ -129,38 +159,41 @@ package flexUnitTests.binding
 		[Test]
 		public function testStrToNumber():void
 		{
-			Bind.addBinding(obj2, "num", obj1, "str");
+			var binding:Binding = new Binding(obj2, "num", obj1, "str");
 			obj1.str = "20";
 			assertEquals("Number did not get set to correctly", 20, obj2.num);
 		}
 		
-		[Test(async)]
+		[Test]
+		public function testMixedPath():void
+		{
+			var binding:Binding = new Binding(this, setter, obj1, "str");
+			
+			assertEquals("Listener not called or called incorrectly", "TestStr1", setterValue);
+			
+			obj1.str = "TestChange";
+			assertEquals("Listener not called or called incorrectly", "TestChange", setterValue);
+		}
+		
+		protected var setterValue:Object;
+		protected function setter(value:Object):void
+		{
+			setterValue = value;
+		}
+		
+		[Test]
 		public function testListener():void
 		{
-			Bind.addListener(this, valueChange, obj1, "obj.str");
+			var binding:Binding = new Binding(this, valueChange, obj1, "str");
 			
 			assertEquals("Listener not called or called incorrectly", "TestStr1", newValue);
 			
-			obj1.obj.str = "TestChange";
+			obj1.str = "TestChange";
 			assertEquals("Listener not called or called incorrectly", "TestChange", newValue);
-			
-			obj1.obj = obj2;
-			assertEquals("Listener not called or called incorrectly", "TestStr2", newValue);
-			
-			System.gc();
-			
-			var params:Object = {obj1: obj1, obj2: obj2};
-			setTimeout(Async.asyncHandler(this, checkListenerValue, 500, params), 10, dummyEvent);
-		}
-		
-		private function checkListenerValue(event:Event, params:Object):void
-		{
-			params.obj1.obj.str = "TestChange2";
-			assertEquals("Listener dropped out of memory", "TestChange2", newValue);
 		}
 		
 		protected var newValue:String;
-		public function valueChange(value:String):void
+		protected function valueChange(value:String):void
 		{
 			newValue = value;
 		}
@@ -168,7 +201,7 @@ package flexUnitTests.binding
 		[Test]
 		public function testIncorrectString():void
 		{
-			Bind.addBinding(obj2, "obj.str", obj1, "obj.str2");
+			var binding:Binding = new Binding(obj2, "obj.str", obj1, "obj.str2");
 			assertNull("Incorrect bindings did not fail gracefully with null", obj2.obj.str);
 		}
 		
@@ -178,56 +211,12 @@ package flexUnitTests.binding
 			var dict:Dictionary = new Dictionary(true);
 			var temp:TestObject = obj1.clone();
 			dict[temp] = true;
-			Bind.addBinding(temp, "str", obj1, "str");
+			var binding:Binding = new Binding(temp, "str", obj1, "str");
 			temp = obj1.clone();
 			dict[temp] = true;
-			Bind.addBinding(obj1, "str", temp, "str");
+			binding = new Binding(obj1, "str", temp, "str");
 			
 			System.gc(); // force collection after this process
-			
-			var params:Object = {dict: dict, msg: "Object was not removed from memory after there were no references to it"};
-			setTimeout(Async.asyncHandler(this, checkEmptyDict, 500, params), 10, dummyEvent);
-		}
-		
-		[Test(async)]
-		public function testMemoryReleaseListener():void
-		{
-			var dict:Dictionary = new Dictionary(true);
-			var temp:TestObject = obj1.clone();
-			dict[temp] = true;
-			
-			newValue = "";
-			Bind.addListener(this, valueChange, temp, "str");
-			
-			assertEquals("Listener not called or called incorrectly", "TestStr1", newValue);
-			
-			temp.str = "TestChange";
-			assertEquals("Listener not called or called incorrectly", "TestChange", newValue);
-			
-			
-			System.gc();
-			
-			var params:Object = {dict: dict, msg: "Object was not removed from memory after there were no references to it"};
-			setTimeout(Async.asyncHandler(this, checkEmptyDict, 500, params), 10, dummyEvent);
-		}
-		
-		[Test(async)]
-		public function testMemoryReleaseEventListener():void
-		{
-			var dict:Dictionary = new Dictionary(true);
-			var temp:TestObject = obj1.clone();
-			temp.obj = temp.clone();
-			dict[temp] = true;
-			
-			eventTriggered = 0;
-			var binding:Binding = Bind.bindEventListener("customChange", onChange, temp, "obj");
-			temp.obj.custom = "test";
-			assertEquals("The event was not bound correctly or triggered.", 1, eventTriggered);
-			temp.obj = new TestObject();
-			temp.obj.custom = "test2";
-			assertEquals("The event was not triggered when the new dispatcher dispatched.", 2, eventTriggered);
-			
-			System.gc();
 			
 			var params:Object = {dict: dict, msg: "Object was not removed from memory after there were no references to it"};
 			setTimeout(Async.asyncHandler(this, checkEmptyDict, 500, params), 10, dummyEvent);
@@ -237,23 +226,6 @@ package flexUnitTests.binding
 		{
 			for (var i:Object in params.dict) {}
 			assertNull(params.msg, i);
-		}
-		
-		[Test]
-		public function testEventListener():void
-		{
-			var binding:Binding = Bind.bindEventListener("customChange", onChange, obj1, "obj");
-			obj1.obj.custom = "test";
-			assertEquals("The event was not bound correctly or triggered.", 1, eventTriggered);
-			obj1.obj = new TestObject();
-			obj1.obj.custom = "test2";
-			assertEquals("The event was not triggered when the new dispatcher dispatched.", 2, eventTriggered);
-		}
-		
-		private var eventTriggered:int;
-		public function onChange(event:Event):void
-		{
-			eventTriggered++;
 		}
 	}
 }
