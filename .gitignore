@@ -5,7 +5,7 @@ doc*
 report*
 html-template
 build.properties
-FlexUnitApplication.mxml
+FlexUnit*
 Thumbs.db
 *.iml
 *.ipr
